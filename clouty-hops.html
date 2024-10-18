@@ -16,163 +16,169 @@
       overflow: hidden;
     }
 
-    /* Canvas for the game */
     canvas {
       border: 2px solid #000;
       background-color: #fff;
-      <canvas id="gameCanvas" width="600" height="300"></canvas>
-<button class="reset-button" onclick="resetGame()">Reset Game</button>
-
     }
 
-    /* Mobile controls */
-    .mobile-controls {
-      display: none;
-    }
-
-    @media (max-width: 768px) {
-      .mobile-controls {
-        display: flex;
-        position: fixed;
-        bottom: 10px;
-        width: 100%;
-        justify-content: center;
-        gap: 20px;
-      }
-
-      .control-button {
-        width: 100px;
-        height: 100px;
-        background-color: #ccc;
-        text-align: center;
-        line-height: 100px;
-        font-size: 24px;
-        border-radius: 50%;
-        user-select: none;
-      }
-    }
-
-    /* Title */
-    .game-title {
+    /* Instructions */
+    .instructions {
       position: absolute;
       top: 10px;
-      font-size: 30px;
-      text-align: center;
       width: 100%;
-      color: #333;
+      text-align: center;
       font-family: "Comic Sans MS", sans-serif;
+      font-size: 16px;
+      color: #333;
     }
 
-    /* Back button */
-    .back-button {
+    /* Settings Button */
+    .settings-button {
       position: absolute;
-      top: 20px;
-      left: 20px;
+      bottom: 20px;
+      right: 20px;
       padding: 10px 15px;
       font-size: 16px;
       background-color: #3498db;
       color: #fff;
       border-radius: 5px;
-      text-decoration: none;
+      cursor: pointer;
       font-family: "Comic Sans MS", sans-serif;
       box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
 
-    .back-button:hover {
-      background-color: #3EB489;
+    .settings-button:hover {
+      background-color: #2980b9;
     }
 
+    /* Settings panel */
+    .settings-panel {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      width: 200px;
+      padding: 20px;
+      background-color: #fff;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .settings-panel h3 {
+      margin-top: 0;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    .slider-container {
+      margin-bottom: 10px;
+    }
+
+    .slider-label {
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    /* Lives Counter */
+    .lives-counter {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-family: "Comic Sans MS", sans-serif;
+      font-size: 20px;
+      color: #333;
+    }
   </style>
-  
 </head>
 <body>
-  <div class="game-title">Clouty Hops</div>
-  <canvas id="gameCanvas" width="600" height="300"></canvas>
-  reset-button {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  padding: 10px 15px;
-  font-size: 16px;
-  background-color: #e74c3c;
-  color: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: "Comic Sans MS", sans-serif;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-}
-.
-
-.reset-button:hover {
-  background-color: #3EB489;
-}
-
-  <!-- Mobile controls -->
-  <div class="mobile-controls">
-    <div class="control-button" onclick="jump()">Jump</div>
+  <div class="instructions">
+    Press <strong>Spacebar</strong> or click/tap to jump. You have 3 lives. this game is still very buggy. I have no clue what im doing!
   </div>
 
-  <a href="index.html" class="back-button">this is the back button</a>
+  <canvas id="gameCanvas" width="600" height="300"></canvas>
+
+  <div class="lives-counter" id="livesCounter">Lives: 3</div>
+
+  <!-- Settings button -->
+  <button class="settings-button" id="settingsButton" onclick="toggleSettings()">Settings</button>
+
+  <!-- Settings panel with sliders -->
+  <div class="settings-panel" id="settingsPanel">
+    <h3>change stuff here</h3>
+
+    <div class="slider-container">
+      <label for="speedSlider" class="slider-label">Speed:</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="4">
+    </div>
+
+    <div class="slider-container">
+      <label for="gravitySlider" class="slider-label">Gravity:</label>
+      <input type="range" id="gravitySlider" min="0.1" max="1" step="0.1" value="0.3">
+    </div>
+
+    <div class="slider-container">
+      <label for="volumeSlider" class="slider-label">Sound Volume:</label>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+    </div>
+
+    <div class="slider-container">
+      <label for="obstacleSlider" class="slider-label">Obstacles:</label>
+      <input type="range" id="obstacleSlider" min="1" max="5" value="1">
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let soundVolume = 1; // Sound volume control
 
-    // Character as a box with text "Clouty Skies"
+    // Character and obstacle settings
     const character = {
       x: 50,
       y: 250,
       width: 100,
       height: 50,
       velocityY: 0,
-      gravity: 0.3, // Less gravity to fall slowly
-      jumpHeight: -15, // Jump height to be higher
+      gravity: 0.3,
+      jumpHeight: -15,
       holdingJump: false,
       text: "Clouty Skies"
     };
-function resetGame() {
-  // Reset game variables
-  character.y = 250;  // Reset character position
-  character.velocityY = 0;
-  obstacle.x = canvas.width;  // Reset obstacle position
-  gameOver = false;  // Remove the "game over" state
 
-  // Restart the game loop
-  update();
-}
-
+    let obstacleSpeed = 4;
     const obstacle = {
       x: canvas.width,
       y: 250,
       width: 50,
-      height: 50,
-      speed: 4
+      height: 50
     };
 
-    let isJumping = false;
+    let lives = 3;
     let gameOver = false;
+    let isJumping = false;
 
-    // Draw the character (a box with text inside)
+    // Draw the character (box with text)
     function drawCharacter() {
-      ctx.fillStyle = '#3498db'; // Blue box
+      ctx.fillStyle = '#3498db';
       ctx.fillRect(character.x, character.y, character.width, character.height);
-      ctx.fillStyle = '#fff'; // White text
+      ctx.fillStyle = '#fff';
       ctx.font = '20px Comic Sans MS';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(character.text, character.x + character.width / 2, character.y + character.height / 2);
     }
 
+    // Draw the obstacle
     function drawObstacle() {
       ctx.fillStyle = 'red';
       ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     }
 
+    // Update game logic
     function update() {
       if (!gameOver) {
-        // Jump and gravity logic
+        // Apply gravity and jump logic
         if (isJumping && character.holdingJump) {
-          character.velocityY = character.jumpHeight; // Keep moving up while holding the jump button
+          character.velocityY = character.jumpHeight;
         } else if (character.y < 250) {
           character.velocityY += character.gravity;
           character.y += character.velocityY;
@@ -182,48 +188,64 @@ function resetGame() {
         }
 
         // Move the obstacle
-        obstacle.x -= obstacle.speed;
+        obstacle.x -= obstacleSpeed;
         if (obstacle.x < 0) {
           obstacle.x = canvas.width;
         }
 
-        // Collision detection
+        // Check for collision
         if (
           character.x < obstacle.x + obstacle.width &&
           character.x + character.width > obstacle.x &&
           character.y < obstacle.y + obstacle.height &&
           character.y + character.height > obstacle.y
         ) {
-          gameOver = true;
+          lives--;
+          document.getElementById('livesCounter').textContent = `Lives: ${lives}`;
+          if (lives <= 0) {
+            gameOver = true;
+            ctx.fillStyle = 'black';
+            ctx.font = '30px Comic Sans MS';
+            ctx.fillText('haha you died', canvas.width / 2, canvas.height / 2);
+          }
         }
 
-        // Clear the canvas and draw the character and obstacle
+        // Clear canvas and redraw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawCharacter();
         drawObstacle();
 
         // Keep updating the game
         requestAnimationFrame(update);
-      } else {
-        ctx.fillStyle = 'black';
-        ctx.font = '50px Comic Sans MS';
-        ctx.fillText('r.i.p.', canvas.width / 2, canvas.height / 2);
       }
     }
 
+    // Play jump sound with volume control
+    function playJumpSound() {
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(666, audioContext.currentTime); // 666Hz sound
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = soundVolume; // Set the volume
+      oscillator.connect(gainNode).connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.1); // Play for 0.1 seconds
+    }
+
+    // Jump logic
     function jump() {
       if (!isJumping && character.y >= 250) {
         isJumping = true;
         character.holdingJump = true;
+        playJumpSound();
       }
     }
 
-    // Release the jump when key/button is released
     function stopJump() {
       character.holdingJump = false;
     }
 
-    // Listen for jump on keyboard and mobile controls
+    // Event listeners for jumping (spacebar and mouse click)
     window.addEventListener('keydown', function (e) {
       if (e.code === 'Space') {
         jump();
@@ -236,9 +258,30 @@ function resetGame() {
       }
     });
 
-    // Start the game
+    canvas.addEventListener('mousedown', jump);
+    canvas.addEventListener('mouseup', stopJump);
+
+    // Toggle the settings panel visibility
+    function toggleSettings() {
+      const settingsPanel = document.getElementById('settingsPanel');
+      settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Listen to slider changes to adjust game settings
+    document.getElementById('speedSlider').addEventListener('input', function (e) {
+      obstacleSpeed = e.target.value;
+    });
+
+    document.getElementById('gravitySlider').addEventListener('input', function (e) {
+      character.gravity = parseFloat(e.target.value);
+    });
+
+    document.getElementById('volumeSlider').addEventListener('input', function (e) {
+      soundVolume = parseFloat(e.target.value);
+    });
+
+    // Start the game loop
     update();
   </script>
 </body>
 </html>
-
