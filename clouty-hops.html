@@ -20,6 +20,9 @@
     canvas {
       border: 2px solid #000;
       background-color: #fff;
+      <canvas id="gameCanvas" width="600" height="300"></canvas>
+<button class="reset-button" onclick="resetGame()">Reset Game</button>
+
     }
 
     /* Mobile controls */
@@ -76,14 +79,33 @@
     }
 
     .back-button:hover {
-      background-color: #2980b9;
+      background-color: #3EB489;
     }
 
   </style>
+  
 </head>
 <body>
   <div class="game-title">Clouty Hops</div>
   <canvas id="gameCanvas" width="600" height="300"></canvas>
+  reset-button {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px 15px;
+  font-size: 16px;
+  background-color: #e74c3c;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Comic Sans MS", sans-serif;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.
+
+.reset-button:hover {
+  background-color: #3EB489;
+}
 
   <!-- Mobile controls -->
   <div class="mobile-controls">
@@ -108,6 +130,16 @@
       holdingJump: false,
       text: "Clouty Skies"
     };
+function resetGame() {
+  // Reset game variables
+  character.y = 250;  // Reset character position
+  character.velocityY = 0;
+  obstacle.x = canvas.width;  // Reset obstacle position
+  gameOver = false;  // Remove the "game over" state
+
+  // Restart the game loop
+  update();
+}
 
     const obstacle = {
       x: canvas.width,
@@ -209,3 +241,4 @@
   </script>
 </body>
 </html>
+
