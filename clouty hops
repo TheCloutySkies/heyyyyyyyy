@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clouty Hops</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      overflow: hidden;
+    }
+
+    /* Canvas for the game */
+    canvas {
+      border: 2px solid #000;
+      background-color: #fff;
+    }
+
+    /* Game controls for mobile */
+    .mobile-controls {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: flex;
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .control-button {
+        width: 100px;
+        height: 100px;
+        background-color: #ccc;
+        text-align: center;
+        line-height: 100px;
+        font-size: 24px;
+        border-radius: 50%;
+        user-select: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="600" height="300"></canvas>
+
+  <!-- Mobile controls -->
+  <div class="mobile-controls">
+    <div class="control-button" onclick="jump()">Jump</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Load your face image as the character
+    const faceImg = new Image();
+    faceImg.src = 'https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true';  // Replace this with the URL of your face image.
+
+    const character = {
+      x: 50,
+      y: 250,
+      width: 50,
+      height: 50,
+      velocityY: 0,
+      gravity: 0.5,
+      jumpHeight: -10
+    };
+
+    const obstacle = {
+      x: canvas.width,
+      y: 250,
+      width: 50,
+      height: 50,
+      speed: 4
+    };
+
+    let isJumping = false;
+    let gameOver = false;
+
+    function drawCharacter() {
+      ctx.drawImage(faceImg, character.x, character.y, character.width, character.height);
+    }
+
+    function drawObstacle() {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    }
+
+    function update() {
+      if (!gameOver) {
+        // Gravity and jumping logic
+        if (character.y < 250) {
+          character.velocityY += character.gravity;
+          character.y += character.velocityY;
+        } else {
+          character.y = 250;
+          isJumping = false;
+        }
+
+        // Move the obstacle
+        obstacle.x -= obstacle.speed;
+        if (obstacle.x < 0) {
+          obstacle.x = canvas.width;
+        }
+
+        // Collision detection
+        if (
+          character.x < obstacle.x + obstacle.width &&
+          character.x + character.width > obstacle.x &&
+          character.y < obstacle.y + obstacle.height &&
+          character.y + character.height > obstacle.y
+        ) {
+          gameOver = true;
+        }
+
+        // Clear the canvas and draw the character and obstacle
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawCharacter();
+        drawObstacle();
+
+        // Keep updating the game
+        requestAnimationFrame(update);
+      } else {
+        ctx.fillStyle = 'black';
+        ctx.font = '30px Comic Sans MS';
+        ctx.fillText('Game Over!', canvas.width / 2 - 100, canvas.height / 2);
+      }
+    }
+
+    function jump() {
+      if (!isJumping && character.y >= 250) {
+        character.velocityY = character.jumpHeight;
+        isJumping = true;
+      }
+    }
+
+    // Listen for jump on keyboard and mobile controls
+    window.addEventListener('keydown', function (e) {
+      if (e.code === 'Space') {
+        jump();
+      }
+    });
+
+    // Start the game
+    faceImg.onload = () => {
+      update();
+    };
+  </script>
+</body>
+</html>
