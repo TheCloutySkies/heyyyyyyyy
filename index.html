@@ -12,6 +12,40 @@
       height: 100vh;
       margin: 0;
       background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 100vh;
+      background-color: #fff;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      font-family: "Comic Sans MS", sans-serif; /* Comic Sans font */
+    }
+
+    .sidebar h2 {
+      text-align: center;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 10px;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #333;
+      background-color: #f0f0f0;
+      text-align: center;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #ddd;
     }
 
     /* Image fade-in animation */
@@ -37,14 +71,23 @@
 <body>
   <!-- Make the image clickable, linking to your YouTube channel -->
   <a href="https://www.youtube.com/@cloutyskies" target="_blank">
-    <img src="https://github.com/TheCloutySkies/ultimateface/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true" alt="My Face">
+    <img src="YOUR_IMAGE_URL" alt="My Face">
   </a>
 
   <!-- Audio element to play sound when the page is loaded -->
   <audio id="myAudio" autoplay>
-    <source src="https://github.com/TheCloutySkies/ultimateface/raw/refs/heads/main/better%20off%20alone%20low%20quality.mp3" type="audio/mpeg">
+    <source src="https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/better%20off%20alone%20low%20quality.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
+
+  <!-- Sidebar on the right with Comic Sans font -->
+  <div class="sidebar">
+    <h2>Menu</h2>
+    <a href="https://www.youtube.com/@cloutyskies" target="_blank">Main Channel</a>
+    <a href="https://www.youtube.com/@cloutyskies2" target="_blank">Second Channel</a>
+    <a href="https://beacons.ai/cloutyskies" target="_blank">Additional Links</a>
+    <a href="about.html">About Page</a>
+  </div>
 
   <script>
     // Auto-play the audio when the page is fully loaded
