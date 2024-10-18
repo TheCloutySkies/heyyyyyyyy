@@ -18,7 +18,14 @@
 
     canvas {
       border: 2px solid #000;
-      background-color: #fff;
+      background: linear-gradient(90deg, #000, #fff); /* Black and white gradient background */
+      background-size: 400% 400%;
+      animation: gradientMove 5s infinite linear; /* Creates a moving effect for illusion */
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
     }
 
     /* Instructions */
@@ -30,6 +37,51 @@
       font-family: "Comic Sans MS", sans-serif;
       font-size: 16px;
       color: #333;
+    }
+
+    /* Settings Button */
+    .settings-button {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: "Comic Sans MS", sans-serif;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .settings-button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Settings panel */
+    .settings-panel {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      width: 200px;
+      padding: 20px;
+      background-color: #fff;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .settings-panel h3 {
+      margin-top: 0;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    .slider-container {
+      margin-bottom: 10px;
+    }
+
+    .slider-label {
+      font-family: "Comic Sans MS", sans-serif;
     }
 
     /* Lives Counter */
@@ -45,12 +97,40 @@
 </head>
 <body>
   <div class="instructions">
-    Press <strong>Spacebar</strong> or click/tap to jump. You have 3 lives, maybe. I have no idea what im doing!
+    Press <strong>Spacebar</strong> or click/tap to jump. hopefully the 3 lives mechanic works. i have clue how to code!
   </div>
 
   <canvas id="gameCanvas" width="600" height="300"></canvas>
 
   <div class="lives-counter" id="livesCounter">Lives: 3</div>
+
+  <!-- Settings button -->
+  <button class="settings-button" id="settingsButton" onclick="toggleSettings()">Settings</button>
+
+  <!-- Settings panel with sliders -->
+  <div class="settings-panel" id="settingsPanel">
+    <h3>Settings</h3>
+
+    <div class="slider-container">
+      <label for="speedSlider" class="slider-label">Speed:</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="4">
+    </div>
+
+    <div class="slider-container">
+      <label for="gravitySlider" class="slider-label">Gravity:</label>
+      <input type="range" id="gravitySlider" min="0.1" max="1" step="0.1" value="0.3">
+    </div>
+
+    <div class="slider-container">
+      <label for="volumeSlider" class="slider-label">loudness:</label>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+    </div>
+
+    <div class="slider-container">
+      <label for="obstacleSlider" class="slider-label">Obstacles:</label>
+      <input type="range" id="obstacleSlider" min="1" max="5" value="1">
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -73,13 +153,14 @@
       y: 250,
       width: 50,
       height: 50,
-      velocityY: 0,
       gravity: 0.5,  // Gravity effect for moving down
       isJumping: false  // Controls whether obstacle is "jumping" down
     };
 
     let lives = 3;
+    let obstaclesHit = 0;
     let gameOver = false;
+    let holdingJump = false;
 
     // Draw the character (box with text)
     function drawCharacter() {
@@ -101,39 +182,29 @@
     // Update game logic
     function update() {
       if (!gameOver) {
-        // Apply gravity and obstacle movement when jumping
-        if (obstacle.isJumping) {
-          obstacle.velocityY += obstacle.gravity;
-          obstacle.y += obstacle.velocityY;
-        }
-
-        // Reset the obstacle position once it's out of the frame
-        if (obstacle.y > canvas.height) {
-          obstacle.isJumping = false;
-          obstacle.y = 250;  // Reset position
-          obstacle.velocityY = 0;
+        // If the player is holding jump, move the obstacle down out of frame
+        if (holdingJump) {
+          obstacle.y = character.y + character.height * 1.5; // Move obstacle out of player's way
+        } else {
+          if (obstacle.y < 250) {
+            obstacle.y += obstacle.gravity; // Gravity pulls obstacle back up
+          }
         }
 
         // Move the obstacle left
         obstacle.x -= obstacleSpeed;
         if (obstacle.x < 0) {
           obstacle.x = canvas.width;
-        }
-
-        // Check for collision (if obstacle isn't "jumping" down)
-        if (!obstacle.isJumping &&
-          character.x < obstacle.x + obstacle.width &&
-          character.x + character.width > obstacle.x &&
-          character.y < obstacle.y + obstacle.height &&
-          character.y + character.height > obstacle.y
-        ) {
-          lives--;
-          document.getElementById('livesCounter').textContent = `Lives: ${lives}`;
-          if (lives <= 0) {
+          obstacle.y = 250; // Reset position
+          if (!obstacle.isJumping) {
+            obstaclesHit++;
+            document.getElementById('livesCounter').textContent = `Lives: ${3 - obstaclesHit}`;
+          }
+          if (obstaclesHit >= 3) {
             gameOver = true;
             ctx.fillStyle = 'black';
             ctx.font = '30px Comic Sans MS';
-            ctx.fillText('ur dead', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
           }
         }
 
@@ -159,12 +230,14 @@
       oscillator.stop(audioContext.currentTime + 0.1); // Play for 0.1 seconds
     }
 
-    // Jump mechanic: Make the obstacle "jump" downwards
+    // Jump mechanic: Hold input to move the obstacle out of the way
     function jump() {
-      if (!obstacle.isJumping) {
-        obstacle.isJumping = true;
-        playJumpSound();  // Play the jump sound
-      }
+      holdingJump = true;
+      playJumpSound();
+    }
+
+    function stopJump() {
+      holdingJump = false;
     }
 
     // Event listeners for jumping (spacebar and mouse click)
@@ -174,7 +247,33 @@
       }
     });
 
+    window.addEventListener('keyup', function (e) {
+      if (e.code === 'Space') {
+        stopJump();
+      }
+    });
+
     canvas.addEventListener('mousedown', jump);
+    canvas.addEventListener('mouseup', stopJump);
+
+    // Toggle the settings panel visibility
+    function toggleSettings() {
+      const settingsPanel = document.getElementById('settingsPanel');
+      settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Listen to slider changes to adjust game settings
+    document.getElementById('speedSlider').addEventListener('input', function (e) {
+      obstacleSpeed = e.target.value;
+    });
+
+    document.getElementById('gravitySlider').addEventListener('input', function (e) {
+      obstacle.gravity = parseFloat(e.target.value);
+    });
+
+    document.getElementById('volumeSlider').addEventListener('input', function (e) {
+      soundVolume = parseFloat(e.target.value);
+    });
 
     // Start the game loop
     update();
