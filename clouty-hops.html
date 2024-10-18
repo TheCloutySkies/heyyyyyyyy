@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clouty Hops</title>
   <style>
     canvas {
       border: 1px solid #d3d3d3;
       background-color: #f1f1f1;
     }
     body {
-      font-family: "Comic Sans MS", sans-serif; /* Comic Sans for the entire game */
+      font-family: "Comic Sans MS", sans-serif;
     }
     h1 {
       text-align: center;
@@ -20,23 +21,37 @@
       padding: 10px;
       font-size: 16px;
     }
+    #settingsPanel {
+      display: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body onload="startGame()">
 
-<h1>Clouty Hops</h1> <!-- Title above the game -->
+<h1>Clouty Hops</h1> 
+<button onclick="window.location.href='index.html'">Back to Home</button> <!-- Back to home button -->
 
 <script>
 
 var myGamePiece;
 var myObstacles = [];
 var myScore;
+var backgroundX = 0; // Dynamic background
+var backgroundSpeed = 1; // Speed for background movement
+var obstacleColor = 'green'; // Default obstacle color
+
+// Background Music
+var backgroundMusic = new Audio("https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/Jersey_Jerk_idk_mane.wav")
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.5; // Default volume
 
 function startGame() {
-    myGamePiece = new component(30, 30, "https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/sad%20man.JPG?raw=true", 10, 120, "image");  // Player as an image
+    myGamePiece = new component(30, 30, "https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true", 10, 120, "image");  
     myGamePiece.gravity = 0.05;
     myScore = new component("30px", "Comic Sans MS", "black", 280, 40, "text");
     myGameArea.start();
+    backgroundMusic.play(); // Start background music
 }
 
 var myGameArea = {
@@ -45,15 +60,15 @@ var myGameArea = {
         this.canvas.width = 480;
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[1]); // Insert the canvas after the title
+        document.body.insertBefore(this.canvas, document.body.childNodes[1]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
-        window.addEventListener('keydown', function(e) {  // Spacebar input for jumping
+        window.addEventListener('keydown', function(e) {
             if (e.code === 'Space') {
                 accelerate(-0.2);
             }
         });
-        window.addEventListener('keyup', function(e) {  // Spacebar input stop acceleration
+        window.addEventListener('keyup', function(e) {
             if (e.code === 'Space') {
                 accelerate(0.05);
             }
@@ -64,6 +79,7 @@ var myGameArea = {
     },
     stop: function() {
         clearInterval(this.interval);
+        backgroundMusic.pause(); // Stop music
     },
     reset: function() {
         document.body.removeChild(this.canvas);
@@ -91,7 +107,7 @@ function component(width, height, color, x, y, type) {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image") {  // Update to display an image
+        } else if (this.type == "image") {  
             let img = new Image();
             img.src = color;
             ctx.drawImage(img, this.x, this.y, this.width, this.height);
@@ -135,21 +151,37 @@ function updateGameArea() {
     for (i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             myGameArea.stop();
+            alert('You died! You have to subscribe to my YouTube.');
             return;
         }
     }
     myGameArea.clear();
+
+    // Dynamic background movement
+    backgroundX -= backgroundSpeed;
+    if (backgroundX <= -myGameArea.canvas.width) {
+        backgroundX = 0;
+    }
+    myGameArea.context.fillStyle = "lightblue";
+    myGameArea.context.fillRect(backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+
     myGameArea.frameNo += 1;
+
+    // Change obstacle color every 200 points
+    if (myGameArea.frameNo % 200 === 0) {
+        obstacleColor = "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 50%)";
+    }
+
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
         minHeight = 20;
-        maxHeight = 200;
+        maxHeight = 150;  // Lower maximum height for more forgiving gaps
         height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 200;
+        minGap = 100;  // Increase gap size
+        maxGap = 250;  // Increase gap size
         gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(10, height, "green", x, 0));
-        myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
+        myObstacles.push(new component(10, height, obstacleColor, x, 0));
+        myObstacles.push(new component(10, x - height - gap, obstacleColor, x, height + gap));
     }
     for (i = 0; i < myObstacles.length; i += 1) {
         myObstacles[i].x += -1;
@@ -170,16 +202,56 @@ function accelerate(n) {
     myGamePiece.gravity = n;
 }
 
-function resetGame() {
-    myGameArea.reset();
+// Settings Button and Panel
+function toggleSettings() {
+    const settingsPanel = document.getElementById("settingsPanel");
+    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
+        settingsPanel.style.display = "block";
+    } else {
+        settingsPanel.style.display = "none";
+    }
 }
+
+// Event Listeners for Settings
+function changeSpeed(value) {
+    backgroundSpeed = value;
+}
+
+function changeGravity(value) {
+    myGamePiece.gravity = value;
+}
+
+function changeObstacleColor(value) {
+    obstacleColor = `hsl(${value}, 100%, 50%)`; // Hue picker for obstacle color
+}
+
+// Volume and Mute Controls
+function setVolume(value) {
+    backgroundMusic.volume = value;
+}
+
+function toggleMute() {
+    backgroundMusic.muted = !backgroundMusic.muted;
+}
+
 </script>
 
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h3>Settings</h3>
+  <label>Speed: <input type="range" min="1" max="10" value="1" onchange="changeSpeed(this.value)"></label><br>
+  <label>Gravity: <input type="range" min="0.01" max="0.2" step="0.01" value="0.05" onchange="changeGravity(this.value)"></label><br>
+  <label>Obstacle Color: <input type="range" min="0" max="360" value="120" onchange="changeObstacleColor(this.value)"></label><br>
+  <label>Volume: <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)"></label>
+  <button onclick="toggleMute()">Mute</button>
+</div>
+
+<!-- Buttons -->
 <br>
-<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">Jump</button>
-<button onclick="resetGame()">RESET</button>
-<p>jump over the stuff</p>
-<p>If you die you have to subscribe to my Youtube</p>
+<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">JUMP</button>
+<button onclick="resetGame()">RESET GAME</button>
+<br>
+<p>Jump over the stuff, if you die you have to subscribe to my YouTube.</p>
 
 </body>
 </html>
