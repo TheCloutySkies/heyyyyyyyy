@@ -32,51 +32,6 @@
       color: #333;
     }
 
-    /* Settings Button */
-    .settings-button {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      padding: 10px 15px;
-      font-size: 16px;
-      background-color: #3498db;
-      color: #fff;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: "Comic Sans MS", sans-serif;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .settings-button:hover {
-      background-color: #2980b9;
-    }
-
-    /* Settings panel */
-    .settings-panel {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 20px;
-      width: 200px;
-      padding: 20px;
-      background-color: #fff;
-      border: 2px solid #000;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    }
-
-    .settings-panel h3 {
-      margin-top: 0;
-      font-family: "Comic Sans MS", sans-serif;
-    }
-
-    .slider-container {
-      margin-bottom: 10px;
-    }
-
-    .slider-label {
-      font-family: "Comic Sans MS", sans-serif;
-    }
-
     /* Lives Counter */
     .lives-counter {
       position: absolute;
@@ -90,40 +45,12 @@
 </head>
 <body>
   <div class="instructions">
-    Press <strong>Spacebar</strong> or click/tap to jump. You have 3 lives. this game is still very buggy. I have no clue what im doing!
+    Press <strong>Spacebar</strong> or click/tap to jump. You have 3 lives, maybe. I have no idea what im doing!
   </div>
 
   <canvas id="gameCanvas" width="600" height="300"></canvas>
 
   <div class="lives-counter" id="livesCounter">Lives: 3</div>
-
-  <!-- Settings button -->
-  <button class="settings-button" id="settingsButton" onclick="toggleSettings()">Settings</button>
-
-  <!-- Settings panel with sliders -->
-  <div class="settings-panel" id="settingsPanel">
-    <h3>change stuff here</h3>
-
-    <div class="slider-container">
-      <label for="speedSlider" class="slider-label">Speed:</label>
-      <input type="range" id="speedSlider" min="1" max="10" value="4">
-    </div>
-
-    <div class="slider-container">
-      <label for="gravitySlider" class="slider-label">Gravity:</label>
-      <input type="range" id="gravitySlider" min="0.1" max="1" step="0.1" value="0.3">
-    </div>
-
-    <div class="slider-container">
-      <label for="volumeSlider" class="slider-label">Sound Volume:</label>
-      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
-    </div>
-
-    <div class="slider-container">
-      <label for="obstacleSlider" class="slider-label">Obstacles:</label>
-      <input type="range" id="obstacleSlider" min="1" max="5" value="1">
-    </div>
-  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -137,10 +64,6 @@
       y: 250,
       width: 100,
       height: 50,
-      velocityY: 0,
-      gravity: 0.3,
-      jumpHeight: -15,
-      holdingJump: false,
       text: "Clouty Skies"
     };
 
@@ -149,12 +72,14 @@
       x: canvas.width,
       y: 250,
       width: 50,
-      height: 50
+      height: 50,
+      velocityY: 0,
+      gravity: 0.5,  // Gravity effect for moving down
+      isJumping: false  // Controls whether obstacle is "jumping" down
     };
 
     let lives = 3;
     let gameOver = false;
-    let isJumping = false;
 
     // Draw the character (box with text)
     function drawCharacter() {
@@ -176,25 +101,27 @@
     // Update game logic
     function update() {
       if (!gameOver) {
-        // Apply gravity and jump logic
-        if (isJumping && character.holdingJump) {
-          character.velocityY = character.jumpHeight;
-        } else if (character.y < 250) {
-          character.velocityY += character.gravity;
-          character.y += character.velocityY;
-        } else {
-          character.y = 250;
-          isJumping = false;
+        // Apply gravity and obstacle movement when jumping
+        if (obstacle.isJumping) {
+          obstacle.velocityY += obstacle.gravity;
+          obstacle.y += obstacle.velocityY;
         }
 
-        // Move the obstacle
+        // Reset the obstacle position once it's out of the frame
+        if (obstacle.y > canvas.height) {
+          obstacle.isJumping = false;
+          obstacle.y = 250;  // Reset position
+          obstacle.velocityY = 0;
+        }
+
+        // Move the obstacle left
         obstacle.x -= obstacleSpeed;
         if (obstacle.x < 0) {
           obstacle.x = canvas.width;
         }
 
-        // Check for collision
-        if (
+        // Check for collision (if obstacle isn't "jumping" down)
+        if (!obstacle.isJumping &&
           character.x < obstacle.x + obstacle.width &&
           character.x + character.width > obstacle.x &&
           character.y < obstacle.y + obstacle.height &&
@@ -206,7 +133,7 @@
             gameOver = true;
             ctx.fillStyle = 'black';
             ctx.font = '30px Comic Sans MS';
-            ctx.fillText('haha you died', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('ur dead', canvas.width / 2, canvas.height / 2);
           }
         }
 
@@ -232,17 +159,12 @@
       oscillator.stop(audioContext.currentTime + 0.1); // Play for 0.1 seconds
     }
 
-    // Jump logic
+    // Jump mechanic: Make the obstacle "jump" downwards
     function jump() {
-      if (!isJumping && character.y >= 250) {
-        isJumping = true;
-        character.holdingJump = true;
-        playJumpSound();
+      if (!obstacle.isJumping) {
+        obstacle.isJumping = true;
+        playJumpSound();  // Play the jump sound
       }
-    }
-
-    function stopJump() {
-      character.holdingJump = false;
     }
 
     // Event listeners for jumping (spacebar and mouse click)
@@ -252,33 +174,7 @@
       }
     });
 
-    window.addEventListener('keyup', function (e) {
-      if (e.code === 'Space') {
-        stopJump();
-      }
-    });
-
     canvas.addEventListener('mousedown', jump);
-    canvas.addEventListener('mouseup', stopJump);
-
-    // Toggle the settings panel visibility
-    function toggleSettings() {
-      const settingsPanel = document.getElementById('settingsPanel');
-      settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Listen to slider changes to adjust game settings
-    document.getElementById('speedSlider').addEventListener('input', function (e) {
-      obstacleSpeed = e.target.value;
-    });
-
-    document.getElementById('gravitySlider').addEventListener('input', function (e) {
-      character.gravity = parseFloat(e.target.value);
-    });
-
-    document.getElementById('volumeSlider').addEventListener('input', function (e) {
-      soundVolume = parseFloat(e.target.value);
-    });
 
     // Start the game loop
     update();
