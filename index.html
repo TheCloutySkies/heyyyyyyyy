@@ -9,7 +9,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 70vh;
+      height: 100vh;
       margin: 0;
       background-color: #f0f0f0;
     }
@@ -36,8 +36,22 @@
 </head>
 <body>
   <!-- Make the image clickable, linking to your YouTube channel -->
-  <a href="https://www.youtube.com/@CloutySkies" target="_blank">
+  <a href="https://www.youtube.com/@cloutyskies" target="_blank">
     <img src="https://github.com/TheCloutySkies/ultimateface/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true" alt="My Face">
   </a>
+
+  <!-- Audio element to play sound when the page is loaded -->
+  <audio id="myAudio" autoplay>
+    <source src="https://github.com/TheCloutySkies/ultimateface/raw/refs/heads/main/better%20off%20alone%20low%20quality.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    // Auto-play the audio when the page is fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      var audio = document.getElementById('myAudio');
+      audio.play();
+    });
+  </script>
 </body>
 </html>
