@@ -2,281 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clouty Hops</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-      overflow: hidden;
-    }
-
     canvas {
-      border: 2px solid #000;
-      background: linear-gradient(90deg, #000, #fff); /* Black and white gradient background */
-      background-size: 400% 400%;
-      animation: gradientMove 5s infinite linear; /* Creates a moving effect for illusion */
+      border: 1px solid #d3d3d3;
+      background-color: #f1f1f1;
     }
-
-    @keyframes gradientMove {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
+    body {
+      font-family: "Comic Sans MS", sans-serif; /* Comic Sans for the entire game */
     }
-
-    /* Instructions */
-    .instructions {
-      position: absolute;
-      top: 10px;
-      width: 100%;
+    h1 {
       text-align: center;
+      font-size: 40px;
+    }
+    button {
       font-family: "Comic Sans MS", sans-serif;
+      padding: 10px;
       font-size: 16px;
-      color: #333;
-    }
-
-    /* Settings Button */
-    .settings-button {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      padding: 10px 15px;
-      font-size: 16px;
-      background-color: #3498db;
-      color: #fff;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: "Comic Sans MS", sans-serif;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .settings-button:hover {
-      background-color: #2980b9;
-    }
-
-    /* Settings panel */
-    .settings-panel {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 20px;
-      width: 200px;
-      padding: 20px;
-      background-color: #fff;
-      border: 2px solid #000;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    }
-
-    .settings-panel h3 {
-      margin-top: 0;
-      font-family: "Comic Sans MS", sans-serif;
-    }
-
-    .slider-container {
-      margin-bottom: 10px;
-    }
-
-    .slider-label {
-      font-family: "Comic Sans MS", sans-serif;
-    }
-
-    /* Lives Counter */
-    .lives-counter {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-family: "Comic Sans MS", sans-serif;
-      font-size: 20px;
-      color: #333;
     }
   </style>
 </head>
-<body>
-  <div class="instructions">
-    Press <strong>Spacebar</strong> or click/tap to jump. hopefully the 3 lives mechanic works. i have clue how to code!
-  </div>
+<body onload="startGame()">
 
-  <canvas id="gameCanvas" width="600" height="300"></canvas>
+<h1>Clouty Hops</h1> <!-- Title above the game -->
 
-  <div class="lives-counter" id="livesCounter">Lives: 3</div>
+<script>
 
-  <!-- Settings button -->
-  <button class="settings-button" id="settingsButton" onclick="toggleSettings()">Settings</button>
+var myGamePiece;
+var myObstacles = [];
+var myScore;
 
-  <!-- Settings panel with sliders -->
-  <div class="settings-panel" id="settingsPanel">
-    <h3>Settings</h3>
+function startGame() {
+    myGamePiece = new component(30, 30, "https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/sad%20man.JPG?raw=true", 10, 120, "image");  // Player as an image
+    myGamePiece.gravity = 0.05;
+    myScore = new component("30px", "Comic Sans MS", "black", 280, 40, "text");
+    myGameArea.start();
+}
 
-    <div class="slider-container">
-      <label for="speedSlider" class="slider-label">Speed:</label>
-      <input type="range" id="speedSlider" min="1" max="10" value="4">
-    </div>
-
-    <div class="slider-container">
-      <label for="gravitySlider" class="slider-label">Gravity:</label>
-      <input type="range" id="gravitySlider" min="0.1" max="1" step="0.1" value="0.3">
-    </div>
-
-    <div class="slider-container">
-      <label for="volumeSlider" class="slider-label">loudness:</label>
-      <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
-    </div>
-
-    <div class="slider-container">
-      <label for="obstacleSlider" class="slider-label">Obstacles:</label>
-      <input type="range" id="obstacleSlider" min="1" max="5" value="1">
-    </div>
-  </div>
-
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    let soundVolume = 1; // Sound volume control
-
-    // Character and obstacle settings
-    const character = {
-      x: 50,
-      y: 250,
-      width: 100,
-      height: 50,
-      text: "Clouty Skies"
-    };
-
-    let obstacleSpeed = 4;
-    const obstacle = {
-      x: canvas.width,
-      y: 250,
-      width: 50,
-      height: 50,
-      gravity: 0.5,  // Gravity effect for moving down
-      isJumping: false  // Controls whether obstacle is "jumping" down
-    };
-
-    let lives = 3;
-    let obstaclesHit = 0;
-    let gameOver = false;
-    let holdingJump = false;
-
-    // Draw the character (box with text)
-    function drawCharacter() {
-      ctx.fillStyle = '#3498db';
-      ctx.fillRect(character.x, character.y, character.width, character.height);
-      ctx.fillStyle = '#fff';
-      ctx.font = '20px Comic Sans MS';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(character.text, character.x + character.width / 2, character.y + character.height / 2);
+var myGameArea = {
+    canvas: document.createElement("canvas"),
+    start: function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[1]); // Insert the canvas after the title
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+        window.addEventListener('keydown', function(e) {  // Spacebar input for jumping
+            if (e.code === 'Space') {
+                accelerate(-0.2);
+            }
+        });
+        window.addEventListener('keyup', function(e) {  // Spacebar input stop acceleration
+            if (e.code === 'Space') {
+                accelerate(0.05);
+            }
+        });
+    },
+    clear: function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop: function() {
+        clearInterval(this.interval);
+    },
+    reset: function() {
+        document.body.removeChild(this.canvas);
+        this.clear();
+        myObstacles = [];
+        this.frameNo = 0;
+        startGame();
     }
+}
 
-    // Draw the obstacle
-    function drawObstacle() {
-      ctx.fillStyle = 'red';
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    }
-
-    // Update game logic
-    function update() {
-      if (!gameOver) {
-        // If the player is holding jump, move the obstacle down out of frame
-        if (holdingJump) {
-          obstacle.y = character.y + character.height * 1.5; // Move obstacle out of player's way
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;
+    this.x = x;
+    this.y = y;
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else if (this.type == "image") {  // Update to display an image
+            let img = new Image();
+            img.src = color;
+            ctx.drawImage(img, this.x, this.y, this.width, this.height);
         } else {
-          if (obstacle.y < 250) {
-            obstacle.y += obstacle.gravity; // Gravity pulls obstacle back up
-          }
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-
-        // Move the obstacle left
-        obstacle.x -= obstacleSpeed;
-        if (obstacle.x < 0) {
-          obstacle.x = canvas.width;
-          obstacle.y = 250; // Reset position
-          if (!obstacle.isJumping) {
-            obstaclesHit++;
-            document.getElementById('livesCounter').textContent = `Lives: ${3 - obstaclesHit}`;
-          }
-          if (obstaclesHit >= 3) {
-            gameOver = true;
-            ctx.fillStyle = 'black';
-            ctx.font = '30px Comic Sans MS';
-            ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
-          }
+    }
+    this.newPos = function() {
+        this.gravitySpeed += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
         }
-
-        // Clear canvas and redraw
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawCharacter();
-        drawObstacle();
-
-        // Keep updating the game
-        requestAnimationFrame(update);
-      }
     }
-
-    // Play jump sound with volume control
-    function playJumpSound() {
-      const oscillator = audioContext.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(666, audioContext.currentTime); // 666Hz sound
-      const gainNode = audioContext.createGain();
-      gainNode.gain.value = soundVolume; // Set the volume
-      oscillator.connect(gainNode).connect(audioContext.destination);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.1); // Play for 0.1 seconds
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
     }
+}
 
-    // Jump mechanic: Hold input to move the obstacle out of the way
-    function jump() {
-      holdingJump = true;
-      playJumpSound();
+function updateGameArea() {
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            myGameArea.stop();
+            return;
+        }
     }
-
-    function stopJump() {
-      holdingJump = false;
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+        myObstacles.push(new component(10, height, "green", x, 0));
+        myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
     }
-
-    // Event listeners for jumping (spacebar and mouse click)
-    window.addEventListener('keydown', function (e) {
-      if (e.code === 'Space') {
-        jump();
-      }
-    });
-
-    window.addEventListener('keyup', function (e) {
-      if (e.code === 'Space') {
-        stopJump();
-      }
-    });
-
-    canvas.addEventListener('mousedown', jump);
-    canvas.addEventListener('mouseup', stopJump);
-
-    // Toggle the settings panel visibility
-    function toggleSettings() {
-      const settingsPanel = document.getElementById('settingsPanel');
-      settingsPanel.style.display = settingsPanel.style.display === 'none' ? 'block' : 'none';
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
     }
+    myScore.text = "SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
 
-    // Listen to slider changes to adjust game settings
-    document.getElementById('speedSlider').addEventListener('input', function (e) {
-      obstacleSpeed = e.target.value;
-    });
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) { return true; }
+    return false;
+}
 
-    document.getElementById('gravitySlider').addEventListener('input', function (e) {
-      obstacle.gravity = parseFloat(e.target.value);
-    });
+function accelerate(n) {
+    myGamePiece.gravity = n;
+}
 
-    document.getElementById('volumeSlider').addEventListener('input', function (e) {
-      soundVolume = parseFloat(e.target.value);
-    });
+function resetGame() {
+    myGameArea.reset();
+}
+</script>
 
-    // Start the game loop
-    update();
-  </script>
+<br>
+<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">Jump</button>
+<button onclick="resetGame()">RESET</button>
+<p>jump over the stuff</p>
+<p>If you die you have to subscribe to my Youtube</p>
+
 </body>
 </html>
