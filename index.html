@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Face</title>
+  <title>hello</title>
   <style>
     body {
       display: flex;
@@ -41,31 +41,12 @@
       background-color: #f0f0f0;
       text-align: center;
       border-radius: 5px;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s, box-shadow 0.3s;
     }
 
     .sidebar a:hover {
       background-color: #ddd;
-    }
-
-    /* Mobile adjustments */
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        box-shadow: none;
-        padding: 10px;
-      }
-
-      img {
-        width: 80%;
-        margin: 20px auto;
-      }
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Hover effect with shadow */
     }
 
     /* Image fade-in animation */
@@ -86,12 +67,31 @@
         opacity: 1;
       }
     }
+
+    /* Mute button */
+    .mute-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: "Comic Sans MS", sans-serif;
+    }
+
+    .mute-button:hover {
+      background-color: #2980b9;
+    }
+
   </style>
 </head>
 <body>
   <!-- Make the image clickable, linking to your YouTube channel -->
   <a href="https://www.youtube.com/@cloutyskies" target="_blank">
-    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true" alt="i dare you to click here">
+    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true" alt="click here i dare u">
   </a>
 
   <!-- Sidebar on the right with Comic Sans font -->
@@ -101,14 +101,29 @@
     <a href="https://www.youtube.com/@cloutyskies2" target="_blank">Second Channel</a>
     <a href="https://www.beacons.ai/cloutyskies" target="_blank">Additional Links</a>
     <a href="about.html">About Page</a>
-    <a href="clouty-hops.html">Play: Clouty Hops</a>
+    <a href="game.html">Play: Clouty Hops</a>
   </div>
 
-  <audio id="myAudio" autoplay>
+  <!-- Mute button -->
+  <div class="mute-button" id="muteButton">Mute</div>
+
+  <!-- Audio element to play sound when the page is loaded -->
+  <audio id="myAudio" autoplay loop>
     <source src="https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/better%20off%20alone%20low%20quality.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
 
   <script>
-    // Auto
+    // Auto-play audio and loop
+    const audio = document.getElementById('myAudio');
+    const muteButton = document.getElementById('muteButton');
+    let isMuted = false;
 
+    muteButton.addEventListener('click', () => {
+      isMuted = !isMuted;
+      audio.muted = isMuted;
+      muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
+    });
+  </script>
+</body>
+</html>
