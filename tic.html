@@ -1,71 +1,150 @@
-# Tic Tac Toe Game in Python
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tic Tac Toe Game</title>
+    <style>
+        body {
+            background-color: #999999;
+            font-family: Arial, sans-serif;
+        }
 
-# Function to print the game board
-def print_board(board):
-    for row in board:
-        print(" | ".join(row))
-        print("-" * 5)
+        h3 {
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            margin: 0;
+        }
 
-# Function to check if a player has won
-def check_winner(board, player):
-    # Check rows, columns, and diagonals for a win
-    for row in board:
-        if all(cell == player for cell in row):
-            return True
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+        }
 
-    for col in range(3):
-        if all(board[row][col] == player for row in range(3)):
-            return True
+        .gameboard {
+            background-color: black;
+            position: relative;
+            margin: auto;
+            height: 24em;
+            width: 24em;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
 
-    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):
-        return True
+        .square {
+            height: 8em;
+            width: 8em;
+            border: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
 
-    return False
+        .square:nth-child(3n + 2) {
+            border-left: none;
+            border-right: none;
+        }
 
-# Function to check if the board is full (draw)
-def is_full(board):
-    return all(all(cell != " " for cell in row) for row in board)
+        .square:nth-child(-n + 3) {
+            border-bottom: none;
+        }
 
-# Main function to play the game
-def tic_tac_toe():
-    board = [[" " for _ in range(3)] for _ in range(3)]
-    players = ["X", "O"]
-    turn = 0
+        .container-fluid {
+            z-index: 2;
+            position: fixed;
+            background-color: rgba(20, 20, 20, 0.5);
+            height: 150px;
+            width: 100%;
+            bottom: 50%;
+            text-align: center;
+        }
 
-    while True:
-        print_board(board)
-        current_player = players[turn % 2]
-        print(f"Player {current_player}'s turn.")
+        button {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="gameboard row">
+            <div class="col-xs-4 square" cell="0"></div>
+            <div class="col-xs-4 square" cell="1"></div>
+            <div class="col-xs-4 square" cell="2"></div>
+            <div class="col-xs-4 square" cell="3"></div>
+            <div class="col-xs-4 square" cell="4"></div>
+            <div class="col-xs-4 square" cell="5"></div>
+            <div class="col-xs-4 square" cell="6"></div>
+            <div class="col-xs-4 square" cell="7"></div>
+            <div class="col-xs-4 square" cell="8"></div>
+        </div>
+    </div>
 
-        # Get valid input from the player
-        while True:
-            try:
-                row = int(input("Enter row (0, 1, 2): "))
-                col = int(input("Enter column (0, 1, 2): "))
-                if row in range(3) and col in range(3) and board[row][col] == " ":
-                    break
-                else:
-                    print("Invalid move, try again.")
-            except ValueError:
-                print("Please enter a valid number.")
+    <div class="container-fluid">
+        <h1>Are you playing with X or O?</h1>
+        <button class="btn btn-primary" id="pickX">X</button>
+        <button class="btn btn-primary" id="pickO">O</button>
+    </div>
 
-        # Make the move
-        board[row][col] = current_player
+    <script>
+        let playerSymbol = "";
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "";
+        const squares = document.querySelectorAll(".square");
 
-        # Check for a winner
-        if check_winner(board, current_player):
-            print_board(board)
-            print(f"Player {current_player} wins!")
-            break
+        document.getElementById("pickX").addEventListener("click", () => pickSymbol("X"));
+        document.getElementById("pickO").addEventListener("click", () => pickSymbol("O"));
 
-        # Check for a draw
-        if is_full(board):
-            print_board(board)
-            print("It's a draw!")
-            break
+        function pickSymbol(symbol) {
+            playerSymbol = symbol;
+            currentPlayer = "X";
+            document.querySelector(".container-fluid").style.display = "none";
+        }
 
-        # Switch turns
-        turn += 1
+        squares.forEach(square => {
+            square.addEventListener("click", () => makeMove(square));
+        });
 
-if __name__ == "__main__":
-    tic_tac_toe()
+        function makeMove(square) {
+            const cellIndex = square.getAttribute("cell");
+            if (board[cellIndex] === "" && playerSymbol !== "") {
+                board[cellIndex] = currentPlayer;
+                square.innerHTML = `<h3>${currentPlayer}</h3>`;
+                if (checkWinner(currentPlayer)) {
+                    setTimeout(() => alert(`Player ${currentPlayer} wins!`), 100);
+                    resetGame();
+                    return;
+                }
+                if (board.every(cell => cell !== "")) {
+                    setTimeout(() => alert("It's a draw!"), 100);
+                    resetGame();
+                    return;
+                }
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+            }
+        }
+
+        function checkWinner(player) {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]            // Diagonals
+            ];
+
+            return winConditions.some(condition =>
+                condition.every(index => board[index] === player)
+            );
+        }
+
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            squares.forEach(square => (square.innerHTML = ""));
+            document.querySelector(".container-fluid").style.display = "block";
+        }
+    </script>
+</body>
+</html>
