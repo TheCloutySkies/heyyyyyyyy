@@ -26,10 +26,18 @@
       box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
       padding: 20px;
       font-family: "Comic Sans MS", sans-serif;
+      transition: width 0.3s ease; /* Smooth transition for collapsing */
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      padding: 0;
     }
 
     .sidebar h2 {
       text-align: center;
+      margin: 0;
     }
 
     .sidebar a {
@@ -47,6 +55,25 @@
     .sidebar a:hover {
       background-color: #ddd;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Hover effect with shadow */
+    }
+
+    /* Sidebar toggle button */
+    .toggle-button {
+      position: fixed;
+      top: 20px;
+      right: 220px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: right 0.3s ease;
+    }
+
+    .collapsed-button {
+      right: 20px; /* Adjust the position when sidebar is collapsed */
     }
 
     /* Image fade-in animation */
@@ -95,15 +122,19 @@
   </a>
 
   <!-- Sidebar on the right with Comic Sans font -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h2>Menu</h2>
     <a href="https://www.youtube.com/@cloutyskies" target="_blank">Main Channel</a>
     <a href="https://www.youtube.com/@cloutyskies2" target="_blank">Second Channel</a>
     <a href="https://www.beacons.ai/cloutyskies" target="_blank">Additional Links</a>
     <a href="about.html">About Page</a>
     <a href="clouty-hops.html">Play: Clouty Hops</a>
-    <a href="tic.html">Play: anotha game</a> <!-- New button linking to tic.html -->
+    <a href="tic.html">Play: Tic-Tac-Toe</a> <!-- Link to tic.html -->
+    <a href="portfolio.html">Portfolio</a> <!-- New button for Portfolio -->
   </div>
+
+  <!-- Sidebar Toggle Button -->
+  <button class="toggle-button" id="toggleSidebar" onclick="toggleSidebar()">Hide Sidebar</button>
 
   <!-- Mute button -->
   <div class="mute-button" id="muteButton">Mute</div>
@@ -125,6 +156,21 @@
       audio.muted = isMuted;
       muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
     });
+
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleButton = document.getElementById('toggleSidebar');
+      sidebar.classList.toggle('collapsed');
+
+      if (sidebar.classList.contains('collapsed')) {
+        toggleButton.textContent = 'Show Sidebar';
+        toggleButton.classList.add('collapsed-button');
+      } else {
+        toggleButton.textContent = 'Hide Sidebar';
+        toggleButton.classList.remove('collapsed-button');
+      }
+    }
   </script>
 </body>
 </html>
