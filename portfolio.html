@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Georgia', serif;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #333;
+      color: white;
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    /* Image gallery styling */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      margin: 0;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    .gallery img.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #333;
+      color: white;
+    }
+
+    /* Mute button */
+    .mute-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #555;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      border: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+    }
+
+    .mute-button:hover {
+      background-color: #444;
+    }
+
+    /* Responsive styling for mobile */
+    @media screen and (max-width: 768px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Portfolio
+  </header>
+
+  <!-- Image Gallery -->
+  <div class="gallery" id="gallery">
+    <img src="https://via.placeholder.com/600x400?text=Art+1" alt="Art 1">
+    <img src="https://via.placeholder.com/600x400?text=Art+2" alt="Art 2">
+    <img src="https://via.placeholder.com/600x400?text=Art+3" alt="Art 3">
+    <img src="https://via.placeholder.com/600x400?text=Art+4" alt="Art 4">
+    <img src="https://via.placeholder.com/600x400?text=Art+5" alt="Art 5">
+    <img src="https://via.placeholder.com/600x400?text=Art+6" alt="Art 6">
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    © 2024 Clouty Skies | All Rights Reserved
+  </footer>
+
+  <!-- Mute Button -->
+  <button class="mute-button" id="muteButton">Mute</button>
+
+  <!-- JavaScript -->
+  <script>
+    // Fade in images when scrolling
+    const images = document.querySelectorAll('.gallery img');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    });
+
+    images.forEach(image => {
+      observer.observe(image);
+    });
+
+    // Background Music with cycling songs
+    const audioTracks = [
+      'https://cdn.pixabay.com/download/audio/2022/10/16/audio_643e9f1e64.mp3',  // Free orchestral track 1
+      'https://cdn.pixabay.com/download/audio/2022/03/16/audio_8e0de6bfb5.mp3',  // Free orchestral track 2
+      'https://cdn.pixabay.com/download/audio/2021/12/20/audio_e3427051cb.mp3'   // Free orchestral track 3
+    ];
+    
+    let currentTrack = 0;
+    const audioElement = new Audio(audioTracks[currentTrack]);
+    audioElement.loop = false;
+    audioElement.volume = 0.5;
+    audioElement.play();
+
+    // Cycle through songs when one ends
+    audioElement.addEventListener('ended', () => {
+      currentTrack = (currentTrack + 1) % audioTracks.length;
+      audioElement.src = audioTracks[currentTrack];
+      audioElement.play();
+    });
+
+    // Mute button functionality
+    const muteButton = document.getElementById('muteButton');
+    let isMuted = false;
+
+    muteButton.addEventListener('click', () => {
+      isMuted = !isMuted;
+      audioElement.muted = isMuted;
+      muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
+    });
+
+  </script>
+</body>
+</html>
