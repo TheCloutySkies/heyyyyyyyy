@@ -8,39 +8,56 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Georgia', serif;
+      font-family: 'Times New Roman', serif;
       background-color: #f8f8f8;
       color: #333;
     }
 
-    /* Header */
+    /* Header styling */
     header {
+      position: relative;
       text-align: center;
       padding: 20px;
-      background-color: #333;
+      background-color: black;
       color: white;
       font-size: 36px;
       font-weight: bold;
     }
 
-    /* Image gallery styling */
+    /* Full Portfolio link in the top left */
+    .full-portfolio-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 16px;
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .full-portfolio-link:hover {
+      color: #ccc;
+    }
+
+    /* Image gallery styling - vertical alignment */
     .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 20px;
       padding: 20px;
-      margin: 0;
-      max-width: 1200px;
-      margin: auto;
+      max-width: 1000px;
+      margin: 0 auto;
     }
 
     .gallery img {
       width: 100%;
+      max-width: 600px;
       height: auto;
       border-radius: 10px;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 1s ease, transform 1s ease;
+      cursor: pointer;
     }
 
     .gallery img.visible {
@@ -48,67 +65,124 @@
       transform: translateY(0);
     }
 
-    /* Footer */
+    /* Expanded image overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      z-index: 10;
+    }
+
+    .overlay img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 10px;
+    }
+
+    .overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* Footer styling */
     footer {
       text-align: center;
       padding: 20px;
-      background-color: #333;
+      background-color: black;
       color: white;
     }
 
-    /* Mute button */
-    .mute-button {
+    /* Button styling */
+    .button {
+      display: inline-block;
+      padding: 10px;
+      color: #333;
+      background-color: transparent;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .button:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Phone icon button for mobile-friendly option */
+    .phone-icon {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
-      background-color: #555;
+      background-color: #333;
       color: white;
-      padding: 10px 15px;
+      padding: 10px;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 16px;
-      border: none;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 24px;
       transition: background-color 0.3s ease;
     }
 
-    .mute-button:hover {
-      background-color: #444;
+    .phone-icon:hover {
+      background-color: #555;
     }
 
-    /* Responsive styling for mobile */
+    /* Responsive styling */
     @media screen and (max-width: 768px) {
-      .gallery {
-        grid-template-columns: 1fr;
+      .gallery img {
+        max-width: 100%;
       }
     }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <header>
     Portfolio
+    <a href="https://www.instagram.com/clouty_skies_photography?utm_source=ig_web_button_share_sheet&igshid=ZDNlZDc0MzIxNw==" class="full-portfolio-link" target="_blank">
+      Full Portfolio
+    </a>
   </header>
 
   <!-- Image Gallery -->
   <div class="gallery" id="gallery">
-    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_0984.JPG?raw=true" alt="Art 1">
-    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_2690.JPG?raw=true" alt="Art 2">
-    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_1703.JPG?raw=true" alt="Art 3">
-    <img src="https://via.placeholder.com/600x400?text=Art+4" alt="Art 4">
-    <img src="https://via.placeholder.com/600x400?text=Art+5" alt="Art 5">
-    <img src="https://via.placeholder.com/600x400?text=Art+6" alt="Art 6">
+    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_2690.JPG?raw=true" alt="Art 1">
+    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_1703.JPG?raw=true" alt="Art 2">
+    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/IMG_0984.JPG?raw=true" alt="Art 3">
+  </div>
+
+  <!-- Overlay for full-screen image -->
+  <div class="overlay" id="overlay">
+    <span class="close-btn" id="closeBtn">&times;</span>
+    <img src="" alt="Expanded image" id="expandedImg">
   </div>
 
   <!-- Footer -->
   <footer>
-    © 2024 Clouty Skies | All Rights Reserved
+    © 2024 Lonnie Johnston Jr.| All Rights Reserved
   </footer>
 
-  <!-- Mute Button -->
-  <button class="mute-button" id="muteButton">Mute</button>
+  <!-- Phone icon for mobile-friendly button -->
+  <div class="phone-icon" id="mobileBtn">📱</div>
 
-  <!-- JavaScript -->
   <script>
     // Fade in images when scrolling
     const images = document.querySelectorAll('.gallery img');
@@ -125,36 +199,27 @@
       observer.observe(image);
     });
 
-    // Background Music with cycling songs
-    const audioTracks = [
-      'https://cdn.pixabay.com/download/audio/2022/10/16/audio_643e9f1e64.mp3',  // Free orchestral track 1
-      'https://cdn.pixabay.com/download/audio/2022/03/16/audio_8e0de6bfb5.mp3',  // Free orchestral track 2
-      'https://cdn.pixabay.com/download/audio/2021/12/20/audio_e3427051cb.mp3'   // Free orchestral track 3
-    ];
-    
-    let currentTrack = 0;
-    const audioElement = new Audio(audioTracks[currentTrack]);
-    audioElement.loop = false;
-    audioElement.volume = 0.5;
-    audioElement.play();
+    // Expand image on click
+    const overlay = document.getElementById('overlay');
+    const expandedImg = document.getElementById('expandedImg');
+    const closeBtn = document.getElementById('closeBtn');
 
-    // Cycle through songs when one ends
-    audioElement.addEventListener('ended', () => {
-      currentTrack = (currentTrack + 1) % audioTracks.length;
-      audioElement.src = audioTracks[currentTrack];
-      audioElement.play();
+    images.forEach(image => {
+      image.addEventListener('click', () => {
+        expandedImg.src = image.src;
+        overlay.classList.add('visible');
+      });
     });
 
-    // Mute button functionality
-    const muteButton = document.getElementById('muteButton');
-    let isMuted = false;
-
-    muteButton.addEventListener('click', () => {
-      isMuted = !isMuted;
-      audioElement.muted = isMuted;
-      muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
+    // Close the expanded image
+    closeBtn.addEventListener('click', () => {
+      overlay.classList.remove('visible');
     });
 
+    // Mobile-friendly button action (you can add functionality for the mobile button here)
+    document.getElementById('mobileBtn').addEventListener('click', () => {
+      alert('Mobile-friendly option clicked!');
+    });
   </script>
 </body>
 </html>
