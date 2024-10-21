@@ -29,55 +29,56 @@
   const context = canvas.getContext('2d');
   context.scale(20, 20); // Each tetromino block will be 20x20 pixels
 
-  // Tetromino shapes and colors
+  // Tetromino shapes
   const tetrominoes = {
     I: [
-      [0, 1, 0, 0],
-      [0, 1, 0, 0],
-      [0, 1, 0, 0],
-      [0, 1, 0, 0]
+      [0, 0, 0, 0],
+      [1, 1, 1, 1],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
     ],
     O: [
-      [1, 1],
-      [1, 1]
+      [2, 2],
+      [2, 2],
     ],
     T: [
-      [0, 1, 0],
-      [1, 1, 1],
-      [0, 0, 0]
+      [0, 3, 0],
+      [3, 3, 3],
+      [0, 0, 0],
     ],
     S: [
-      [0, 1, 1],
-      [1, 1, 0],
-      [0, 0, 0]
+      [0, 4, 4],
+      [4, 4, 0],
+      [0, 0, 0],
     ],
     Z: [
-      [1, 1, 0],
-      [0, 1, 1],
-      [0, 0, 0]
+      [5, 5, 0],
+      [0, 5, 5],
+      [0, 0, 0],
     ],
     J: [
-      [1, 0, 0],
-      [1, 1, 1],
-      [0, 0, 0]
+      [6, 0, 0],
+      [6, 6, 6],
+      [0, 0, 0],
     ],
     L: [
-      [0, 0, 1],
-      [1, 1, 1],
-      [0, 0, 0]
-    ]
+      [0, 0, 7],
+      [7, 7, 7],
+      [0, 0, 0],
+    ],
   };
 
   // Colors for each tetromino
-  const colors = {
-    I: 'cyan',
-    O: 'yellow',
-    T: 'purple',
-    S: 'green',
-    Z: 'red',
-    J: 'blue',
-    L: 'orange'
-  };
+  const colors = [
+    null,
+    'cyan',   // I
+    'yellow', // O
+    'purple', // T
+    'green',  // S
+    'red',    // Z
+    'blue',   // J
+    'orange'  // L
+  ];
 
   // Draw a tetromino on the canvas
   function drawMatrix(matrix, offset) {
@@ -93,14 +94,7 @@
 
   // Create a random tetromino
   function createPiece(type) {
-    return tetrominoes[type].map(row => row.slice());
-  }
-
-  // Create a new random tetromino
-  function createRandomPiece() {
-    const pieces = 'IOTSZJL';
-    const randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
-    return createPiece(randomPiece);
+    return tetrominoes[type];
   }
 
   // Draw the game state (the board and current piece)
@@ -170,7 +164,8 @@
 
   // Reset the player position and tetromino
   function playerReset() {
-    player.matrix = createRandomPiece();
+    const pieces = 'IOTSZJL';
+    player.matrix = createPiece(pieces[Math.floor(Math.random() * pieces.length)]);
     player.pos.y = 0;
     player.pos.x = (board[0].length / 2) - (player.matrix[0].length / 2);
     if (collide(board, player)) {
