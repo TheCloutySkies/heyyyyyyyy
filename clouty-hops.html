@@ -2,281 +2,201 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clouty Hops</title>
   <style>
-    canvas {
-      border: 1px solid #d3d3d3;
-      background-color: #f1f1f1;
-    }
     body {
-      font-family: "Comic Sans MS", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f1f0;
+      font-family: Arial, sans-serif;
     }
-    h1 {
-      text-align: center;
-      font-size: 40px;
-    }
-    button {
-      font-family: "Comic Sans MS", sans-serif;
-      padding: 10px;
-      font-size: 16px;
-    }
-    #settingsPanel {
-      display: none;
-      margin-top: 20px;
-      border: 1px solid black;
-      padding: 10px;
+
+    /* Game Canvas */
+    canvas {
+      border: 2px solid #333;
       background-color: #f1f1f1;
     }
-    #darkModeButton {
-      margin-top: 10px;
+
+    /* Large "Jump" button for mobile */
+    .jump-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background-color: #3498db;
+      color: white;
+      border-radius: 10px;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
     }
-    #musicControls {
-      margin-top: 20px;
+
+    .jump-button:hover {
+      background-color: #2980b9;
     }
-    .dark-mode {
-      background-color: #222;
-      color: #eee;
+
+    /* Reset Button */
+    .reset-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px;
+      font-size: 18px;
+      background-color: #e74c3c;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+    }
+
+    .reset-button:hover {
+      background-color: #c0392b;
     }
   </style>
 </head>
-<body onload="startGame()">
+<body>
 
-<h1>Clouty Hops</h1> 
-<button onclick="window.location.href='index.html'">Back to Home</button> <!-- Back to home button -->
+  <!-- Game Canvas -->
+  <canvas id="gameCanvas" width="600" height="300"></canvas>
 
-<!-- Settings Button -->
-<button onclick="toggleSettings()">Settings</button>
+  <!-- Jump Button for mobile -->
+  <div class="jump-button" id="jumpButton">JUMP</div>
 
-<!-- Settings Panel -->
-<div id="settingsPanel">
-  <h3>Settings</h3>
-  <label>Speed: <input type="range" min="1" max="10" value="1" onchange="changeSpeed(this.value)"></label><br>
-  <label>Gravity: <input type="range" min="0.01" max="0.2" step="0.01" value="0.05" onchange="changeGravity(this.value)"></label><br>
-  <label>Obstacle Color: <input type="range" min="0" max="360" value="120" onchange="changeObstacleColor(this.value)"></label><br>
-  <button id="darkModeButton" onclick="toggleDarkMode()">Toggle Dark Mode</button>
-</div>
+  <!-- Reset Button -->
+  <div class="reset-button" id="resetButton">RESET</div>
 
-<!-- Music Controls -->
-<div id="musicControls">
-  <h3>Background Music</h3>
-  <label>Volume: <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)"></label>
-  <button onclick="toggleMute()">Mute</button>
-</div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-<script>
+    const jumpButton = document.getElementById('jumpButton');
+    const resetButton = document.getElementById('resetButton');
 
-var myGamePiece;
-var myObstacles = [];
-var myScore;
-var backgroundX = 0; // Dynamic background
-var backgroundSpeed = 1; // Speed for background movement
-var obstacleColor = 'green'; // Default obstacle color
-var darkModeEnabled = false; // Track dark mode
+    let gamePiece, obstacles = [], score, gravity = 0.05, isGameOver = false;
 
-// Background Music
-var backgroundMusic = new Audio("https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/Jersey_Jerk_idk_mane.wav");
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.5; // Default volume
+    function startGame() {
+      gamePiece = new component(30, 30, 'blue', 10, 120);
+      score = new component('30px', 'Comic Sans MS', 'black', 280, 40, 'text');
+      gamePiece.gravity = gravity;
+      gameArea.start();
+    }
 
-function startGame() {
-    myGamePiece = new component(30, 30, "https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg?raw=true", 10, 120, "image");  
-    myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Comic Sans MS", "black", 280, 40, "text");
-    myGameArea.start();
-    backgroundMusic.play(); // Start background music
-}
-
-var myGameArea = {
-    canvas: document.createElement("canvas"),
-    start: function() {
-        this.canvas.width = window.innerWidth; // Full width
-        this.canvas.height = 270;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[1]);
+    const gameArea = {
+      canvas: document.getElementById('gameCanvas'),
+      start: function () {
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
-        // Jumping by touch or click anywhere on canvas
-        this.canvas.addEventListener('mousedown', function() {
-            accelerate(-0.2);
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'Space') {
+            jump();
+          }
         });
-        this.canvas.addEventListener('mouseup', function() {
-            accelerate(0.05);
-        });
-    },
-    clear: function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    },
-    stop: function() {
+      },
+      clear: function () {
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      },
+      stop: function () {
         clearInterval(this.interval);
-        backgroundMusic.pause(); // Stop music
-    },
-    reset: function() {
-        document.body.removeChild(this.canvas);
-        this.clear();
-        myObstacles = [];
-        this.frameNo = 0;
-        startGame();
-    }
-}
+      }
+    };
 
-function component(width, height, color, x, y, type) {
-    this.type = type;
-    this.score = 0;
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-    this.gravity = 0;
-    this.gravitySpeed = 0;
-    this.update = function() {
-        ctx = myGameArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image") {  
-            let img = new Image();
-            img.src = color;
-            ctx.drawImage(img, this.x, this.y, this.width, this.height);
+    function component(width, height, color, x, y, type) {
+      this.type = type;
+      this.width = width;
+      this.height = height;
+      this.x = x;
+      this.y = y;
+      this.gravity = 0;
+      this.gravitySpeed = 0;
+
+      this.update = function () {
+        ctx.fillStyle = color;
+        if (this.type === 'text') {
+          ctx.font = this.width + ' ' + this.height;
+          ctx.fillText(this.text, this.x, this.y);
         } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+          ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-    }
-    this.newPos = function() {
+      };
+
+      this.newPos = function () {
         this.gravitySpeed += this.gravity;
-        this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;
+        this.y += this.gravitySpeed;
         this.hitBottom();
-    }
-    this.hitBottom = function() {
-        var rockbottom = myGameArea.canvas.height - this.height;
+      };
+
+      this.hitBottom = function () {
+        const rockbottom = canvas.height - this.height;
         if (this.y > rockbottom) {
-            this.y = rockbottom;
-            this.gravitySpeed = 0;
+          this.y = rockbottom;
+          this.gravitySpeed = 0;
         }
+      };
     }
-    this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
+
+    function updateGameArea() {
+      if (isGameOver) return;
+      gameArea.clear();
+      gameArea.frameNo += 1;
+
+      if (gameArea.frameNo == 1 || everyInterval(150)) {
+        let x = canvas.width;
+        let height = Math.floor(Math.random() * (200 - 20 + 1) + 20);
+        let gap = Math.floor(Math.random() * (200 - 50 + 1) + 50);
+        obstacles.push(new component(10, height, 'green', x, 0));
+        obstacles.push(new component(10, canvas.height - height - gap, 'green', x, height + gap));
+      }
+
+      for (let i = 0; i < obstacles.length; i++) {
+        obstacles[i].x -= 1;
+        obstacles[i].update();
+
+        if (gamePiece.x + gamePiece.width > obstacles[i].x &&
+          gamePiece.x < obstacles[i].x + obstacles[i].width &&
+          gamePiece.y + gamePiece.height > obstacles[i].y &&
+          gamePiece.y < obstacles[i].y + obstacles[i].height) {
+          gameArea.stop();
+          isGameOver = true;
+          setTimeout(() => {
+            alert('you died. click this thing to restart!');
+            location.reload(); // Reload the page on death
+          }, 100);
         }
-        return crash;
-    }
-}
+      }
 
-function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            myGameArea.stop();
-            alert('You died lol. you better subscribe now.');
-            return;
-        }
-    }
-    myGameArea.clear();
-
-    // Dynamic background movement
-    backgroundX -= backgroundSpeed;
-    if (backgroundX <= -myGameArea.canvas.width) {
-        backgroundX = 0;
-    }
-    myGameArea.context.fillStyle = "lightblue";
-    myGameArea.context.fillRect(backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-
-    myGameArea.frameNo += 1;
-
-    // Change obstacle color every 200 points
-    if (myGameArea.frameNo % 200 === 0) {
-        obstacleColor = "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 50%)";
+      gamePiece.newPos();
+      gamePiece.update();
+      score.text = "SCORE: " + gameArea.frameNo;
+      score.update();
     }
 
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 150;  // Lower maximum height for more forgiving gaps
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 100;  // Increase gap size
-        maxGap = 250;  // Increase gap size
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(10, height, obstacleColor, x, 0));
-        myObstacles.push(new component(10, x - height - gap, obstacleColor, x, height + gap));
+    function everyInterval(n) {
+      return (gameArea.frameNo / n) % 1 === 0;
     }
-    for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1;
-        myObstacles[i].update();
+
+    function jump() {
+      gamePiece.gravity = -0.2;
+      setTimeout(() => gamePiece.gravity = gravity, 200);
     }
-    myScore.text = "SCORE: " + myGameArea.frameNo;
-    myScore.update();
-    myGamePiece.newPos();
-    myGamePiece.update();
-}
 
-function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) { return true; }
-    return false;
-}
+    jumpButton.addEventListener('click', jump); // Jump button functionality
 
-function accelerate(n) {
-    myGamePiece.gravity = n;
-}
+    resetButton.addEventListener('click', () => {
+      location.reload(); // Reset the game by reloading the page
+    });
 
-// Settings Button and Panel
-function toggleSettings() {
-    const settingsPanel = document.getElementById("settingsPanel");
-    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
-        settingsPanel.style.display = "block";
-    } else {
-        settingsPanel.style.display = "none";
-    }
-}
-
-// Event Listeners for Settings
-function changeSpeed(value) {
-    backgroundSpeed = value;
-}
-
-function changeGravity(value) {
-    myGamePiece.gravity = value;
-}
-
-function changeObstacleColor(value) {
-    obstacleColor = `hsl(${value}, 100%, 50%)`; // Hue picker for obstacle color
-}
-
-// Volume and Mute Controls
-function setVolume(value) {
-    backgroundMusic.volume = value;
-}
-
-function toggleMute() {
-    backgroundMusic.muted = !backgroundMusic.muted;
-}
-
-// Dark Mode Toggle
-function toggleDarkMode() {
-    darkModeEnabled = !darkModeEnabled;
-    document.body.classList.toggle("dark-mode");
-}
-
-</script>
-
-<br>
-<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">JUMP</button>
-<button onclick="resetGame()">RESET GAME</button>
-<br>
-<p>Jump over the stuff, if you die you have to subscribe to my YouTube!</p>
-
+    window.onload = startGame;
+  </script>
 </body>
 </html>
