@@ -56,25 +56,45 @@
       background-color: #2980b9;
     }
 
+    /* Dark mode */
     .dark-mode {
       background-color: #222;
       color: #eee;
+    }
+
+    /* Back to home button */
+    .back-home-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      background-color: #555;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .back-home-button:hover {
+      background-color: #333;
     }
   </style>
 </head>
 <body onload="startGame()">
 
-<h1>Clouty Hops</h1> 
-<button onclick="window.location.href='index.html'">Back to Home</button>
+<h1>Clouty Hops</h1>
+
+<!-- Back to home button -->
+<a href="index.html" class="back-home-button">Back to Home</a>
 
 <!-- Settings Panel -->
 <div id="settingsPanel">
   <h3>Settings</h3>
   <label>Speed: <input type="range" min="1" max="10" value="1" onchange="changeSpeed(this.value)"></label><br>
   <label>Gravity: <input type="range" min="0.01" max="0.2" step="0.01" value="0.05" onchange="changeGravity(this.value)"></label><br>
-  <label>Obstacle Color: <input type="range" min="0" max="360" value="120" onchange="changeObstacleColor(this.value)"></label><br>
-  <label>Volume: <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)"></label>
-  <button onclick="toggleMute()">Mute</button>
+  <label>Volume: <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)"></label><br>
+  <button onclick="toggleMute()">Mute</button><br>
+  <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
 </div>
 
 <!-- Game Canvas -->
@@ -91,6 +111,7 @@ var myScore;
 var backgroundX = 0; // Dynamic background
 var backgroundSpeed = 1; // Speed for background movement
 var obstacleColor = 'green'; // Default obstacle color
+var darkModeEnabled = false; // Dark mode toggle
 
 // Background Music
 var backgroundMusic = new Audio("https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/Jersey_Jerk_idk_mane.wav");
@@ -127,13 +148,6 @@ var myGameArea = {
     stop: function() {
         clearInterval(this.interval);
         backgroundMusic.pause(); // Stop music
-    },
-    reset: function() {
-        document.body.removeChild(this.canvas);
-        this.clear();
-        myObstacles = [];
-        this.frameNo = 0;
-        startGame();
     }
 }
 
@@ -254,11 +268,7 @@ function jump() {
 // Settings Button and Panel
 function toggleSettings() {
     const settingsPanel = document.getElementById("settingsPanel");
-    if (settingsPanel.style.display === "none" || settingsPanel.style.display === "") {
-        settingsPanel.style.display = "block";
-    } else {
-        settingsPanel.style.display = "none";
-    }
+    settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
 }
 
 // Event Listeners for Settings
@@ -270,11 +280,6 @@ function changeGravity(value) {
     myGamePiece.gravity = value;
 }
 
-function changeObstacleColor(value) {
-    obstacleColor = `hsl(${value}, 100%, 50%)`; // Hue picker for obstacle color
-}
-
-// Volume and Mute Controls
 function setVolume(value) {
     backgroundMusic.volume = value;
 }
@@ -283,13 +288,18 @@ function toggleMute() {
     backgroundMusic.muted = !backgroundMusic.muted;
 }
 
+// Dark Mode Toggle
+function toggleDarkMode() {
+    darkModeEnabled = !darkModeEnabled;
+    document.body.classList.toggle("dark-mode");
+}
+
 </script>
 
 <!-- Buttons -->
 <br>
-<button onclick="resetGame()">RESET GAME</button>
-<br>
-<p>Jump over the stuff, if you die you have to subscribe to my YouTube!</p>
+<button onclick="toggleSettings()">Settings</button>
+<p>Jump over the obstacles. If you die, you have to subscribe to my YouTube!</p>
 
 </body>
 </html>
