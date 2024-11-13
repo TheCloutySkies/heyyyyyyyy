@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tic Tac Toe</title>
+    <title>Tic Tac Toe Game</title>
     <style>
         body {
             background-color: #999999;
@@ -108,7 +108,7 @@
             this.panel = [];
             this.cells = [];
             for (var i = 0; i < 9; i++) {
-                this.cells.push(document.getElementById("cell" + (i + 1) + "s"));
+                this.cells.push(document.querySelector(`[cell="${i}"]`));
             }
         }
 
@@ -262,13 +262,16 @@
 
         function init(e) {
             pick = (e.target.getAttribute("id") === "pickX") ? "X" : "O";
-            $(".container-fluid").remove();
+            document.querySelector(".container-fluid").style.display = "none";
             Game = new game();
-            $(".square").on("click", logicPicker);
+            document.querySelectorAll(".square").forEach(square => {
+                square.addEventListener("click", logicPicker);
+            });
         }
 
-        $(document).ready(function() {
-            $("button").on("click", init);
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("pickX").addEventListener("click", init);
+            document.getElementById("pickO").addEventListener("click", init);
         });
     </script>
 </body>
