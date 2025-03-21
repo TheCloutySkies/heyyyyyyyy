@@ -5,301 +5,564 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Clouty Hops</title>
   <style>
-    canvas {
-      border: 1px solid #d3d3d3;
-      background-color: #f1f1f1;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+
     body {
-      font-family: "Comic Sans MS", sans-serif;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      background: url("https://i.imgur.com/bohevMP_d.webp?maxwidth=1520&fidelity=grand");
+      background-size: cover;
+      background-attachment: fixed;
+      color: #335c81;
+      padding: 20px;
     }
+
+    canvas {
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+      backdrop-filter: blur(10px);
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.15),
+        inset 0 0 80px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      margin: 20px 0;
+    }
+
     h1 {
       text-align: center;
       font-size: 40px;
-    }
-    button {
-      font-family: "Comic Sans MS", sans-serif;
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
-    }
-    #settingsPanel {
-      display: none;
-      margin-top: 20px;
-      border: 1px solid black;
-      padding: 10px;
-      background-color: #f1f1f1;
+      color: #335c81;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
     }
 
-    /* Large "Jump" button for mobile */
+    .game-container {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+      padding: 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        inset 0 0 80px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(to bottom, #3498db, #85c1e9);
+    }
+
     .jump-button {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       width: 200px;
-      height: 100px;
-      background-color: #3498db;
+      height: 80px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db);
       color: white;
-      border-radius: 10px;
+      border-radius: 15px;
       font-size: 24px;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s ease;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
     }
+
     .jump-button:hover {
-      background-color: #2980b9;
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
     }
 
-    /* Dark mode */
-    .dark-mode {
-      background-color: #222;
-      color: #eee;
-    }
-
-    /* Back to home button */
     .back-home-button {
       position: fixed;
       top: 20px;
       left: 20px;
       font-size: 18px;
-      background-color: #555;
+      background: linear-gradient(to bottom, #85c1e9, #3498db);
       color: white;
-      padding: 10px;
-      border-radius: 5px;
+      padding: 12px 24px;
+      border-radius: 8px;
       cursor: pointer;
       text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+
     .back-home-button:hover {
-      background-color: #333;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #score-display {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: #335c81;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+    }
+
+    .settings-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 20px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+      z-index: 1000;
+      display: none;
+    }
+
+    .settings-panel.visible {
+      display: block;
+    }
+
+    .settings-group {
+      margin-bottom: 15px;
+    }
+
+    .settings-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #335c81;
+    }
+
+    .settings-group input[type="range"] {
+      width: 100%;
+      margin: 5px 0;
+    }
+
+    .value-display {
+      font-size: 12px;
+      color: #335c81;
+    }
+
+    .settings-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1001;
+    }
+
+    .reset-button {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      font-size: 24px;
+      display: none;
+      z-index: 1000;
     }
   </style>
 </head>
-<body onload="startGame()">
+<body>
 
+<a href="index.html" class="back-home-button">Back to Home</a>
 <h1>Clouty Hops</h1>
 
-<!-- Back to home button -->
-<a href="index.html" class="back-home-button">Back to Home</a>
-
-<!-- Settings Panel -->
-<div id="settingsPanel">
-  <h3>Settings</h3>
-  <label>Speed: <input type="range" min="1" max="10" value="1" onchange="changeSpeed(this.value)"></label><br>
-  <label>Gravity: <input type="range" min="0.01" max="0.2" step="0.01" value="0.05" onchange="changeGravity(this.value)"></label><br>
-  <label>Volume: <input type="range" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)"></label><br>
-  <button onclick="toggleMute()">Mute</button><br>
-  <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+<div class="game-container">
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="score-display">Score: 0</div>
 </div>
 
-<!-- Game Canvas -->
-<canvas id="gameCanvas" width="480" height="270"></canvas>
+<button class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</button>
 
-<!-- Large Jump Button for Mobile -->
-<div class="jump-button" id="jumpButton">JUMP</div>
+<div class="settings-panel" id="settingsPanel">
+  <h3>Game Settings</h3>
+  <div class="settings-group">
+    <label for="gravity">Gravity: <span id="gravityValue">0.25</span></label>
+    <input type="range" id="gravity" min="0.1" max="0.5" step="0.05" value="0.25">
+  </div>
+  <div class="settings-group">
+    <label for="jumpForce">Jump Force: <span id="jumpForceValue">-6</span></label>
+    <input type="range" id="jumpForce" min="4" max="8" step="0.5" value="6">
+  </div>
+  <div class="settings-group">
+    <label for="gameSpeed">Game Speed: <span id="gameSpeedValue">2</span></label>
+    <input type="range" id="gameSpeed" min="1" max="5" step="0.5" value="2">
+  </div>
+  <div class="settings-group">
+    <label for="pipeGap">Pipe Gap: <span id="pipeGapValue">150</span></label>
+    <input type="range" id="pipeGap" min="100" max="200" step="10" value="150">
+  </div>
+</div>
+
+<button class="reset-button" id="resetButton" onclick="location.reload()">Play Again</button>
+
+<div class="jump-button" id="jumpButton">JUMP!</div>
 
 <script>
+// Update game constants to be configurable
+let GRAVITY = 0.15; // Much lighter gravity
+let JUMP_FORCE = -4; // Gentler jump
+let PIPE_SPEED = 1.5; // Slower movement
+let PIPE_SPAWN_RATE = 240; // Increased spacing between pipes
+let PIPE_GAP = 250; // Bigger gap between top and bottom pipes
+let PIPE_WIDTH = 80; // Wider pipes for Vista aesthetic
 
-var myGamePiece;
-var myObstacles = [];
-var myScore;
-var backgroundX = 0; // Dynamic background
-var backgroundSpeed = 1; // Speed for background movement
-var obstacleColor = 'green'; // Default obstacle color
-var darkModeEnabled = false; // Dark mode toggle
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const jumpButton = document.getElementById('jumpButton');
+const scoreDisplay = document.getElementById('score-display');
 
-// Background Music
-var backgroundMusic = new Audio("https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/Jersey_Jerk_idk_mane.wav");
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.5; // Default volume
+// Game state
+let isPlaying = false;
+let score = 0;
+let highScore = localStorage.getItem('highScore') || 0;
+
+// Bird object
+const bird = {
+  x: 150, // Move bird more to the center
+  y: canvas.height / 2,
+  width: 40, // Size for the image
+  height: 40,
+  velocity: 0,
+  gravity: GRAVITY,
+  rotation: 0,
+  collisionRadius: 16, // Smaller collision radius for more precise hits
+
+  draw() {
+    ctx.save();
+    ctx.translate(this.x + this.width/2, this.y + this.height/2);
+    this.rotation = Math.min(Math.max(this.velocity * 0.1, -0.5), 0.5);
+    ctx.rotate(this.rotation);
+    
+    // Draw bird image
+    const img = new Image();
+    img.src = 'horrid.png';
+    ctx.drawImage(img, -this.width/2, -this.height/2, this.width, this.height);
+    
+    // Debug collision circle (comment out in production)
+    // ctx.beginPath();
+    // ctx.arc(0, 0, this.collisionRadius, 0, Math.PI * 2);
+    // ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    // ctx.stroke();
+    
+    // Gloss effect
+    const glossGradient = ctx.createRadialGradient(
+      -this.width/4, -this.height/4, 0,
+      -this.width/4, -this.height/4, this.width/2
+    );
+    glossGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+    glossGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = glossGradient;
+    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+    
+    ctx.restore();
+  },
+
+  update() {
+    this.velocity += this.gravity;
+    this.y += this.velocity;
+  },
+
+  jump() {
+    this.velocity = JUMP_FORCE;
+  },
+
+  reset() {
+    this.y = canvas.height / 2;
+    this.velocity = 0;
+  }
+};
+
+// Pipe array
+let pipes = [];
+let frames = 0;
+
+// Game functions
+function createPipe() {
+  const minHeight = 100;
+  const maxHeight = canvas.height - PIPE_GAP - minHeight;
+  const height = Math.random() * (maxHeight - minHeight) + minHeight;
+
+  pipes.push({
+    x: canvas.width,
+    topHeight: height,
+    scored: false,
+    passed: false
+  });
+}
+
+function drawPipes() {
+  pipes.forEach(pipe => {
+    // Create gradients
+    const topGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
+    topGradient.addColorStop(0, '#98ff98');
+    topGradient.addColorStop(1, '#50c878');
+    
+    const bottomGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
+    bottomGradient.addColorStop(0, '#ffb7c5');
+    bottomGradient.addColorStop(1, '#ff69b4');
+    
+    // Draw pipes with glass effect
+    function drawGlassPipe(x, y, width, height, gradient) {
+      // Main pipe
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, y, width, height);
+      
+      // Glass shine
+      const shine = ctx.createLinearGradient(x, y, x + width, y);
+      shine.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+      shine.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+      shine.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
+      ctx.fillStyle = shine;
+      ctx.fillRect(x, y, width, height);
+      
+      // Edge highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fillRect(x + 2, y, 3, height);
+    }
+    
+    // Draw pipes
+    drawGlassPipe(pipe.x, 0, PIPE_WIDTH, pipe.topHeight, topGradient);
+    drawGlassPipe(pipe.x, pipe.topHeight + PIPE_GAP, PIPE_WIDTH, 
+                  canvas.height - (pipe.topHeight + PIPE_GAP), bottomGradient);
+  });
+}
+
+// Update game background
+function drawBackground() {
+  // Vista-style gradient background
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#b7d9f7');
+  gradient.addColorStop(1, '#ddf3ff');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Add some floating bubbles
+  for(let i = 0; i < bubbles.length; i++) {
+    const bubble = bubbles[i];
+    ctx.beginPath();
+    ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fill();
+    
+    // Move bubbles
+    bubble.y -= 0.2;
+    bubble.x += Math.sin(frames / 50 + i) * 0.5;
+    
+    if(bubble.y < -bubble.size) {
+      bubble.y = canvas.height + bubble.size;
+      bubble.x = Math.random() * canvas.width;
+    }
+  }
+}
+
+// Initialize bubbles
+const bubbles = Array(20).fill().map(() => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  size: Math.random() * 30 + 10
+}));
+
+function checkCollision(pipe) {
+  // Calculate distance from bird center to pipe edges
+  const birdCenterX = bird.x + bird.width/2;
+  const birdCenterY = bird.y + bird.height/2;
+  
+  // Check top pipe
+  if (birdCenterY - bird.collisionRadius < pipe.topHeight) {
+    if (Math.abs(birdCenterX - (pipe.x + PIPE_WIDTH/2)) < (PIPE_WIDTH/2 + bird.collisionRadius)) {
+      return true;
+    }
+  }
+  
+  // Check bottom pipe
+  if (birdCenterY + bird.collisionRadius > pipe.topHeight + PIPE_GAP) {
+    if (Math.abs(birdCenterX - (pipe.x + PIPE_WIDTH/2)) < (PIPE_WIDTH/2 + bird.collisionRadius)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+function gameLoop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  const deltaTime = (timestamp - lastTime) / 16; // Target 60 FPS
+  lastTime = timestamp;
+
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw background
+  drawBackground();
+
+  if (!isPlaying) {
+    ctx.fillStyle = '#335c81';
+    ctx.font = '20px "Segoe UI"';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press SPACE or tap JUMP! to start', canvas.width/2, canvas.height/2);
+    ctx.fillText(`High Score: ${highScore}`, canvas.width/2, canvas.height/2 + 30);
+    bird.draw();
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  // Update bird
+  bird.update();
+  bird.draw();
+
+  // Create new pipes
+  if (frames % PIPE_SPAWN_RATE === 0) {
+    createPipe();
+  }
+
+  // Update and draw pipes
+  pipes.forEach(pipe => {
+    pipe.x -= PIPE_SPEED * deltaTime;
+
+    // More precise score detection
+    if (!pipe.scored && pipe.x + PIPE_WIDTH < bird.x) {
+      score++;
+      pipe.scored = true;
+      scoreDisplay.textContent = `Score: ${score}`;
+    }
+  });
+
+  drawPipes();
+
+  // Remove off-screen pipes
+  pipes = pipes.filter(pipe => pipe.x > -50);
+
+  // Check collisions
+  if (
+    bird.y > canvas.height - bird.height / 2 ||
+    bird.y < bird.height / 2 ||
+    pipes.some(checkCollision)
+  ) {
+    gameOver();
+    return;
+  }
+
+  frames++;
+  requestAnimationFrame(gameLoop);
+}
 
 function startGame() {
-    myGamePiece = new component(30, 30, "https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/horrid.png?raw=true", 10, 120, "image");  
-    myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Comic Sans MS", "black", 280, 40, "text");
-    myGameArea.start();
-    backgroundMusic.play(); // Start background music
+  isPlaying = true;
+  score = 0;
+  pipes = [];
+  frames = 0;
+  bird.reset();
+  scoreDisplay.textContent = 'Score: 0';
 }
 
-var myGameArea = {
-    canvas: document.getElementById('gameCanvas'),
-    start: function() {
-        this.context = this.canvas.getContext("2d");
-        this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
-        // Spacebar input for jumping
-        window.addEventListener('keydown', function(e) {
-            if (e.code === 'Space') {
-                jump();
-            }
-        });
-
-        // Touch or click input for jumping (on large jump button)
-        document.getElementById('jumpButton').addEventListener('click', jump);
-    },
-    clear: function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    },
-    stop: function() {
-        clearInterval(this.interval);
-        backgroundMusic.pause(); // Stop music
-    }
+function gameOver() {
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('highScore', highScore);
+  }
+  isPlaying = false;
+  document.getElementById('resetButton').style.display = 'block';
+  alert(`Game Over!\nScore: ${score}\nHigh Score: ${highScore}`);
+  startGame();
 }
 
-function component(width, height, color, x, y, type) {
-    this.type = type;
-    this.score = 0;
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-    this.gravity = 0;
-    this.gravitySpeed = 0;
-    this.update = function() {
-        const ctx = myGameArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image") {  
-            let img = new Image();
-            img.src = color;
-            ctx.drawImage(img, this.x, this.y, this.width, this.height);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-    }
-    this.newPos = function() {
-        this.gravitySpeed += this.gravity;
-        this.y += this.gravitySpeed;
-        this.hitBottom();
-    }
-    this.hitBottom = function() {
-        const rockbottom = myGameArea.canvas.height - this.height;
-        if (this.y > rockbottom) {
-            this.y = rockbottom;
-            this.gravitySpeed = 0;
-        }
-    }
-    this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
-    }
-}
-
-function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            myGameArea.stop();
-            setTimeout(() => {
-                alert('You died! You have to subscribe to my YouTube.');
-                location.reload(); // Reloads the game
-            }, 100);
-            return;
-        }
-    }
-    myGameArea.clear();
-
-    // Dynamic background movement
-    backgroundX -= backgroundSpeed;
-    if (backgroundX <= -myGameArea.canvas.width) {
-        backgroundX = 0;
-    }
-    myGameArea.context.fillStyle = "lightblue";
-    myGameArea.context.fillRect(backgroundX, 0, myGameArea.canvas.width, myGameArea.canvas.height);
-
-    myGameArea.frameNo += 1;
-
-    // Change obstacle color every 200 points
-    if (myGameArea.frameNo % 200 === 0) {
-        obstacleColor = "hsl(" + Math.floor(Math.random() * 360) + ", 100%, 50%)";
-    }
-
-    if (myGameArea.frameNo == 1 || everyInterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 150;  // Lower maximum height for more forgiving gaps
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 100;  // Increase gap size
-        maxGap = 250;  // Increase gap size
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(10, height, obstacleColor, x, 0));
-        myObstacles.push(new component(10, x - height - gap, obstacleColor, x, height + gap));
-    }
-    for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1;
-        myObstacles[i].update();
-    }
-    myScore.text = "SCORE: " + myGameArea.frameNo;
-    myScore.update();
-    myGamePiece.newPos();
-    myGamePiece.update();
-}
-
-function everyInterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
-}
-
-function jump() {
-    myGamePiece.gravity = -0.2;
-    setTimeout(() => myGamePiece.gravity = 0.05, 200);
-}
-
-// Settings Button and Panel
+// Add settings functionality
 function toggleSettings() {
-    const settingsPanel = document.getElementById("settingsPanel");
-    settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+  document.getElementById('settingsPanel').classList.toggle('visible');
 }
 
-// Event Listeners for Settings
-function changeSpeed(value) {
-    backgroundSpeed = value;
+function updateSetting(setting, value) {
+  const valueDisplay = document.getElementById(`${setting}Value`);
+  valueDisplay.textContent = value;
+  
+  switch(setting) {
+    case 'gravity':
+      GRAVITY = value;
+      bird.gravity = value;
+      break;
+    case 'jumpForce':
+      JUMP_FORCE = -value;
+      break;
+    case 'gameSpeed':
+      PIPE_SPEED = value;
+      break;
+    case 'pipeGap':
+      PIPE_GAP = value;
+      break;
+  }
 }
 
-function changeGravity(value) {
-    myGamePiece.gravity = value;
-}
+// Add event listeners for settings
+document.querySelectorAll('.settings-panel input').forEach(input => {
+  input.addEventListener('input', (e) => {
+    updateSetting(e.target.id, e.target.value);
+  });
+});
 
-function setVolume(value) {
-    backgroundMusic.volume = value;
-}
+// Initialize default settings
+document.addEventListener('DOMContentLoaded', () => {
+  // Set initial values
+  document.getElementById('gravity').value = GRAVITY;
+  document.getElementById('jumpForce').value = Math.abs(JUMP_FORCE);
+  document.getElementById('gameSpeed').value = PIPE_SPEED;
+  document.getElementById('pipeGap').value = PIPE_GAP;
+  
+  // Update displays
+  document.getElementById('gravityValue').textContent = GRAVITY;
+  document.getElementById('jumpForceValue').textContent = Math.abs(JUMP_FORCE);
+  document.getElementById('gameSpeedValue').textContent = PIPE_SPEED;
+  document.getElementById('pipeGapValue').textContent = PIPE_GAP;
+});
 
-function toggleMute() {
-    backgroundMusic.muted = !backgroundMusic.muted;
-}
+// Event listeners
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    if (!isPlaying) startGame();
+    bird.jump();
+  }
+});
 
-// Dark Mode Toggle
-function toggleDarkMode() {
-    darkModeEnabled = !darkModeEnabled;
-    document.body.classList.toggle("dark-mode");
-}
+jumpButton.addEventListener('click', () => {
+  if (!isPlaying) startGame();
+  bird.jump();
+});
 
+// Start game loop with timestamp
+let lastTime = 0;
+requestAnimationFrame(gameLoop);
 </script>
-
-<!-- Buttons -->
-<br>
-<button onclick="toggleSettings()">Settings</button>
-<p>Jump over the obstacles. If you die, you have to subscribe to my YouTube!</p>
 
 </body>
 </html>

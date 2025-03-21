@@ -3,175 +3,1651 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>hello</title>
+  <title>Clouty Skies Land</title>
   <style>
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
+      background: url("https://i.imgur.com/bohevMP_d.webp?maxwidth=1520&fidelity=grand");
+      background-size: cover;
+      background-attachment: fixed;
+      color: #335c81;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif; /* Modern sans-serif font */
+      overflow-x: hidden;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23335c81" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>') 12 12, auto;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.3); /* Glassy white */
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #5dade2, #2e86c1); /* Blue gradient */
+      border: 2px solid rgba(255, 255, 255, 0.5); /* White border */
+      border-radius: 10px;
+    }
+    
+    /* Intro Section */
+    #intro {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(to bottom, #a6dff0, #c2e9f2); /* Light blue gradient */
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f1f0;
-      font-family: Arial, sans-serif;
+      flex-direction: column;
+      z-index: 1000;
+      transition: opacity 1s ease-out;
+    }
+    
+    #skip-intro,
+    #enter-site {
+      padding: 12px 24px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: "Segoe UI", sans-serif;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      font-size: 18px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-top: 20px;
+      transition: transform 0.3s ease;
+    }
+    
+    #skip-intro:hover,
+    #enter-site:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Main Content */
+    #content {
+      display: none;
+      position: relative;
+      width: 100%;
+    }
+    
+    /* Header and Navigation */
+    .marquee {
+      background: rgba(255, 255, 255, 0.5); /* Glassy white */
+      color: #335c81;
+      padding: 10px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      border-top: 1px solid rgba(255, 255, 255, 0.7); /* Light border */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.7); /* Light border */
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .marquee-content {
+      display: inline-block;
+      animation: marquee 15s linear infinite;
+    }
+    
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    
+    .nav-container {
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      width: 100%;
+      background: rgba(166, 223, 240, 0.7); /* Light blue with transparency */
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.7); /* Light border */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      backdrop-filter: blur(10px); /* Glass effect */
+    }
+    
+    .nav-toggle {
+      position: absolute;
+      right: 25px;
+      top: 15px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Soft shadow */
+      transition: transform 0.3s ease;
+    }
+    
+    .nav-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+    }
+    
+    nav {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      background: rgba(166, 223, 240, 0.9); /* Light blue with transparency */
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+    
+    nav.open {
+      max-height: 500px;
+    }
+    
+    nav ul {
+      list-style-type: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    nav ul li {
+      margin: 10px 0;
+      width: 80%;
+    }
+    
+    nav ul li a {
+      display: block;
+      text-align: center;
+      padding: 12px 20px;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      border-radius: 8px;
+      font-size: 18px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Soft shadow */
+    }
+    
+    nav ul li a:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+    }
+    
+    .logo {
+      display: block;
+      text-align: center;
+      padding: 10px 0;
+    }
+    
+    .logo img {
+      height: 60px;
+      animation: spin 10s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Sections */
+    section {
+      min-height: 100vh;
+      padding: 80px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.2); /* Glassy white */
+      border-radius: 15px;
+      margin: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%23a6dff0" stroke-width="0.5"/></svg>');
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .section-title {
+      font-size: 42px;
+      margin-bottom: 30px;
+      font-family: "Segoe UI", sans-serif;
+      color: #335c81;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+      position: relative;
+    }
+    
+    /* Music Section */
+    #music {
+      background-color: rgba(166, 223, 240, 0.3); /* Light blue with transparency */
+    }
+    
+    .music-platforms {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .platform-card {
+      width: 180px;
+      background: rgba(255, 255, 255, 0.5); /* Glassy white */
+      border-radius: 12px;
+      padding: 15px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .platform-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    .platform-card img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 10px;
+    }
+    
+    .platform-card h3 {
+      margin-bottom: 8px;
+      color: #335c81;
+    }
+    
+    .platform-card a {
+      display: inline-block;
+      padding: 8px 12px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      margin-top: 8px;
+      transition: all 0.3s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .platform-card a:hover {
+      background: linear-gradient(to bottom, #3498db, #85c1e9); /* Reverse blue gradient */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    /* Portfolio Section */
+    #portfolio {
+      background-color: rgba(166, 223, 240, 0.4); /* Light blue with transparency */
+    }
+    
+    .instagram-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin: 30px auto;
+      max-width: 1100px;
+      padding: 0 15px;
     }
 
-    /* Sidebar styling */
-    .sidebar {
+    .instagram-media {
+      background: rgba(255, 255, 255, 0.5) !important; /* Glassy white */
+      border-radius: 12px !important;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important; /* Soft shadow */
+      transition: transform 0.3s, box-shadow 0.3s !important;
+      margin: 0 auto !important;
+    }
+
+    .instagram-media:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important; /* Deeper shadow on hover */
+    }
+    
+    /* Games Section */
+    #games {
+      background-color: rgba(166, 223, 240, 0.5); /* Light blue with transparency */
+    }
+    
+    .games-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .game-card {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.5); /* Glassy white */
+      border-radius: 12px;
+      padding: 15px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .game-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    .game-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .game-card h3 {
+      color: #335c81;
+      margin-bottom: 8px;
+    }
+    
+    .game-card p {
+      margin-bottom: 12px;
+      color: #335c81;
+    }
+    
+    .game-card a {
+      display: inline-block;
+      padding: 8px 12px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .game-card a:hover {
+      background: linear-gradient(to bottom, #3498db, #85c1e9); /* Reverse blue gradient */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    /* Contact Section */
+    #contact {
+      background-color: rgba(166, 223, 240, 0.6); /* Light blue with transparency */
+    }
+    
+    .contact-form {
+      max-width: 550px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.5); /* Glassy white */
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 16px;
+      color: #335c81;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.7); /* Glassy white */
+      border: none;
+      border-radius: 8px;
+      color: #335c81;
+      font-family: "Segoe UI", sans-serif;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow */
+    }
+    
+    .form-group textarea {
+      min-height: 120px;
+    }
+    
+    button[type="submit"] {
+      padding: 10px 20px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: "Segoe UI", sans-serif;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    button[type="submit"]:hover {
+      background: linear-gradient(to bottom, #3498db, #85c1e9); /* Reverse blue gradient */
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    /* Footer */
+    footer {
+      background: rgba(166, 223, 240, 0.7); /* Light blue with transparency */
+      color: #335c81;
+      padding: 20px 0;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.7); /* Light border */
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .social-links {
+      margin: 15px 0;
+    }
+    
+    .social-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      margin: 0 10px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .social-links img {
+      width: 24px;
+      height: 24px;
+      filter: brightness(0) invert(1);
+      transition: transform 0.3s ease;
+    }
+
+    .social-links a:hover img {
+      transform: scale(1.2);
+    }
+    
+    .footer-text {
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    
+    .back-to-top {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    }
+    
+    .back-to-top:hover {
+      background: linear-gradient(to bottom, #3498db, #85c1e9); /* Reverse blue gradient */
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+    
+    /* Media Queries */
+    @media (min-width: 768px) {
+      .nav-toggle {
+        display: none;
+      }
+      
+      nav {
+        max-height: none;
+      }
+      
+      nav ul {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      nav ul li {
+        width: auto;
+        margin: 0 10px;
+      }
+    }
+    
+    /* Animated Background */
+    .stars {
       position: fixed;
       top: 0;
-      right: 0;
-      width: 200px;
-      height: 100vh;
-      background-color: #fff;
-      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      font-family: "Comic Sans MS", sans-serif;
-      transition: width 0.3s ease; /* Smooth transition for collapsing */
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      pointer-events: none;
+    }
+    
+    .star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.8); /* White stars */
+      border-radius: 50%;
+      animation: twinkle 2s infinite;
+    }
+    
+    @keyframes twinkle {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    /* Visitor Counter */
+    .visitor-counter {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.3); /* Glassy white */
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      color: #335c81;
+    }
+    
+    .counter-value {
+      font-family: "Courier New", monospace;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    
+    /* Spotify Player */
+    .spotify-player {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 990;
+      background: rgba(255, 255, 255, 0.3); /* Glassy white */
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      transition: transform 0.3s, height 0.3s;
+      backdrop-filter: blur(10px);
+      width: 350px; /* Fixed width */
+      height: 172px; /* Adjusted height */
+    }
+
+    .spotify-player.minimized {
+      transform: scale(0.5);
+      border-radius: 50%;
+      overflow: hidden;
+      height: 50px;
+      width: 50px;
+    }
+
+    .minimize-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: linear-gradient(to bottom, #85c1e9, #3498db); /* Blue gradient */
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      z-index: 991;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      transition: all 0.3s;
+    }
+
+    .minimize-btn:hover {
+      background: linear-gradient(to bottom, #3498db, #85c1e9); /* Reverse blue gradient */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+
+    /* Updated Intro Section */
+    #intro {
+      background-color: #000033;
+    }
+
+    .intro-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    /* Updated Spotify Player */
+    .spotify-player {
+      transform-origin: bottom right;
+      transition: all 0.6s cubic-bezier(0.87, 0, 0.13, 1);
+    }
+
+    .spotify-player.minimized {
+      transform: scale(0.1);
+      border-radius: 50%;
       overflow: hidden;
     }
 
-    .sidebar.collapsed {
-      width: 0;
-      padding: 0;
-    }
-
-    .sidebar h2 {
-      text-align: center;
-      margin: 0;
-    }
-
-    .sidebar a {
-      display: block;
-      padding: 10px;
-      margin: 10px 0;
-      text-decoration: none;
-      color: #333;
-      background-color: #f0f0f0;
-      text-align: center;
-      border-radius: 5px;
-      transition: background-color 0.3s, box-shadow 0.3s;
-    }
-
-    .sidebar a:hover {
-      background-color: #ddd;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Hover effect with shadow */
-    }
-
-    /* Sidebar toggle button */
-    .toggle-button {
+    /* Visitor Counter */
+    .visitor-counter {
       position: fixed;
       top: 20px;
-      right: 220px;
-      padding: 10px 15px;
-      font-size: 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: right 0.3s ease;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
     }
 
-    .collapsed-button {
-      right: 20px; /* Adjust the position when sidebar is collapsed */
+    /* Add after existing styles */
+  
+    /* Cursor Effects */
+    .cursor-gradient {
+      position: fixed;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(133, 193, 233, 0.2) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
     }
 
-    /* Image fade-in animation */
-    img {
-      max-width: 100%;
-      height: auto;
+    /* Loading Bar */
+    .loading-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      text-align: center;
+    }
+
+    .loading-bar-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 4px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 20px rgba(133, 193, 233, 0.3);
+    }
+
+    .loading-bar {
+      height: 20px;
+      width: 0%;
+      background: linear-gradient(90deg, #3498db, #85c1e9);
+      border-radius: 16px;
+      transition: width 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loading-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+      );
+      animation: loading-shine 1.5s infinite;
+    }
+
+    .bubble {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 50%;
-      opacity: 0; /* Start with hidden image */
-      animation: fadeIn 10s forwards; /* 10-second fade-in animation */
+      animation: bubble-rise 2s ease-in-out infinite;
     }
 
-    /* Define the fade-in animation */
-    @keyframes fadeIn {
-      0% {
+    /* Ripple Effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(133, 193, 233, 0.3);
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    /* Section Animations */
+    .section-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+    }
+
+    .section-animate.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Button Hover Effects */
+    .hover-effect {
+      transition: all 0.3s ease;
+      background-size: 200% auto;
+      background-image: linear-gradient(
+        to right,
+        #3498db 0%,
+        #85c1e9 50%,
+        #3498db 100%
+      );
+    }
+
+    .hover-effect:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+    }
+
+    @keyframes loading-shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes bubble-rise {
+      0% { transform: translateY(0) scale(0); opacity: 0; }
+      50% { opacity: 0.5; }
+      100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
         opacity: 0;
       }
-      100% {
-        opacity: 1;
-      }
     }
 
-    /* Mute button */
-    .mute-button {
+    /* Enhanced Loading Animation */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.5s ease;
+      z-index: 1001;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-screen.active {
+      background: rgba(255, 255, 255, 1);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .loading-text {
+      color: #335c81;
+      font-size: 24px;
+      margin-bottom: 20px;
+      animation: pulse-text 2s infinite;
+    }
+
+    .loading-progress {
+      width: 300px;
+      height: 6px;
+      background: rgba(133, 193, 233, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #3498db, #85c1e9);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      position: relative;
+    }
+
+    .progress-bar::after {
+      content: '';
       position: absolute;
-      top: 20px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: loading-shine 1.5s infinite;
+    }
+
+    @keyframes pulse-text {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background: url("https://i.imgur.com/bohevMP_d.webp?maxwidth=1520&fidelity=grand") #1a1a2e;
+      color: #85c1e9;
+    }
+
+    .dark-mode .game-container,
+    .dark-mode .settings-panel,
+    .dark-mode canvas {
+      background: rgba(26, 26, 46, 0.7);
+      border-color: rgba(133, 193, 233, 0.2);
+    }
+
+    /* Floating Logo Animation */
+    .logo img {
+      position: relative;
+      animation: spin 10s linear infinite, float 5s ease-in-out infinite;
+      transition: transform 0.3s ease;
+      will-change: transform;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    /* Updated Loading Bar */
+    .loading-container {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-container.visible {
+      opacity: 1;
+    }
+
+    /* Updated Spotify Player */
+    .spotify-player {
+      left: -350px;
+      transition: left 0.6s cubic-bezier(0.87, 0, 0.13, 1);
+    }
+
+    .spotify-player.open {
       left: 20px;
-      padding: 10px 15px;
-      font-size: 16px;
-      background-color: #3EB489;
-      color: #fff;
-      border-radius: 5px;
+    }
+
+    .minimize-btn {
+      right: -30px;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      left: 80px;
+      padding: 10px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #85c1e9, #3498db);
       cursor: pointer;
-      font-family: "Comic Sans MS", sans-serif;
+      z-index: 1000;
     }
 
-    .mute-button:hover {
-      background-color: #2980b9;
+    /* Video Controls */
+    .video-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1002;
     }
 
+    .mute-toggle {
+      padding: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* Dark Mode Cursor */
+    body.dark-mode #cursor-custom {
+      height: 50px;
+      width: 50px;
+      pointer-events: none;
+      position: fixed;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 
+                  0 0 40px #fff, 0 0 70px #fff, 0 0 80px #fff, 
+                  0 0 100px #fff, 0 0 150px #fff;
+      z-index: 9999;
+      display: none;
+    }
+
+    body.dark-mode {
+      cursor: none;
+    }
+
+    body.dark-mode .cursor-gradient {
+      display: none;
+    }
+
+    /* Dark Mode Toggle Button */
+    .theme-toggle {
+      padding: 0;
+      width: 7rem;
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      background-color: var(--button-color);
+      border-radius: 5em;
+      border: 0;
+      position: fixed;
+      top: 20px;
+      left: 80px;
+      z-index: 1001;
+      overflow: hidden;
+    }
+
+    .theme-toggle i {
+      background-color: var(--button-bg-color);
+      display: inline-block;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      padding: 0.5rem;
+      position: relative;
+      transition: transform 0.5s ease;
+    }
+
+    /* Dark mode animation classes */
+    .darkmode-toggle {
+      animation: darkmode_toggle 0.5s ease-in-out forwards;
+    }
+
+    .darkmode-toggle-normal {
+      animation: darkmode_toggle_normal 0.5s ease-in-out forwards;
+    }
+
+    @keyframes darkmode_toggle {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(133%); }
+    }
+
+    @keyframes darkmode_toggle_normal {
+      0% { transform: translateX(133%); }
+      100% { transform: translateX(0%); }
+    }
   </style>
 </head>
 <body>
-  <!-- Make the image clickable, linking to your YouTube channel -->
-  <a href="https://www.youtube.com/@cloutyskies" target="_blank">
-    <img src="https://github.com/TheCloutySkies/heyyyyyyyy/blob/main/horrid.png?raw=true" alt="click here i dare u">
-  </a>
-
-  <!-- Sidebar on the right with Comic Sans font -->
-  <div class="sidebar" id="sidebar">
-    <h2>Menu</h2>
-    <a href="https://www.youtube.com/@cloutyskies" target="_blank">Main Channel</a>
-    <a href="https://www.youtube.com/@cloutyskies2" target="_blank">Second Channel</a>
-    <a href="https://www.beacons.ai/cloutyskies" target="_blank">Additional Links</a>
-    <a href="about.html">About Page</a>
-    <a href="clouty-hops.html">Play: Clouty Hops</a>
-    <a href="tic.html">Play: Tic-Tac-Toe</a>
-    <a href="Cloutris.html">Play: Cloutris</a> <!-- Link to tic.html -->
-    <a href="portfolio.html">Portfolio</a> <!-- New button for Portfolio -->
+  <!-- Intro Section with Video -->
+  <div id="intro">
+    <video class="intro-video" src="talking yayyy.mp4" muted></video>
+    <div class="loading">
+      <div class="loading-text">LOADING THE CLOUTY SKIES EXPERIENCE...</div>
+      <div class="loading-bar-container">
+        <div class="loading-bar"></div>
+      </div>
+    </div>
+    <button id="skip-intro" class="frutiger-button">skip this!</button>
+    <button id="enter-site" class="frutiger-button">enter!</button>
   </div>
 
-  <!-- Sidebar Toggle Button -->
-  <button class="toggle-button" id="toggleSidebar" onclick="toggleSidebar()">Hide Sidebar</button>
+  <!-- Main Content -->
+  <div id="content">
+    <!-- Marquee Banner -->
+    <div class="marquee">
+      <div class="marquee-content">
+        //HI WELCOME TO MY WEBSITE, DO YOU LIKE IT, YOU BETTER LIKE IT, IM ACTUALLY GOING INSANE TRYING TO MAKE THIS WORK//
+      </div>
+    </div>
 
-  <!-- Mute button -->
-  <div class="mute-button" id="muteButton">Mute</div>
+    <!-- Navigation -->
+    <div class="nav-container">
+      <div class="logo">
+        <img src="horrid.png" alt="Clouty Skies">
+      </div>
+      <button class="nav-toggle">≡</button>
+      <nav id="main-nav">
+        <ul>
+          <li><a href="#music">the things</a></li>
+          <li><a href="#portfolio">pictures and stuff</a></li>
+          <li><a href="#games">games</a></li>
+          <li><a href="#contact">hmu ayyyyy</a></li>
+        </ul>
+      </nav>
+    </div>
 
-  <!-- Audio element to play sound when the page is loaded -->
-  <audio id="myAudio" autoplay loop>
-    <source src="https://github.com/TheCloutySkies/heyyyyyyyy/raw/refs/heads/main/better%20off%20alone%20low%20quality.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
+    <!-- Music Section -->
+    <section id="music">
+      <h2 class="section-title">my stuff, more links at da bottom</h2>
+      <div class="music-platforms">
+        <div class="platform-card">
+          <img src="https://www.freeiconspng.com/thumbs/youtube-logo-png/hd-youtube-logo-png-transparent-background-20.png" alt="YouTube">
+          <h3>Main Channel</h3>
+          <p>The more tame, archival side</p>
+          <a href="https://www.youtube.com/@cloutyskies" target="_blank">VISIT</a>
+        </div>
+        <div class="platform-card">
+          <img src="https://www.freeiconspng.com/thumbs/youtube-logo-png/hd-youtube-logo-png-transparent-background-20.png" alt="YouTube">
+          <h3>Second Channel</h3>
+          <p>I pretend to be a YouTuber on this channel</p>
+          <a href="https://www.youtube.com/@cloutyskies2" target="_blank">VISIT</a>
+        </div>
+        <div class="platform-card">
+          <img src="https://st-aug.edu/wp-content/uploads/2021/09/soundcloud-logo-soundcloud-icon-transparent-png-1.png" alt="SoundCloud">
+          <h3>SoundCloud</h3>
+          <p>listen to my tinkerings</p>
+          <a href="https://soundcloud.com/clouty-skies-extras" target="_blank">i guess</a>
+        </div>
+        <div class="platform-card">
+          <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Green.png" alt="Spotify">
+          <h3>Spotify</h3>
+          <p>The "Good" stuff, (its ok)</p>
+          <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank">VISIT</a>
+        </div>
+      </div>
+
+      <div class="visitor-counter">
+        <p>VISITORS: <span class="counter-value">10428501</span></p>
+      </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio">
+      <h2 class="section-title">WOW PICTURES</h2>
+      <p>Check out some of my cool and awesome pictures</p>
+      <div class="instagram-gallery">
+        <!-- Instagram Embeds -->
+        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/CvF8uXDvLuq/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>
+        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DCd7MGURfRC/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>
+        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/C8YFteCvkvB/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>
+      </div>
+
+      <a href="https://www.instagram.com/clouty_skies_photography/" target="_blank" class="instagram-button">
+        you should totally follow me 
+      </a>
+    </section>
+
+    <!-- Games Section -->
+    <section id="games">
+      <h2 class="section-title">It's Playtime</h2>
+      <p>Play some fun Clouty Skies games!!!</p>
+      <div class="games-container">
+        <div class="game-card">
+          <img src="E581D915-C65E-4ADF-825B-38161BF70ED1.jpeg" alt="Clouty Hops">
+          <h3>Clouty Hops</h3>
+          <p>kinda like that bird game but its me and terribly designed!</p>
+          <a href="clouty-hops.html">PLAY NOW</a>
+        </div>
+        <div class="game-card">
+          <img src="https://png.pngtree.com/png-vector/20220420/ourmid/pngtree-tic-tac-toe-pattern-png-png-image_4549871.png" alt="Tic-Tac-Toe">
+          <h3>Tic-Tac-Toe</h3>
+          <p>This is not working right now sorryyyy</p>
+          <a href="tic.html">PLAY NOW</a>
+        </div>
+        <div class="game-card">
+          <img src="https://previews.123rf.com/images/urfandadashov/urfandadashov1808/urfandadashov180822064/108801037-tetris-vector-icon-isolated-on-transparent-background-tetris-logo-concept.jpg" alt="Cloutris">
+          <h3>Cloutris</h3>
+          <p>also not working./p>
+          <a href="Cloutris.html">PLAY NOW</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <h2 class="section-title">HMU, (instagram would probably be easier)</h2>
+      <div class="contact-form">
+        <form action="process-contact.php" method="POST">
+          <div class="form-group">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Your Email:</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+          </div>
+          <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+          <button type="submit">SEND MESSAGE</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="social-links">
+        <a href="https://tiktok.com/@clouty_skies" target="_blank">
+          <img src="https://www.edigitalagency.com.au/wp-content/uploads/tiktok-icon-white-symbol.png" alt="TikTok">
+        </a>
+        <a href="https://instagram.com/thecloutyskies" target="_blank">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png" alt="Instagram">
+        </a>
+        <a href="https://www.beacons.ai/cloutyskies" target="_blank">
+          <img src="https://assets.beacons.ai/user_content/favicon.png" alt="Beacons">
+        </a>
+      </div>
+      <p class="footer-text">© 2025 Clouty Skies. All rights reserved bro.</p>
+      <a href="#" class="back-to-top">BACK TO TOP</a>
+    </footer>
+
+    <!-- Spotify Player -->
+    <div class="spotify-player">
+      <button class="minimize-btn" onclick="toggleSpotifyPlayer()">−</button>
+      <iframe id="spotify-iframe" style="border-radius:12px" 
+              src="https://open.spotify.com/embed/artist/3QbHatr8OY2onxDhLD4dmC?utm_source=generator" 
+              width="75%" 
+              height="152" 
+              frameBorder="0" 
+              allowfullscreen="" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- Animated Stars Background -->
+  <div class="stars" id="stars"></div>
+
+  <div class="cursor-gradient"></div>
+  <audio id="loadingSound" preload="auto">
+    <source src="https://www.soundjay.com/buttons/sounds/button-94.mp3" type="audio/mpeg">
   </audio>
 
-  <script>
-    // Auto-play audio and loop
-    const audio = document.getElementById('myAudio');
-    const muteButton = document.getElementById('muteButton');
-    let isMuted = false;
+  <!-- Add loading screen -->
+  <div class="loading-screen">
+    <div class="loading-text">Loading Clouty Skies Experience...</div>
+    <div class="loading-progress">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
 
-    muteButton.addEventListener('click', () => {
-      isMuted = !isMuted;
-      audio.muted = isMuted;
-      muteButton.textContent = isMuted ? 'Unmute' : 'Mute';
+  <!-- Add new elements -->
+  <button class="theme-toggle js-toggle-mode">
+    <i class="fa fa-moon-o fa-2x" aria-hidden="true"></i>
+  </button>
+  <div class="video-controls">
+    <button class="mute-toggle" onclick="toggleMute()">🔊</button>
+  </div>
+
+  <!-- Add cursor div -->
+  <div id="cursor-custom"></div>
+
+  <script>
+    // Stars background
+    document.addEventListener('DOMContentLoaded', function() {
+      createStars();
+      initializeVideo();
+      initializeCounter();
+      initializeContactForm();
     });
 
-    // Sidebar toggle functionality
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const toggleButton = document.getElementById('toggleSidebar');
-      sidebar.classList.toggle('collapsed');
+    function initializeVideo() {
+      const video = document.querySelector('.intro-video');
+      const loadingBar = document.querySelector('.loading-bar');
+      
+      video.addEventListener('loadedmetadata', function() {
+        video.style.opacity = 1;
+        video.play().catch(function(error) {
+          console.log("Video autoplay failed:", error);
+          // Skip to enter site if video fails
+          skipToEnterSite();
+        });
+      });
 
-      if (sidebar.classList.contains('collapsed')) {
-        toggleButton.textContent = 'Show Sidebar';
-        toggleButton.classList.add('collapsed-button');
-      } else {
-        toggleButton.textContent = 'Hide Sidebar';
-        toggleButton.classList.remove('collapsed-button');
+      video.addEventListener('error', function(e) {
+        console.log("Video loading error:", e);
+        skipToEnterSite();
+      });
+    }
+
+    function initializeCounter() {
+      const counterElement = document.querySelector('.counter-value');
+      let localCount = localStorage.getItem('visitorCount') || 1;
+      updateCounter(parseInt(localCount));
+
+      fetch('counter.php')
+        .then(response => response.json())
+        .then(data => {
+          localStorage.setItem('visitorCount', data.count);
+          updateCounter(data.count);
+        })
+        .catch(error => {
+          console.log("Counter error:", error);
+          // Use local fallback
+          updateCounter(parseInt(localCount));
+        });
+    }
+
+    function initializeContactForm() {
+      const form = document.querySelector('.contact-form form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const submitBtn = form.querySelector('button[type="submit"]');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Sending...';
+
+          fetch('process-contact.php', {
+            method: 'POST',
+            body: new FormData(form)
+          })
+          .then(response => response.text())
+          .then(data => {
+            alert('Message sent successfully!');
+            form.reset();
+          })
+          .catch(error => {
+            alert('Error sending message. Please try again.');
+            console.log("Form error:", error);
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'SEND MESSAGE';
+          });
+        });
       }
     }
+
+    function skipToEnterSite() {
+      document.querySelector('.loading').style.display = 'none';
+      document.getElementById('skip-intro').style.display = 'none';
+      document.getElementById('enter-site').style.display = 'block';
+    }
+
+    function createStars() {
+      const starsContainer = document.getElementById('stars');
+      const numStars = 100;
+      
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        
+        // Random position
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        
+        star.style.left = `${x}px`;
+        star.style.top = `${y}px`;
+        
+        // Random size
+        const size = Math.random() * 3;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Random animation delay
+        const delay = Math.random() * 2;
+        star.style.animationDelay = `${delay}s`;
+        
+        starsContainer.appendChild(star);
+      }
+    }
+    
+    // Intro sequence
+    document.addEventListener('DOMContentLoaded', function() {
+      createStars();
+      
+      const intro = document.getElementById('intro');
+      const content = document.getElementById('content');
+      const skipIntro = document.getElementById('skip-intro');
+      const enterSite = document.getElementById('enter-site');
+      const loadingBar = document.querySelector('.loading-bar');
+      
+      // Skip intro button
+      skipIntro.addEventListener('click', function() {
+        document.querySelector('.loading').style.display = 'none';
+        skipIntro.style.display = 'none';
+        enterSite.style.display = 'block';
+      });
+      
+      // Enter site button
+      enterSite.addEventListener('click', function() {
+        intro.style.opacity = '0';
+        setTimeout(function() {
+          intro.style.display = 'none';
+          content.style.display = 'block';
+        }, 1000);
+      });
+      
+      // Auto-complete loading after animation
+      loadingBar.addEventListener('animationend', function() {
+        document.querySelector('.loading').style.display = 'none';
+        skipIntro.style.display = 'none';
+        enterSite.style.display = 'block';
+      });
+      
+      // Navigation toggle
+      const navToggle = document.querySelector('.nav-toggle');
+      const mainNav = document.getElementById('main-nav');
+      
+      navToggle.addEventListener('click', function() {
+        mainNav.classList.toggle('open');
+        navToggle.textContent = mainNav.classList.contains('open') ? '✕' : '≡';
+      });
+      
+      // Smooth scrolling for navigation links
+      document.querySelectorAll('nav a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetSection = document.querySelector(targetId);
+          
+          window.scrollTo({
+            top: targetSection.offsetTop - 100,
+            behavior: 'smooth'
+          });
+          
+          // Close mobile menu after clicking
+          if (window.innerWidth < 768) {
+            mainNav.classList.remove('open');
+            navToggle.textContent = '≡';
+          }
+        });
+      });
+      
+      // Back to top button
+      document.querySelector('.back-to-top').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+
+      // Spotify player minimize button
+      const spotifyPlayer = document.querySelector('.spotify-player');
+      const minimizeBtn = document.querySelector('.minimize-btn');
+      
+      minimizeBtn.addEventListener('click', function() {
+        spotifyPlayer.classList.toggle('minimized');
+        this.textContent = spotifyPlayer.classList.contains('minimized') ? '+' : '−';
+      });
+
+      const video = document.querySelector('.intro-video');
+      video.addEventListener('loadedmetadata', function() {
+        loadingBar.style.animation = `load ${video.duration}s linear forwards`;
+        video.style.opacity = 1;
+        video.play();
+      });
+
+      video.addEventListener('ended', function() {
+        video.style.opacity = 0;
+        setTimeout(() => {
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('enter-site').style.display = 'block';
+        }, 1000);
+      });
+
+      // Initialize counter from localStorage
+      let localCount = localStorage.getItem('visitorCount') || 0;
+      updateCounter(parseInt(localCount));
+
+      // Fetch server count and update
+      fetch('counter.php')
+        .then(response => response.json())
+        .then(data => {
+          localStorage.setItem('visitorCount', data.count);
+          updateCounter(data.count);
+        });
+
+      function updateCounter(count) {
+        const counterElement = document.querySelector('.counter-value');
+        counterElement.textContent = String(count).padStart(8, '0');
+      }
+
+      // Handle contact form submission
+      const contactForm = document.querySelector('.contact-form form');
+      if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+          // Form will submit to process-contact.php
+          // Check for success message in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('message') === 'success') {
+            alert('Message sent successfully!');
+          }
+        });
+      }
+    });
+
+    function toggleSpotifyPlayer() {
+      const spotifyPlayer = document.querySelector('.spotify-player');
+      const minimizeBtn = document.querySelector('.minimize-btn');
+      const spotifyIframe = document.getElementById('spotify-iframe');
+
+      spotifyPlayer.classList.toggle('minimized');
+
+      if (spotifyPlayer.classList.contains('minimized')) {
+        minimizeBtn.textContent = '+';
+        spotifyIframe.style.opacity = 0; // Hide the iframe
+      } else {
+        minimizeBtn.textContent = '−';
+        spotifyIframe.style.opacity = 1; // Show the iframe
+      }
+    }
+
+    // Add after existing script
+    function createRipple(event) {
+      const button = event.currentTarget;
+      const ripple = document.createElement('div');
+      const rect = button.getBoundingClientRect();
+      
+      ripple.className = 'ripple';
+      ripple.style.left = `${event.clientX - rect.left}px`;
+      ripple.style.top = `${event.clientY - rect.top}px`;
+      
+      button.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    }
+
+    function createBubbles() {
+      const loadingBar = document.querySelector('.loading-bar');
+      for (let i = 0; i < 10; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.left = `${Math.random() * 100}%`;
+        bubble.style.width = `${Math.random() * 20 + 5}px`;
+        bubble.style.height = bubble.style.width;
+        bubble.style.animationDelay = `${Math.random() * 2}s`;
+        loadingBar.appendChild(bubble);
+      }
+    }
+
+    function initializeCursorEffect() {
+      const cursor = document.querySelector('.cursor-gradient');
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+      });
+    }
+
+    function initializeSectionAnimations() {
+      const sections = document.querySelectorAll('section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            entry.target.style.animationDelay = `${Math.random() * 0.5}s`;
+          } else {
+            entry.target.classList.remove('active');
+          }
+        });
+      }, { threshold: 0.2 });
+
+      sections.forEach(section => {
+        section.classList.add('section-animate');
+        observer.observe(section);
+      });
+    }
+
+    // Update existing skip intro function
+    function skipIntro() {
+      const video = document.querySelector('.intro-video');
+      const loadingContainer = document.querySelector('.loading-container');
+      const skipButton = document.getElementById('skip-intro');
+      
+      skipButton.style.display = 'none';
+      loadingContainer.style.display = 'block';
+      
+      setTimeout(() => {
+        loadingContainer.classList.add('visible');
+        video.style.opacity = '0';
+        
+        let progress = 0;
+        const loadingBar = document.querySelector('.loading-bar');
+        const interval = setInterval(() => {
+          progress += 1;
+          loadingBar.style.width = `${progress}%`;
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              document.getElementById('enter-site').style.display = 'block';
+              document.getElementById('enter-site').style.opacity = '1';
+            }, 500);
+          }
+        }, 30);
+      }, 100);
+    }
+
+    // Initialize theme
+    document.addEventListener('DOMContentLoaded', () => {
+      const theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        toggleTheme();
+      }
+      
+      // Initialize Spotify player position
+      const player = document.querySelector('.spotify-player');
+      player.classList.add('open');
+    });
+
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', () => {
+      // ...existing initialization code...
+      
+      initializeCursorEffect();
+      initializeSectionAnimations();
+      
+      // Add ripple effect to all buttons
+      document.querySelectorAll('button, .platform-card a, .game-card a')
+        .forEach(button => {
+          button.addEventListener('click', createRipple);
+          button.classList.add('hover-effect');
+        });
+    });
+
+    function toggleTheme() {
+      const body = document.body;
+      const icon = document.querySelector('.js-toggle-mode i');
+      const cursor = document.getElementById('cursor-custom');
+      
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('darkmode-toggle-normal');
+        icon.classList.add('darkmode-toggle');
+        icon.classList.remove('fa-moon-o');
+        icon.classList.add('fa-sun-o');
+        cursor.style.display = 'block';
+        
+        // Enable glowing cursor in dark mode
+        document.addEventListener('mousemove', updateGlowingCursor);
+      } else {
+        icon.classList.remove('darkmode-toggle');
+        icon.classList.add('darkmode-toggle-normal');
+        icon.classList.remove('fa-sun-o');
+        icon.classList.add('fa-moon-o');
+        cursor.style.display = 'none';
+        
+        // Disable glowing cursor in light mode
+        document.removeEventListener('mousemove', updateGlowingCursor);
+      }
+      
+      localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function updateGlowingCursor(e) {
+      const cursor = document.getElementById('cursor-custom');
+      const radius = cursor.offsetHeight / 2;
+      
+      cursor.style.top = `${e.clientY - radius}px`;
+      cursor.style.left = `${e.clientX - radius}px`;
+    }
+
+    function toggleMute() {
+      const video = document.querySelector('.intro-video');
+      video.muted = !video.muted;
+      document.querySelector('.mute-toggle').textContent = video.muted ? '🔇' : '🔊';
+    }
+
+    function toggleSpotifyPlayer() {
+      const player = document.querySelector('.spotify-player');
+      player.classList.toggle('open');
+      const btn = document.querySelector('.minimize-btn');
+      btn.textContent = player.classList.contains('open') ? '−' : '+';
+    }
+
+    // Logo avoidance behavior
+    document.addEventListener('mousemove', (e) => {
+      const logo = document.querySelector('.logo img');
+      const rect = logo.getBoundingClientRect();
+      const logoCenter = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+      
+      const distance = Math.hypot(e.clientX - logoCenter.x, e.clientY - logoCenter.y);
+      const maxDistance = 100;
+      
+      if (distance < maxDistance) {
+        const angle = Math.atan2(logoCenter.y - e.clientY, logoCenter.x - e.clientX);
+        const push = (1 - distance / maxDistance) * 30;
+        
+        logo.style.transform = `
+          translate(${Math.cos(angle) * push}px, ${Math.sin(angle) * push}px)
+          rotate(${frames}deg)
+        `;
+      } else {
+        logo.style.transform = `rotate(${frames}deg)`;
+      }
+    });
   </script>
+  <script async src="//www.instagram.com/embed.js"></script>
 </body>
 </html>
