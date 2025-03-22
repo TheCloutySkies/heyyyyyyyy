@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +7,9 @@
   <style>
     body {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
       background-color: #333;
       color: white;
@@ -19,11 +19,49 @@
       border: 2px solid white;
       background-color: black;
     }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .controls button {
+      margin: 0 5px;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #555;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background-color: #777;
+    }
+    .back-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #555;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .back-button:hover {
+      background-color: #777;
+    }
   </style>
 </head>
 <body>
 
+<button class="back-button" onclick="window.location.href='index.html'">Back</button>
 <canvas id="tetris" width="320" height="640"></canvas>
+<div class="controls">
+  <button onclick="move(-1)">Left</button>
+  <button onclick="move(1)">Right</button>
+  <button onclick="drop()">Down</button>
+  <button onclick="resetGame()">Reset</button>
+</div>
 
 <script>
   const canvas = document.getElementById('tetris');
@@ -134,13 +172,32 @@
   }
 
   // Rotate a tetromino
-  function rotate(matrix) {
+  function rotate(matrix, dir) {
     for (let y = 0; y < matrix.length; ++y) {
       for (let x = 0; x < y; ++x) {
         [matrix[y][x], matrix[x][y]] = [matrix[x][y], matrix[y][x]];
       }
     }
-    matrix.reverse();
+    if (dir > 0) {
+      matrix.forEach(row => row.reverse());
+    } else {
+      matrix.reverse();
+    }
+  }
+
+  function playerRotate(dir) {
+    const pos = player.pos.x;
+    let offset = 1;
+    rotate(player.matrix, dir);
+    while (collide(board, player)) {
+      player.pos.x += offset;
+      offset = -(offset + (offset > 0 ? 1 : -1));
+      if (offset > player.matrix[0].length) {
+        rotate(player.matrix, -dir);
+        player.pos.x = pos;
+        return;
+      }
+    }
   }
 
   // Move the tetromino
@@ -159,6 +216,7 @@
       merge(board, player);
       playerReset();
       sweepRows();
+      updateScore();
     }
     dropCounter = 0;
   }
@@ -171,11 +229,14 @@
     player.pos.x = (board[0].length / 2) - (player.matrix[0].length / 2);
     if (collide(board, player)) {
       board.forEach(row => row.fill(0));
+      player.score = 0;
+      updateScore();
     }
   }
 
   // Clear full rows
   function sweepRows() {
+    let rowCount = 1;
     outer: for (let y = board.length - 1; y >= 0; --y) {
       for (let x = 0; x < board[y].length; ++x) {
         if (board[y][x] === 0) {
@@ -184,6 +245,10 @@
       }
       const row = board.splice(y, 1)[0].fill(0);
       board.unshift(row);
+      ++y;
+
+      player.score += rowCount * 10;
+      rowCount *= 2;
     }
   }
 
@@ -205,10 +270,15 @@
     requestAnimationFrame(update);
   }
 
+  function updateScore() {
+    document.getElementById('score').innerText = player.score;
+  }
+
   // Player object
   const player = {
     pos: { x: 0, y: 0 },
-    matrix: null
+    matrix: null,
+    score: 0
   };
 
   // Create the board
@@ -223,20 +293,40 @@
     } else if (event.key === 'ArrowDown') {
       drop();
     } else if (event.key === 'ArrowUp') {
-      rotate(player.matrix);
-      if (collide(board, player)) {
-        rotate(player.matrix);
-        rotate(player.matrix);
-        rotate(player.matrix);
+      playerRotate(1);
+    }
+  });
+
+  // Mobile controls
+  document.querySelector('.controls').addEventListener('click', event => {
+    if (event.target.tagName === 'BUTTON') {
+      const action = event.target.innerText.toLowerCase();
+      if (action === 'left') {
+        move(-1);
+      } else if (action === 'right') {
+        move(1);
+      } else if (action === 'down') {
+        drop();
+      } else if (action === 'reset') {
+        resetGame();
       }
     }
   });
+
+  function resetGame() {
+    board.forEach(row => row.fill(0));
+    player.score = 0;
+    updateScore();
+    playerReset();
+  }
 
   // Start the game
   playerReset();
   update();
 
 </script>
+
+<div id="score" style="position: absolute; top: 10px; right: 10px; font-size: 20px;">0</div>
 
 </body>
 </html>
