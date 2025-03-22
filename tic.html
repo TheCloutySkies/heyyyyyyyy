@@ -1,278 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tic Tac Toe Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clouty Tic-Tac-Toe</title>
     <style>
+        :root {
+            --vista-bg: #1a1f2b;
+            --vista-glass: rgba(40, 65, 95, 0.65);
+            --vista-glass-dark: rgba(20, 35, 55, 0.85);
+            --vista-border: rgba(100, 150, 200, 0.3);
+            --vista-shadow: 0 0 20px rgba(0, 30, 60, 0.6);
+            --vista-text: #e0e5ef;
+        }
+
         body {
-            background-color: #999999;
-            font-family: Arial, sans-serif;
-        }
-
-        h3 {
-            color: white;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 100px;
             margin: 0;
+            padding: 0;
+            background: url("https://c4.wallpaperflare.com/wallpaper/845/501/105/windows-vista-aero-45-wallpaper-preview.jpg");
+            background-size: cover;
+            background-attachment: fixed;
+            font-family: "Segoe UI", sans-serif;
+            color: var(--vista-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        h1 {
-            color: white;
-            margin-bottom: 30px;
+        .game-container {
+            background: var(--vista-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--vista-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 50px;
+            box-shadow: var(--vista-shadow);
         }
 
-        .gameboard {
-            background-color: black;
-            position: relative;
-            margin: auto;
-            height: 24em;
-            width: 24em;
+        .board {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            margin: 20px 0;
         }
 
-        .square {
-            height: 8em;
-            width: 8em;
-            border: 1px solid white;
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: var(--vista-glass-dark);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 40px;
             cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .square:nth-child(3n + 2) {
-            border-left: none;
-            border-right: none;
+        .cell:hover {
+            background: rgba(60, 85, 115, 0.65);
+            transform: translateY(-2px);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .square:nth-child(-n + 3) {
-            border-bottom: none;
-        }
-
-        .container-fluid {
-            z-index: 2;
-            position: fixed;
-            background-color: rgba(20, 20, 20, 0.5);
-            height: 150px;
-            width: 100%;
-            bottom: 50%;
+        .status {
+            font-size: 24px;
+            margin-bottom: 20px;
             text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        button {
-            margin: 10px;
+        .reset-btn {
+            padding: 12px 24px;
+            background: var(--vista-glass);
+            color: var(--vista-text);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-btn:hover {
+            background: var(--vista-glass-dark);
+            transform: translateY(-2px);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: var(--vista-glass);
+            color: var(--vista-text);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: var(--vista-shadow);
+        }
+
+        .back-button:hover {
+            background: var(--vista-glass-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Add new styles for CPU and custom markers */
+        .cpu-avatar {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid var(--vista-border);
+            box-shadow: var(--vista-shadow);
+            background: var(--vista-glass);
+            padding: 5px;
+        }
+
+        .cpu-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .speech-bubble {
+            position: fixed;
+            right: 180px;
+            bottom: 100px;
+            background: var(--vista-glass);
+            padding: 15px;
+            border-radius: 20px;
+            border: 1px solid var(--vista-border);
+            box-shadow: var(--vista-shadow);
+            max-width: 200px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .speech-bubble.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            bottom: 20px;
+            border-left: 10px solid var(--vista-glass);
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .cell img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+
+        .cell.marked img {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(var(--float-x), var(--float-y)) rotate(180deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        .floating-star {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+
+        .floating-star img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="gameboard row">
-            <div class="col-xs-4 square" id="cell1s" cell="0"></div>
-            <div class="col-xs-4 square" id="cell2s" cell="1"></div>
-            <div class="col-xs-4 square" id="cell3s" cell="2"></div>
-            <div class="col-xs-4 square" id="cell4s" cell="3"></div>
-            <div class="col-xs-4 square" id="cell5s" cell="4"></div>
-            <div class="col-xs-4 square" id="cell6s" cell="5"></div>
-            <div class="col-xs-4 square" id="cell7s" cell="6"></div>
-            <div class="col-xs-4 square" id="cell8s" cell="7"></div>
-            <div class="col-xs-4 square" id="cell9s" cell="8"></div>
+    <a href="index.html" class="back-button">Back to Home</a>
+    
+    <div class="game-container">
+        <div class="status">Your turn (X)</div>
+        <div class="board">
+            <div class="cell" data-index="0"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="1"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="2"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="3"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="4"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="5"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="6"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="7"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+            <div class="cell" data-index="8"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
         </div>
+        <button class="reset-btn">Reset Game</button>
     </div>
 
-    <div class="container-fluid">
-        <h1>Are you playing with X or O?</h1>
-        <button class="btn btn-primary" id="pickX">X</button>
-        <button class="btn btn-primary" id="pickO">O</button>
+    <div class="cpu-avatar">
+        <img src="nerdy skies.jpg" alt="Clouty Skies">
     </div>
+    <div class="speech-bubble">Clouty Skies is thinking...</div>
 
     <script>
-        var player = {
-            human: 1,
-            cpu: 2
-        };
-        var state = {
-            playing: 0,
-            waiting: 1,
-            done: 2
+        const game = {
+            board: Array(9).fill(''),
+            currentPlayer: 'X',
+            finished: false,
+            winCombos: [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6] // Diagonals
+            ]
         };
 
-        var pick;
-        let Game;
+        const cells = document.querySelectorAll('.cell');
+        const status = document.querySelector('.status');
+        const resetBtn = document.querySelector('.reset-btn');
 
-        function board() {
-            this.panel = [];
-            this.cells = [];
-            for (var i = 0; i < 9; i++) {
-                this.cells.push(document.querySelector(`[cell="${i}"]`));
+        function checkWinner(board) {
+            for (let combo of game.winCombos) {
+                if (board[combo[0]] && 
+                    board[combo[0]] === board[combo[1]] && 
+                    board[combo[0]] === board[combo[2]]) {
+                    return board[combo[0]];
+                }
+            }
+            
+            if (board.includes('')) return null;
+            return 'draw';
+        }
+
+        function minmax(board, depth, isMaximizing) {
+            const result = checkWinner(board);
+            if (result === 'O') return 10 - depth;
+            if (result === 'X') return depth - 10;
+            if (result === 'draw') return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let score = minmax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let score = minmax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
             }
         }
 
-        board.prototype.reset = function() {
-            this.panel = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        };
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let bestMove;
+            let moves = [];
 
-        board.prototype.markable = function(pos) {
-            return this.panel[pos] == 0;
-        };
-
-        board.prototype.mark = function(turn, pos) {
-            this.panel[pos] = turn;
-        };
-
-        board.prototype.checkWin = function(player) {
-            var bool = (this.panel[0] === player && this.panel[1] === player && this.panel[2] === player);
-            bool = bool || (this.panel[3] === player && this.panel[4] === player && this.panel[5] === player);
-            bool = bool || (this.panel[6] === player && this.panel[7] === player && this.panel[8] === player);
-
-            bool = bool || (this.panel[0] === player && this.panel[3] === player && this.panel[6] === player);
-            bool = bool || (this.panel[1] === player && this.panel[4] === player && this.panel[7] === player);
-            bool = bool || (this.panel[2] === player && this.panel[5] === player && this.panel[8] === player);
-
-            bool = bool || (this.panel[0] === player && this.panel[4] === player && this.panel[8] === player);
-            bool = bool || (this.panel[2] === player && this.panel[4] === player && this.panel[6] === player);
-            return bool;
-        };
-
-        board.prototype.emptyCells = function() {
-            return this.panel.includes(0);
-        };
-
-        board.prototype.draw = function() {
-            var n = this.panel.length;
-            var humanSign = pick;
-            var cpuSign = (pick === "X") ? "O" : "X";
-            for (var i = 0; i < n; i++) {
-                if (this.panel[i] === 0) {
-                    this.cells[i].innerHTML = "";
-                } else {
-                    this.cells[i].innerHTML = (this.panel[i] === player.human) ? humanSign : cpuSign;
+            // First check for winning move
+            for (let i = 0; i < game.board.length; i++) {
+                if (game.board[i] === '') {
+                    game.board[i] = 'O';
+                    let score = minmax(game.board, 0, false);
+                    game.board[i] = '';
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        moves = [i];
+                    } else if (score === bestScore) {
+                        moves.push(i);
+                    }
                 }
             }
-        };
 
-        function game() {
-            this.board = new board();
-            this.status = null;
-            this.reset();
+            // Add some randomness to make CPU less predictable
+            bestMove = moves[Math.floor(Math.random() * moves.length)];
+            return bestMove;
         }
 
-        game.prototype.reset = function() {
-            this.board.reset();
-            this.status = state.playing;
-            this.board.draw();
-        };
+        async function handleClick(e) {
+            const cell = e.target.closest('.cell');
+            const index = cell.dataset.index;
 
-        game.prototype.logic = function(pos) {
-            if (this.status === state.playing) {
-                if (this.board.markable(pos)) {
-                    this.board.mark(player.human, pos);
-                    this.board.draw();
+            if (game.board[index] || game.finished) return;
 
-                    if (this.board.checkWin(player.human)) {
-                        setTimeout(() => alert("Player wins!"), 100);
-                        this.status = state.done;
-                        return;
-                    } else if (!this.board.emptyCells()) {
-                        setTimeout(() => alert("It's a draw!"), 100);
-                        this.status = state.done;
-                        return;
-                    }
+            // Player move
+            game.board[index] = 'X';
+            markCell(cell, 'X');
 
-                    this.moveAI();
-                    this.board.draw();
-
-                    if (this.board.checkWin(player.cpu)) {
-                        setTimeout(() => alert("CPU wins!"), 100);
-                        this.status = state.done;
-                    } else if (!this.board.emptyCells()) {
-                        setTimeout(() => alert("It's a draw!"), 100);
-                        this.status = state.done;
-                    }
-                }
-            }
-        };
-
-        game.prototype.moveAI = function() {
-            var pos = 0;
-            var n = this.board.panel.length;
-            var aux, best = -9999;
-            var posicion = 0;
-
-            for (var i = 0; i < n; i++) {
-                if (this.board.markable(i)) {
-                    this.board.mark(player.cpu, i);
-                    aux = this.min();
-                    if (aux > best) {
-                        best = aux;
-                        posicion = i;
-                    }
-                    this.board.mark(0, i);
-                }
+            if (checkWinner(game.board) === 'X') {
+                status.textContent = 'You win!';
+                game.finished = true;
+                return;
             }
 
-            this.board.mark(player.cpu, posicion);
-        };
-
-        game.prototype.min = function() {
-            if (this.board.checkWin(player.cpu)) return 1;
-            if (!this.board.emptyCells()) return 0;
-            var n = this.board.panel.length;
-            var aux, best = 9999;
-
-            for (var i = 0; i < n; i++) {
-                if (this.board.markable(i)) {
-                    this.board.mark(player.human, i);
-                    aux = this.max();
-                    if (aux < best) {
-                        best = aux;
-                    }
-                    this.board.mark(0, i);
-                }
+            if (!game.board.includes('')) {
+                status.textContent = "It's a draw!";
+                game.finished = true;
+                return;
             }
-            return best;
-        };
 
-        game.prototype.max = function() {
-            if (this.board.checkWin(player.human)) return -1;
-            if (!this.board.emptyCells()) return 0;
-            var n = this.board.panel.length;
-            var aux, best = -9999;
+            // CPU move
+            status.textContent = "Clouty Skies is thinking...";
+            showSpeechBubble();
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            for (var i = 0; i < n; i++) {
-                if (this.board.markable(i)) {
-                    this.board.mark(player.cpu, i);
-                    aux = this.min();
-                    if (aux > best) {
-                        best = aux;
-                    }
-                    this.board.mark(0, i);
-                }
+            const cpuMove = getBestMove();
+            game.board[cpuMove] = 'O';
+            markCell(cells[cpuMove], 'O');
+            hideSpeechBubble();
+
+            if (checkWinner(game.board) === 'O') {
+                status.textContent = 'Clouty Skies wins!';
+                game.finished = true;
+                return;
             }
-            return best;
-        };
 
-        function logicPicker(e) {
-            Game.logic(parseInt(e.target.getAttribute("cell")));
+            if (!game.board.includes('')) {
+                status.textContent = "It's a draw!";
+                game.finished = true;
+                return;
+            }
+
+            status.textContent = 'Your turn (X)';
         }
 
-        function init(e) {
-            pick = (e.target.getAttribute("id") === "pickX") ? "X" : "O";
-            document.querySelector(".container-fluid").style.display = "none";
-            Game = new game();
-            document.querySelectorAll(".square").forEach(square => {
-                square.addEventListener("click", logicPicker);
+        function markCell(cell, player) {
+            const xImage = cell.querySelector('img[alt="X"]');
+            const oImage = cell.querySelector('img[alt="O"]');
+            
+            if (player === 'X') {
+                xImage.style.display = 'block';
+                oImage.style.display = 'none';
+            } else {
+                xImage.style.display = 'none';
+                oImage.style.display = 'block';
+            }
+            
+            cell.classList.add('marked');
+        }
+
+        function showSpeechBubble() {
+            document.querySelector('.speech-bubble').classList.add('visible');
+        }
+
+        function hideSpeechBubble() {
+            document.querySelector('.speech-bubble').classList.remove('visible');
+        }
+
+        function resetGame() {
+            game.board = Array(9).fill('');
+            game.finished = false;
+            cells.forEach(cell => {
+                cell.classList.remove('marked');
+                cell.querySelectorAll('img').forEach(img => img.style.display = 'none');
             });
+            status.textContent = "Your turn (X)";
+            hideSpeechBubble();
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById("pickX").addEventListener("click", init);
-            document.getElementById("pickO").addEventListener("click", init);
-        });
+        cells.forEach(cell => cell.addEventListener('click', handleClick));
+        resetBtn.addEventListener('click', resetGame);
+
+        function createFloatingStars() {
+            const starCount = 15;
+            const container = document.body;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'floating-star';
+                
+                const img = document.createElement('img');
+                img.src = Math.random() > 0.5 ? 'sign026_result.png' : 'sign027_result.png';
+                star.appendChild(img);
+                
+                // Random starting position
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                
+                // Random float animation
+                const floatX = (Math.random() - 0.5) * 200;
+                const floatY = (Math.random() - 0.5) * 200;
+                star.style.setProperty('--float-x', `${floatX}px`);
+                star.style.setProperty('--float-y', `${floatY}px`);
+                
+                // Random animation duration and delay
+                const duration = 5 + Math.random() * 10;
+                star.style.animation = `float ${duration}s infinite`;
+                star.style.animationDelay = `${Math.random() * -10}s`;
+                
+                container.appendChild(star);
+            }
+        }
+
+        // Initialize floating stars
+        document.addEventListener('DOMContentLoaded', createFloatingStars);
     </script>
 </body>
 </html>
