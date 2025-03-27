@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clouty Talks - Forum</title>
+    <style>
+        :root {
+            --vista-bg: #1a1f2b;
+            --vista-glass: rgba(26, 26, 26, 0.75);
+            --vista-border: rgba(69, 128, 196, 0.3);
+            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: url('https://images2.alphacoders.com/134/1349536.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: var(--vista-glass);
+            color: white;
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .forum-container {
+            max-width: 1200px;
+            margin: 60px auto 20px;
+            padding: 20px;
+            background: var(--vista-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            box-shadow: var(--vista-shadow);
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #forum_iframe {
+            width: 100%;
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            min-height: 500px;
+        }
+
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">Back to Home</a>
+    
+    <div class="forum-container">
+        <div class="loading-indicator">Loading forum...</div>
+        <!-- Bravenet Forum Embed -->
+        <script src="https://apps.bravenet.com/go.js?service=forum;id=1;usernum=2184525146" 
+                type="text/javascript" 
+                charset="utf-8">
+        </script>
+    </div>
+
+    <script>
+        // Enhanced iframe handling
+        window.addEventListener('load', function() {
+            const forumFrame = document.querySelector('iframe');
+            const loadingIndicator = document.querySelector('.loading-indicator');
+            
+            if (forumFrame) {
+                loadingIndicator.style.display = 'block';
+                forumFrame.id = 'forum_iframe';
+                
+                forumFrame.onload = function() {
+                    loadingIndicator.style.display = 'none';
+                    // Clean up Bravenet branding
+                    try {
+                        const unwantedElements = forumFrame.contentDocument.querySelectorAll('[id^="bn_"]');
+                        unwantedElements.forEach(el => el.style.display = 'none');
+                    } catch (e) {
+                        console.log('Unable to modify forum content due to same-origin policy');
+                    }
+                };
+
+                // Add error handling
+                forumFrame.onerror = function() {
+                    loadingIndicator.textContent = 'Error loading forum. Please refresh the page.';
+                };
+            }
+        });
+    </script>
+</body>
+</html>

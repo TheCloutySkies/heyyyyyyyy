@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin - Clouty</title>
+    <style>
+        :root {
+            --vista-bg: #1a1f2b;
+            --vista-glass: rgba(26, 26, 26, 0.75);
+            --vista-glass-dark: rgba(20, 20, 20, 0.85);
+            --vista-border: rgba(69, 128, 196, 0.3);
+            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
+            --vista-text: #e0e5ef;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: url("https://frutiger-aero.org/img/dark-aero-1.webp") no-repeat center center fixed;
+            background-size: cover;
+            font-family: "Segoe UI", sans-serif;
+            color: var(--vista-text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .admin-form {
+            background: var(--vista-glass);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: var(--vista-shadow),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            color: var(--vista-text);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--vista-text);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--vista-border);
+            border-radius: 6px;
+            color: var(--vista-text);
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(69, 128, 196, 0.6);
+            box-shadow: 0 0 0 3px rgba(69, 128, 196, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(
+                to bottom,
+                rgba(69, 128, 196, 0.3),
+                rgba(40, 40, 40, 0.95)
+            );
+            color: var(--vista-text);
+            border: 1px solid var(--vista-border);
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 2px 5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(
+                to bottom,
+                rgba(89, 148, 216, 0.3),
+                rgba(60, 60, 60, 0.95)
+            );
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-button:hover {
+            opacity: 1;
+        }
+
+        .tox.tox-tinymce {
+            border: 1px solid var(--vista-border);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .image-preview {
+            max-width: 200px;
+            margin-top: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(69, 128, 196, 0.2);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--vista-border), rgba(69, 128, 196, 0.8));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+
+    <!-- Update TinyMCE with correct API key -->
+    <script src="https://cdn.tiny.cloud/1/15bynki8rzxctly24wv8yf9ok5as0k4i1scv31kv3pic34lm/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEfIURDww9ePUVJ43H6sdd-5AYSusYgF4",
+            authDomain: "cloutyblog.firebaseapp.com",
+            projectId: "cloutyblog",
+            storageBucket: "cloutyblog.firebasestorage.app",
+            messagingSenderId: "394219132287",
+            appId: "1:394219132287:web:ddff4a81e6d1d8b5aaf64a",
+            measurementId: "G-4M8C1W7ZDJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const blogForm = document.getElementById('blogForm');
+        const loginForm = document.getElementById('loginForm');
+        
+        // Check auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                blogForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            } else {
+                // User is signed out
+                blogForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            }
+        });
+
+        // Handle login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+        // Update TinyMCE initialization with more features
+        tinymce.init({
+            selector: '#content',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect typography inlinecss',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            height: 500,
+            skin: 'oxide-dark',
+            content_css: 'dark',
+            body_class: 'dark-theme',
+            setup: function(editor) {
+                editor.on('init', function() {
+                    editor.getContainer().style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+                });
+                
+                // Custom image upload handler
+                editor.on('drop', function(e) {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        e.preventDefault();
+                        handleImageUpload(files[0], editor);
+                    }
+                });
+
+                editor.ui.registry.addButton('customImageUpload', {
+                    icon: 'image',
+                    tooltip: 'Upload Image',
+                    onAction: function() {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = e => {
+                            if (e.target.files.length > 0) {
+                                handleImageUpload(e.target.files[0], editor);
+                            }
+                        };
+                        input.click();
+                    }
+                });
+            }
+        });
+
+        async function handleImageUpload(file, editor) {
+            const storage = getStorage(app);
+            const storageRef = ref(storage, 'blog-images/' + Date.now() + '_' + file.name);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            // Show progress bar
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            progressBar.innerHTML = '<div class="progress-bar-fill"></div>';
+            editor.getContainer().appendChild(progressBar);
+            progressBar.style.display = 'block';
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.querySelector('.progress-bar-fill').style.width = progress + '%';
+                },
+                (error) => {
+                    console.error('Upload failed:', error);
+                    progressBar.remove();
+                },
+                async () => {
+                    try {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        editor.insertContent(`<img src="${downloadURL}" alt="Uploaded image" style="max-width: 100%; height: auto;">`);
+                        progressBar.remove();
+                    } catch (error) {
+                        console.error('Error getting download URL:', error);
+                        progressBar.remove();
+                    }
+                }
+            );
+        }
+
+        // Handle blog post submission
+        blogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!auth.currentUser) {
+                alert('Please login first');
+                return;
+            }
+
+            const title = document.getElementById('title').value;
+            const content = tinymce.get('content').getContent();
+
+            try {
+                await addDoc(collection(db, 'posts'), {
+                    title: title,
+                    content: content,
+                    date: serverTimestamp(),
+                    author: auth.currentUser.email
+                });
+
+                alert('Post created successfully!');
+                blogForm.reset();
+                tinymce.get('content').setContent('');
+            } catch (error) {
+                alert('Error creating post: ' + error.message);
+            }
+        });
+    </script>
+</head>
+<body>
+    <a href="blog.html" class="back-button">Back to Blog</a>
+
+    <div class="admin-container">
+        <form id="loginForm" class="admin-form">
+            <div class="form-header">
+                <h1>Admin Login</h1>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+
+        <form id="blogForm" class="admin-form" style="display: none;">
+            <div class="form-header">
+                <h1>Create New Post</h1>
+            </div>
+            <div class="form-group">
+                <label for="title">Post Title</label>
+                <input type="text" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Post Content</label>
+                <textarea id="content" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Create Post</button>
+        </form>
+    </div>
+</body>
+</html>

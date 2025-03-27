@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clouty Blog</title>
+    <style>
+        :root {
+            --vista-bg: #1a1f2b;
+            --vista-glass: rgba(26, 26, 26, 0.75);
+            --vista-glass-dark: rgba(20, 20, 20, 0.85);
+            --vista-border: rgba(69, 128, 196, 0.3);
+            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
+            --vista-text: #e0e5ef;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: url("https://frutiger-aero.org/img/dark-aero-1.webp") no-repeat center center fixed;
+            background-size: cover;
+            font-family: "Segoe UI", sans-serif;
+            color: white;
+        }
+
+        .blog-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .blog-post {
+            background: var(--vista-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--vista-shadow),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .blog-post:hover {
+            transform: translateY(-5px);
+        }
+
+        .post-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .post-title {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+            color: var(--vista-text);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .post-meta {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .post-content {
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: var(--vista-glass);
+            color: var(--vista-text);
+            border: 1px solid var(--vista-border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 2px 5px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button:hover {
+            background: var(--vista-glass-dark);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <!-- Update Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEfIURDww9ePUVJ43H6sdd-5AYSusYgF4",
+            authDomain: "cloutyblog.firebaseapp.com",
+            projectId: "cloutyblog",
+            storageBucket: "cloutyblog.firebasestorage.app",
+            messagingSenderId: "394219132287",
+            appId: "1:394219132287:web:ddff4a81e6d1d8b5aaf64a",
+            measurementId: "G-4M8C1W7ZDJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        // Load blog posts
+        async function loadBlogPosts() {
+            const blogContainer = document.getElementById('blogPosts');
+            const loadingDiv = document.querySelector('.loading');
+            
+            try {
+                const postsRef = collection(db, 'posts');
+                const q = query(postsRef, orderBy('date', 'desc'));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    blogContainer.innerHTML = '<p>No posts yet!</p>';
+                    return;
+                }
+
+                let postsHTML = '';
+                snapshot.forEach(doc => {
+                    const post = doc.data();
+                    const date = post.date ? new Date(post.date.toDate()).toLocaleDateString() : 'Unknown date';
+                    
+                    postsHTML += `
+                        <article class="blog-post">
+                            <header class="post-header">
+                                <h2 class="post-title">${post.title || 'Untitled'}</h2>
+                                <div class="post-meta">Posted on ${date}</div>
+                            </header>
+                            <div class="post-content">
+                                ${post.content || 'No content'}
+                            </div>
+                        </article>
+                    `;
+                });
+                
+                blogContainer.innerHTML = postsHTML;
+            } catch (error) {
+                console.error("Error loading posts: ", error);
+                blogContainer.innerHTML = '<p>Error loading posts. Please try again later.</p>';
+            } finally {
+                loadingDiv?.remove();
+            }
+        }
+
+        // Load posts when page loads
+        document.addEventListener('DOMContentLoaded', loadBlogPosts);
+
+        // Add keyboard shortcut for admin panel
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + Shift + A to access admin panel
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                window.location.href = 'blog-admin.html';
+            }
+        });
+
+        // Remove visible admin button
+        document.addEventListener('DOMContentLoaded', () => {
+            const adminButton = document.querySelector('[href="blog-admin.html"]');
+            if (adminButton) {
+                adminButton.remove();
+            }
+        });
+    </script>
+</head>
+<body>
+    <a href="index.html" class="back-button">Back to Home</a>
+    
+    <div class="blog-container" id="blogPosts">
+        <!-- Posts will be loaded dynamically -->
+        <div class="loading">Loading posts...</div>
+    </div>
+</body>
+</html>

@@ -7,22 +7,27 @@
     <style>
         :root {
             --vista-bg: #1a1f2b;
-            --vista-glass: rgba(40, 65, 95, 0.65);
-            --vista-glass-dark: rgba(20, 35, 55, 0.85);
-            --vista-border: rgba(100, 150, 200, 0.3);
-            --vista-shadow: 0 0 20px rgba(0, 30, 60, 0.6);
+            --vista-glass: rgba(26, 26, 26, 0.75);
+            --vista-glass-dark: rgba(20, 20, 20, 0.85);
+            --vista-border: rgba(69, 128, 196, 0.3);
+            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
             --vista-text: #e0e5ef;
+            --aero-highlight: rgba(69, 128, 196, 0.5);
+            --aero-gradient: linear-gradient(
+                to bottom,
+                rgba(40, 40, 40, 0.95),
+                rgba(26, 26, 26, 0.95)
+            );
         }
 
         body {
             margin: 0;
             padding: 0;
-            background: url("https://c4.wallpaperflare.com/wallpaper/845/501/105/windows-vista-aero-45-wallpaper-preview.jpg");
+            background: url("https://frutiger-aero.org/img/dark-aero-1.webp") no-repeat center center fixed;
             background-size: cover;
-            background-attachment: fixed;
             font-family: "Segoe UI", sans-serif;
             color: var(--vista-text);
-            min-height: 100vh;
+            min-height: 75vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -32,10 +37,11 @@
             background: var(--vista-glass);
             backdrop-filter: blur(15px);
             border: 1px solid var(--vista-border);
-            border-radius: 15px;
+            border-radius: 8px;
             padding: 20px;
             margin-top: 50px;
-            box-shadow: var(--vista-shadow);
+            box-shadow: var(--vista-shadow),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .board {
@@ -48,7 +54,7 @@
         .cell {
             width: 100px;
             height: 100px;
-            background: var(--vista-glass-dark);
+            background: var(--aero-gradient);
             border: 1px solid var(--vista-border);
             border-radius: 8px;
             display: flex;
@@ -57,29 +63,36 @@
             font-size: 40px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .cell:hover {
-            background: rgba(60, 85, 115, 0.65);
+            background: linear-gradient(
+                to bottom,
+                rgba(69, 128, 196, 0.3),
+                rgba(40, 40, 40, 0.95)
+            );
             transform: translateY(-2px);
             box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                0 4px 8px rgba(0, 0, 0, 0.3);
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .cell.marked img {
+            filter: drop-shadow(0 0 5px rgba(69, 128, 196, 0.5));
         }
 
         .status {
             font-size: 24px;
             margin-bottom: 20px;
             text-align: center;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            color: var(--vista-text);
         }
 
         .reset-btn {
             padding: 12px 24px;
-            background: var(--vista-glass);
+            background: var(--aero-gradient);
             color: var(--vista-text);
             border: 1px solid var(--vista-border);
             border-radius: 8px;
@@ -87,16 +100,20 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                0 2px 4px rgba(0, 0, 0, 0.2);
+                0 2px 5px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .reset-btn:hover {
-            background: var(--vista-glass-dark);
+            background: linear-gradient(
+                to bottom,
+                rgba(69, 128, 196, 0.3),
+                rgba(40, 40, 40, 0.95)
+            );
             transform: translateY(-2px);
             box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.3),
-                0 4px 8px rgba(0, 0, 0, 0.3);
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
         }
 
         .back-button {
@@ -104,22 +121,42 @@
             top: 20px;
             left: 20px;
             padding: 12px 24px;
-            background: var(--vista-glass);
+            background: var(--aero-gradient);
             color: var(--vista-text);
             border: 1px solid var(--vista-border);
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
             transition: all 0.3s ease;
-            box-shadow: var(--vista-shadow);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 2px 5px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         .back-button:hover {
-            background: var(--vista-glass-dark);
+            background: linear-gradient(
+                to bottom,
+                rgba(69, 128, 196, 0.3),
+                rgba(40, 40, 40, 0.95)
+            );
             transform: translateY(-2px);
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
         }
 
-        /* Add new styles for CPU and custom markers */
+        .speech-bubble {
+            background: var(--vista-glass);
+            border: 1px solid var(--vista-border);
+            box-shadow: var(--vista-shadow);
+            color: var(--vista-text);
+        }
+
+        .speech-bubble:after {
+            border-left-color: var(--vista-glass);
+        }
+
         .cpu-avatar {
             position: fixed;
             right: 20px;
@@ -365,19 +402,31 @@
             status.textContent = 'Your turn (X)';
         }
 
+        // Preload images
+        const images = {
+            X: new Image(),
+            O: new Image()
+        };
+        images.X.src = 'Sign006_result.png';
+        images.O.src = 'Net003_result.png';
+
         function markCell(cell, player) {
-            const xImage = cell.querySelector('img[alt="X"]');
-            const oImage = cell.querySelector('img[alt="O"]');
-            
-            if (player === 'X') {
-                xImage.style.display = 'block';
-                oImage.style.display = 'none';
-            } else {
-                xImage.style.display = 'none';
-                oImage.style.display = 'block';
+            // Wait for image to load
+            const img = cell.querySelector(`img[alt="${player}"]`);
+            if (img) {
+                img.style.display = 'block';
+                img.style.opacity = '0';
+                
+                // Ensure image is loaded before showing
+                if (images[player].complete) {
+                    img.style.opacity = '1';
+                } else {
+                    images[player].onload = () => img.style.opacity = '1';
+                }
+                
+                cell.querySelector(`img[alt="${player === 'X' ? 'O' : 'X'}"]`).style.display = 'none';
+                cell.classList.add('marked');
             }
-            
-            cell.classList.add('marked');
         }
 
         function showSpeechBubble() {
