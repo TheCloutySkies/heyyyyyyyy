@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Page</title>
+  <title>About</title>
+  <link rel="stylesheet" href="https://unpkg.com/7.css" />
   <style>
     body {
-      font-family: "Comic Sans MS", sans-serif; /* Comic Sans font */
+      background: #0a5fad url('horrid.png') center/cover fixed;
+      min-height: 100vh;
+      margin: 0;
       display: flex;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
+      justify-content: center;
+    }
+    .window {
+      max-width: 480px;
+      margin: auto;
+    }
+    .window-body {
       text-align: center;
+      font-size: 1.1em;
     }
   </style>
-<head></head>
+</head>
 <body>
-  <h1>hey you found me!</h1>
-  <p>Yeah idk i was super bored one night, 
-    October 18. 2024 actually, and decided to make the most low effort website of all time. </p>
+  <section class="window glass is-bright">
+    <div class="title-bar">
+      <div class="title-bar-text">About</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize"></button>
+        <button aria-label="Maximize"></button>
+        <button aria-label="Close"></button>
+      </div>
+    </div>
+    <div class="window-body has-space">
+      <h1>Heyyyyy</h1>
+      <p>Yeah idk, I was super bored one night—October 18, 2024 actually—and decided to make the most low effort website of all time.</p>
+      <p></p>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field">1 item</p>
+      <p class="status-bar-field">© Clouty Skies</p>
+    </div>
+  </section>
 </body>
 </html>
