@@ -3,186 +3,520 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clouty Blog</title>
+    <title>8,000 Miles of Mirrors</title>
+    <link rel="stylesheet" href="https://unpkg.com/7.css">
     <style>
-        :root {
-            --vista-bg: #1a1f2b;
-            --vista-glass: rgba(26, 26, 26, 0.75);
-            --vista-glass-dark: rgba(20, 20, 20, 0.85);
-            --vista-border: rgba(69, 128, 196, 0.3);
-            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
-            --vista-text: #e0e5ef;
-        }
-
         body {
-            margin: 0;
-            padding: 0;
-            background: url("https://frutiger-aero.org/img/dark-aero-1.webp") no-repeat center center fixed;
-            background-size: cover;
-            font-family: "Segoe UI", sans-serif;
-            color: white;
-        }
-
-        .blog-container {
-            max-width: 800px;
-            margin: 50px auto;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
-
-        .blog-post {
-            background: var(--vista-glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: var(--vista-shadow),
-                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .blog-post:hover {
-            transform: translateY(-5px);
-        }
-
-        .post-header {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 15px;
+        .window {
             margin-bottom: 20px;
         }
-
-        .post-title {
-            font-size: 24px;
-            margin: 0 0 10px 0;
-            color: var(--vista-text);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        .window-body {
+            padding: 24px 28px;
         }
-
-        .post-meta {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+        .window-body img,
+        .window-body figure img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            box-sizing: border-box;
         }
-
-        .post-content {
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.8);
+        .ql-figure {
+            margin: 1em 0;
+            text-align: center;
         }
-
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
-            background: var(--vista-glass);
-            color: var(--vista-text);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 
-                0 2px 5px rgba(0, 0, 0, 0.2),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        .indented {
+            margin-left: 20px;
         }
-
-        .back-button:hover {
-            background: var(--vista-glass-dark);
-            transform: translateY(-2px);
-            box-shadow: 
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .window-body {
+                padding: 12px 8px;
+            }
         }
     </style>
-    <!-- Update Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEfIURDww9ePUVJ43H6sdd-5AYSusYgF4",
-            authDomain: "cloutyblog.firebaseapp.com",
-            projectId: "cloutyblog",
-            storageBucket: "cloutyblog.firebasestorage.app",
-            messagingSenderId: "394219132287",
-            appId: "1:394219132287:web:ddff4a81e6d1d8b5aaf64a",
-            measurementId: "G-4M8C1W7ZDJ"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const analytics = getAnalytics(app);
-
-        // Load blog posts
-        async function loadBlogPosts() {
-            const blogContainer = document.getElementById('blogPosts');
-            const loadingDiv = document.querySelector('.loading');
-            
-            try {
-                const postsRef = collection(db, 'posts');
-                const q = query(postsRef, orderBy('date', 'desc'));
-                const snapshot = await getDocs(q);
-
-                if (snapshot.empty) {
-                    blogContainer.innerHTML = '<p>No posts yet!</p>';
-                    return;
-                }
-
-                let postsHTML = '';
-                snapshot.forEach(doc => {
-                    const post = doc.data();
-                    const date = post.date ? new Date(post.date.toDate()).toLocaleDateString() : 'Unknown date';
-                    
-                    postsHTML += `
-                        <article class="blog-post">
-                            <header class="post-header">
-                                <h2 class="post-title">${post.title || 'Untitled'}</h2>
-                                <div class="post-meta">Posted on ${date}</div>
-                            </header>
-                            <div class="post-content">
-                                ${post.content || 'No content'}
-                            </div>
-                        </article>
-                    `;
-                });
-                
-                blogContainer.innerHTML = postsHTML;
-            } catch (error) {
-                console.error("Error loading posts: ", error);
-                blogContainer.innerHTML = '<p>Error loading posts. Please try again later.</p>';
-            } finally {
-                loadingDiv?.remove();
-            }
-        }
-
-        // Load posts when page loads
-        document.addEventListener('DOMContentLoaded', loadBlogPosts);
-
-        // Add keyboard shortcut for admin panel
-        document.addEventListener('keydown', (e) => {
-            // Ctrl + Shift + A to access admin panel
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                window.location.href = 'blog-admin.html';
-            }
-        });
-
-        // Remove visible admin button
-        document.addEventListener('DOMContentLoaded', () => {
-            const adminButton = document.querySelector('[href="blog-admin.html"]');
-            if (adminButton) {
-                adminButton.remove();
-            }
-        });
-    </script>
 </head>
 <body>
-    <a href="index.html" class="back-button">Back to Home</a>
-    
-    <div class="blog-container" id="blogPosts">
-        <!-- Posts will be loaded dynamically -->
-        <div class="loading">Loading posts...</div>
-    </div>
+    <div class="window" style="width: 100%">
+        <div class="title-bar">
+            <div class="title-bar-text">8,000 Miles of Mirrors</div>
+        </div>
+        <div class="window-body">
+            <fieldset>
+                <legend>About This Project</legend>
+                <p>This is an ongoing project documenting a life-altering adventure. Eventually, it will be released as a book. Here's what I have so far.</p>
+            </fieldset>
+            
+            <fieldset>
+                <legend>Author's Note</legend>
+                <p>Now before we begin I would like to preface with this, I am not a writer&mdash;certainly not a great one. I have no idea how to write a book. I don&rsquo;t even know if this supposed to be a chronicle, memoir, or a how-to book. But I was gifted a beautiful experience, and I feel compelled&mdash;almost obligated to share it. Keeping it to myself would be selfish, and I believe all stories are meant to be shared.</p>
+                <div class="status-bar">
+                    <p class="status-bar-field">Important Note:</p>
+                    <p class="status-bar-field"><strong>Your comfort zone is dangerous.</strong> Not just for you, but for everyone around you.</p>
+                </div>
+            </fieldset>
+            
+            <div id="chapter-editor" class="editor-wrapper" data-v-98a3ac6d="">
+	<div class="editor rich-text-editor" spellcheck="false" data-v-a7a83fb8="" data-v-98a3ac6d="">
+		<div class="ql-container notranslate ql-reedsy" data-v-a7a83fb8="">
+			<div class="ql-editor" contenteditable="true" data-placeholder="Begin writing here...">
+				<p>Now before we begin I would like to preface with this, I am not a writer&mdash;certainly not a great one. I have no idea how to write a book. I don&rsquo;t even know if this supposed to be a chronicle, memoir, or a how-to book. But I was gifted a beautiful experience, and I feel compelled&mdash;almost obligated to share it. Keeping it to myself would be selfish, and I believe all stories are meant to be shared.</p>
+				<p class="indented">So, let me just skip to the end of the book and give you the most important advice upfront: <strong> Your comfort zone is dangerous. </strong> Not just for you, but for everyone around you.</p>
+				<p class="indented">Are you scared of something? <strong> Good. </strong> That fear is a sign, a messenger ready to guide you. It&rsquo;s a door&mdash;a way out of the comfortable, stagnant space you&rsquo;ve built around yourself. Look around; there are doors everywhere, signs pointing toward growth, opportunities waiting to transform the unfamiliar into the familiar.</p>
+				<p class="indented">It&rsquo;s OK to start small, I recommend it. Take a cold shower. Run half a mile. Say &ldquo;hi&rdquo; to a stranger. We all feel the itch to change because <u> we&rsquo;re not meant to sit still </u> . Growth is in our nature. And while you don&rsquo;t need to make a massive, impulsive leap like I did&mdash;traveling across the country on a bicycle with no experience.</p>
+				<p class="indented">I don&rsquo;t know who you are, reader. But I know this: Sometimes, life feels blurry, like glancing in a rear view mirror and realizing the past is too hazy to make sense of. But don&rsquo;t linger there too long, because life is always moving forward. If you spend too much time looking back, you might crash into what&rsquo;s ahead.</p>
+				<p class="indented">On this journey we&rsquo;re all on, you&rsquo;ll approach countless intersections. Some more significant and daunting than others. You could keep going straight, following the same path you always have&mdash;because it&rsquo;s easy, familiar, safe. But do me a favor: take a turn. Right or left, it doesn&rsquo;t matter. Just choose something different, unfamiliar.</p>
+				<p class="indented">Surprise yourself. Push your boundaries. The life you dream of living won&rsquo;t happen by accident. It requires action&mdash;yours and yours alone. Remember, we control nothing in this world except our actions. And in the end, we are solely to blame for our own disappointment or success. Here&rsquo;s a quote from that I always go back to when I need motivation,</p>
+				<blockquote>&ldquo;Now is the time to get serious about living your ideals. How long can you afford to put off who you really want to be? Your nobler self cannot wait any longer. Put your principles into practice - now. Stop the excuses and the procrastination. This is your life! You aren&rsquo;t a child anymore. The sooner you set yourself to your spiritual program, the happier you will be. The longer you wait, the more you&rsquo;ll be vulnerable to mediocrity and feel filled with shame and regret, because you know you are capable of better. From this instant on, vow to stop disappointing yourself. Separate yourself from the mob. Decide to be extraordinary and do what you need to do, now!&rdquo; - Epictetus</blockquote>
+				<p><strong> You have always been in control, make us proud. </strong></p>
+				<p><strong> --------------------------------------------------------------------------------------------------------------- </strong></p>
+				<p>&nbsp;</p>
+				<p>One hundred and thirty days away from home, away from the normal pattern. Away from the forces that shaped me. I never felt lost, I don&rsquo;t know what I felt most of the time. Just different. There was a new system that was getting calibrated. New questions to ask, new air to breathe, new protons to process. I felt as though I was a fish getting thrown from my warm cozy tank, into a cool flowing river. I don&rsquo;t quite feel the shock of the water, just the feeling of something new. Something new which now requires me to make it my master. I prepared six months for this very moment, the transfer from still, familiar comfort to rough, nomadic movement. To think that hundreds of springs and winters before my time, the natives of the very land I was about to traverse felt the inverse of my situation. Hunting and traveling, to a settled encampment. A place to sanctuary for the many people before me had experienced a curious transition, into a prison for the restless man. I needed to move. I could not sit still any longer. I was being called somewhere, no where specific really. Just not here.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> <u> But why? </u> </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>I graduated from high school in 2022. Core 40 diploma, nothing special. I participated in track and field, a sprinter and high jumper. I lost some and I won some. While still in school I got my first real job, an order taker at Taco Bell. I continued to work there until about June or July of 2022. I originally applied to work there with a group of my friends. We all got the job and it was fun, a year and a half later and it was just me. I was working but not for a reason anymore, the novelty wore off and I felt stuck. I quit. I spent a month or two just running around with friends during the summer doing typical teenager stuff. I learned pretty quick that you spend money a lot faster when you aren&rsquo;t making any back. So I had to begrudgingly search for another job.</p>
+				<p class="indented">Walmart. Honestly working at Walmart was great. I made friends pretty quick, the work was fun, and the pay was great for an 18 year old kid. The itch was still there, I knew I still felt stuck. I did a good job not acknowledging the feeling for a couple months until I had a brief, yet eye opening conversation with a coworker. It went something like this;</p>
+				<blockquote>&ldquo;Kevin, how long have you been working here?&rdquo;</blockquote>
+				<blockquote><em> &ldquo;Hmm, probably about 7 years now.&rdquo; </em></blockquote>
+				<blockquote>&ldquo;How long are you planning on working here for?&rdquo;</blockquote>
+				<blockquote><em> &ldquo;Honestly I don&rsquo;t know. Probably for as long as they will let me stay.&rdquo; </em></blockquote>
+				<blockquote>&ldquo;Did you want to do something else before you started working here?&rdquo;</blockquote>
+				<blockquote><em> &ldquo;I probably did. I can&rsquo;t remember now. Live moves too fast and </em> <strong> <em> Walmart is where your dreams go to die </em> </strong> <em> .&rdquo; </em></blockquote>
+				<p>At that moment I realized two things; I don&rsquo;t want my dreams to die, and that I don&rsquo;t even have a dream to begin with. I saw for the first time that I applied for these jobs just for the sake of getting a job. I only worked at Taco Bell because my friends were there and my dad was really getting on me about getting into the workforce. I wasn&rsquo;t putting my money towards something, at least not anything meaningful to me. I needed to search. Now naturally the first thing my brain went to was traveling. I&rsquo;ve done a decent amount of traveling in and out of the country to this point of my life. Out of country thanks to my mom, she was born and raised in the Philippines and would take occasional trips back to see family and would bring me and my brother along. Inside the country trips were thanks to my dad, he used to deliver trailers and RV&rsquo;s around the U.S. (and sometimes Canada) with a big, loud, and blue Dodge 3500. Lots of rock music and surprise rumble strips whenever he caught me dozing off.</p>
+				<p class="indented">Well I don&rsquo;t have a CDL, let alone a truck. The Philippines would be nice but it would only last a month max and I have no clue how to speak the language. Time to come up with alternatives. Hitchhiking? Could be dangerous, and there was always the possibility that I would just never get picked up. Train hopping? Even more dangerous, also could face jail time/fines. Road trip? Oh yeah i don&rsquo;t have a car. Military? This was legitimately my second choice if I couldn&rsquo;t figure something out. I would learn a lot of important skills and it would be a fun challenge too. The biggest deterrent for joining up is the water stuff, I am a BAD swimmer. I can manage a 50 yard survival, maximum struggle swim but beyond that and I am straight up dying. I really need to figure something out.</p>
+				<p class="indented">YouTube was founded in 2005 by three former PayPal employees as a platform to easily share and view videos online. In 2006, Google acquired YouTube, transforming it into the world&rsquo;s largest video-sharing platform. Don&rsquo;t we all just love YouTube? A habit I was beginning to form while at work was to have a YouTube video playing while I worked to help the time pass. I think one of my videos must&rsquo;ve ended so I pulled out my phone and boom, my life changed. In the recommended videos grid sat an intriguing piece of media, &ldquo;Two Years on a Bike 1/4, Martijn Doolaard.&rdquo; I felt something click, the day was October 30th, 2022. <strong> I saw the future. </strong></p>
+				<p class="indented"><strong> ---------------------------------------------------------------------------------------------------------------- </strong></p>
+				<p>I just gotta reiterate, don&rsquo;t we all just love YouTube? I had absolutely no idea where to even start when it came to this stuff. Hours upon hours of reading and watching tutorials finally brought me to a bike. The Poseidon Redwood. A fairly new bike that came up on the market. It was light, durable, had a sturdy and prepped frame for lots of mounting options, and most importantly it was budget friendly. I was able to get it on sale for $749. I really lucked out because most bikes in the bike touring spaces get real pricey, real fast. Now a fair warning, if you order this bike online like I did, you&rsquo;ll have to assemble the bike yourself. I believe I had to attach the handlebars, front wheel, seat post and seat, pedals, and the chain. By the time you finish, you&rsquo;ll already know your bike pretty well.</p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/ef0186b7bf8d216670bfa927b5af16c8.jpg" alt="" />
+					<figcaption>For some reason I never took a picture of the plain bike.</figcaption>
+				</figure>
+				<p>Now what about my stuff. How am I supposed to carry 75 pounds of gear with me? Bags. In a typical bike touring setup there are bags mounted all over a bike. The biggest bags on my bike were mounted on the sides of my rear rack called pannier bags. The word pannier actually comes from an old English word for bread basket. After a bunch of online deliberations, I eventually chose the Ortlieb Back Roller Classics. Pretty much the Lebron James of bike panniers. Actually a fun fact; I named my bike, <em> Bichael Jordan. </em> If Mike is short for Michael; then Bike must be short for Bichael. But that&rsquo;s aside from the point here. I decided to also buy my handlebar bag from Ortlieb, mostly because I was going to keep my camera in it and I wanted to make absolutely sure it would not get wet. And let me tell you that both of my Ortlieb products did a mind blowing job of keeping my stuff dry. Those bags have been through 30 degree nights and 105 degree days, torrential downpours and weeks of sun, crashes, drops, hundreds of miles worth of dust and dirt, and they held up magnificently. For the rest of my gear I would say that they were, very water resistant, but when you are in the great plains with nowhere to hide from a whole days onslaught of rain. You start to see where you gears&rsquo; weak points are. Like with the Ibera Trunk Bag, I had a period of time in Rapid City, South Dakota where it no joke rained for nearly 3 days non stop. I made the mistake of leaving it out on a picnic table, naively assuming it was waterproof from previous experiences with shorter periods of precipitation. Long story short, I found out what a fish tank would look like if they had zippers. So if you gleam any lessons from this, if you can afford to invest in vetted&mdash;more expensive gear. <strong> Do it. </strong> All together if you were to buy the same stuff that I did, and brand new, the price would come out to be close to $5000. That being said though, about three quarters of this stuff I bought used online and I probably paid about half of that hypothetical $5000.</p>
+				<h2>Bike Stuff</h2>
+				<ul>
+					<li><strong> Bike: </strong> Poseidon Redwood Dropbar - Large (I got it on sale for $749)</li>
+					<li><strong> Rear Rack: </strong> Ibera PakRak - $54.99</li>
+					<li><strong> Trunk Bag: </strong> Ibera PakRak - $69.99</li>
+					<li><strong> Pannier Bags: </strong> Ortlieb Back Roller Classic - $215.00 (pair)</li>
+					<li><strong> Frame Bag: </strong> Blackburn Outpost - $89.99</li>
+					<li><strong> Salsa EXP Anything Bag </strong> - $52.00 (each)</li>
+					<li><strong> Blackburn Anything Cage </strong> - $35.00 (each)</li>
+					<li><strong> Handlebar Bag: </strong> Ortlieb Ultimate Six - $140.00</li>
+					<li><strong> Seat: </strong> Selle Royal Float - $45.99</li>
+					<li><strong> Seat Bag: </strong> Topeak Aero - $29.99</li>
+					<li><strong> Generic Handlebar Cup Holder </strong> - $12.99</li>
+					<li><strong> Wild Man Top Tube Bag </strong> - $19.99</li>
+					<li><strong> Headlight: </strong> Gearlight S400 - $19.99</li>
+					<li><strong> Tail Light: </strong> Cygolite Hotshot - $39.99</li>
+					<li><strong> Tire Pump: </strong> Rehook Air (sooooo slow) - $34.99</li>
+					<li><strong> Marspeeder Phone Mount </strong> - $21.99</li>
+					<li><strong> Bike Multi-Tool: </strong> Vibrelli V19 - $29.99</li>
+					<li><strong> Metric Allen Wrench Set </strong> - $15.99</li>
+					<li><strong> Walmart Tire Repair Kit </strong> - $9.99</li>
+					<li><strong> Hafney Bar End Mirror </strong> - $24.99</li>
+				</ul>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/f7079698e3bd673913090039083e97af.jpg" alt="" />
+					<figcaption>Fence posts are handy when you don&rsquo;t have a kickstand</figcaption>
+				</figure>
+				<p>Let&rsquo;s talk a little safety. When it comes to lights, there&rsquo;s three things to think about. Battery, brightness, and ruggedness. For a headlight, get a rechargeable light with a metal housing and it wouldn&rsquo;t hurt to get multiple. I had two headlights on my setup, one mounted horizontally to the flatbar and another mounted vertically on drop bar that I used for extra coverage or as a flashing light depending on the conditions. For rear lights I think I had 4 different lights. One main flashing light that was mad bright. In addition to that I had a almost like accent lights pointed in different directions to make my bike more visible and easier to identify as a bike.</p>
+				<p class="indented">In Bozeman, Montana I transformed my bike into the highly visible and highly annoying; Rave Bike. I bought a handful of cheap kayak and decorative LEDs to mount all over my bike and set them all to flash in different colors. Then every time I had to roll through a town or city during the nighttime, I would set my Bluetooth speaker to full volume and blast techno and dubstep music through all the quiet neighborhoods I passed through. During my Rave Bike era I also wore a high visibility, reflective vest which I recommend you to have if you aren&rsquo;t planning on going full rave mode.</p>
+				<h2>Camping Gear</h2>
+				<ul>
+					<li><strong> Tent: </strong> Naturehike CloudUp-1- $159.99</li>
+					<li><strong> Sleeping Bag: </strong> Teton Leef 0 Degree- $89.99</li>
+					<li><strong> Sleeping Pad: </strong> Big Agnes Air Core Ultra - $79.99</li>
+					<li><strong> Sleeping Pad Pump: </strong> Big Agnes Pumphouse Ultra - $34.95</li>
+					<li><strong> Pillow: </strong> Nemo Fillo - $39.99</li>
+					<li><strong> Woodland Camo Scrim </strong> - $20.00</li>
+					<li><strong> Stove: </strong> SOTO Windmaster - $64.95</li>
+					<li><strong> Foldable Solar Panel </strong> - $40.00</li>
+					<li><strong> Bear Spray </strong> - (gifted)</li>
+					<li><strong> Cold Steel Tanto Knife </strong> - $49.99</li>
+				</ul>
+				<p>On the self defense side of safety, I recommend on having <strong> <u> at least </u> </strong> bear spray with you. When I had to wild/stealth camp I would always sleep with my fixed blade knife, flashlight, phone, and bear spray right next to my head. Luckily I never had to use any of my self defense tools on any animals or humans. I did once wake up to the sound of rustling on the side of my tent. I groggily picked my head up slightly to see if I could figure out what curious little critter was looking for food in my camp as I did make myself some beef stew earlier that day.</p>
+				<blockquote>* <span class="ql-ignore-spelling"> Hmmmpf </span> *</blockquote>
+				<p>My fight or flight sense activated without warning. It took my still half asleep brain a second or two to figure out why it was suddenly ready throw hands.</p>
+				<p class="indented">&nbsp;</p>
+				<blockquote>* <span class="ql-ignore-spelling"> Hmmmpf </span> , sniff sniff*</blockquote>
+				<blockquote class="indented">&ldquo;Oh that&rsquo;s a bear.&rdquo; I thought to myself</blockquote>
+				<p>The heavy breathing and powerful snuffling were unmistakable. In northern Montana, (Around Eureka) that meant one thing: grizzly bear. They can smell food from over 20 miles away. <em> Maybe I shouldn&rsquo;t have made that beef stew </em> . I figured this was going to happen sooner or later so I weighed my options. I read somewhere that you should made a bunch of noise to startle the bear away. I also happened to read in a separate article that that was a great way to get mauled. Another article advised turning on your flashlight inside your tent to surprise and confuse the bear away. I also had a sneaky suspicion that course of action could cause the bear to become a little TOO curious. Turns out there&rsquo;s a lot of ways to die to a bear, who would&rsquo;ve thought. But eventually after careful and nervous consideration, I made up my mind. I looked at my watch and it read about 5am in the morning. I put my earbuds in and fell back asleep about 5 minutes later. I woke up a couple hours later with no sign of the bear anywhere. Now I&rsquo;m not saying that ignoring the danger is the best course of action but I suppose it&rsquo;s a lesson that preparedness doesn&rsquo;t exclusively refer to the tools and gadgets. I had the proper gear but still decided to take a more passive route to decrease the chance of bleeding out in a nylon coffin. This story is also a testament to how comfy my sleep setup was. My Big Agnes sleeping pad is one of those big, inflatable ones. It packs down small, it&rsquo;s so comfortable, and surprisingly rugged. My sleeping bag was actually sometimes a little too hot and did not pack down as well, it actually ended up taking half of a pannier bag worth of space. My favorite part of my setup though had to be the Nemo Fillo, a half inflatable/half foam pillow. I packs down incredibly well and you can adjust it for your preferred head position. I even used it to sleep on cold, hard concrete in the Hollywood streets. Heck I still use it in my bed now.</p>
+				<h2>Other Stuff</h2>
+				<ul>
+					<li><strong> Anker 20W&nbsp;USB C Power Strip </strong> - $29.99</li>
+					<li><strong> Multiport USB Charging Brick </strong> - $14.99</li>
+					<li><strong> Power Banks: </strong></li>
+					<li><strong> 2x </strong> &nbsp; <strong> <mark class="ql-spelling"> 10000mAh </mark> - $19.99 each </strong></li>
+					<li><strong> <mark class="ql-spelling"> 1x </mark> <mark class="ql-spelling"> 20000mAh </mark> - $29.99 </strong></li>
+					<li><strong> Cameras: </strong></li>
+					<li><strong> Nikon <mark class="ql-spelling"> D5300 </mark> </strong> - $699.99</li>
+					<li><strong> GoPro Hero 10 Black </strong> - $349.99</li>
+					<li><strong> Jabra Elite Active 7 Earbuds </strong> - $179.99</li>
+					<li><strong> AirPods Pro </strong> - $249.99</li>
+					<li><strong> Sony XB-33 Speaker </strong> - $148.00</li>
+					<li><strong> Garmin Instinct Watch </strong> - $199.99</li>
+					<li><strong> iPhone 13 </strong> - $699.99</li>
+					<li><strong> Salomon X-Ultra 3 Shoes </strong> - $149.99</li>
+					<li><strong> Vans UltraRange EXO </strong> - $89.99</li>
+					<li><strong> US Army Dust Goggles </strong> - $29.99</li>
+					<li><strong> Rite in the Rain Notepad </strong> - $8.99</li>
+					<li><strong> Padded Cycling Shorts (NWT) </strong> - $45.99</li>
+					<li><strong> Marmot Rain Jacket </strong> - $99.99</li>
+					<li><strong> North Face <mark class="ql-spelling"> NanoPuff </mark> Coat </strong> - $99.99</li>
+					<li><strong> 4 pairs of socks </strong></li>
+					<li><strong> 5 pairs of underwear </strong></li>
+					<li><strong> 2 pairs of shorts </strong></li>
+					<li><strong> A pair of joggers </strong></li>
+					<li><strong> 4 T-Shirts </strong></li>
+					<li><strong> Toiletries </strong></li>
+					<li><strong> Gorilla Tape </strong></li>
+				</ul>
+				<p>Now onto clothes and gadgets. Having the right clothes is super important for a long bike trip. For me, I started out simple: a couple of yellow t-shirts with the sleeves cut off as my riding shirts and one pair of padded bike shorts. They weren&rsquo;t the tight, Tour <span class="ql-ignore-spelling"> De </span> France kind&mdash;more rugged, with a tough exterior that held up the entire trip. They dried out pretty quickly too, which was a bonus.</p>
+				<p class="indented">Later, I switched out the t-shirts for some breathable tank tops made for more athletic purposes. I got them cheap at Walmart, and honestly, they worked great. You don&rsquo;t need to drop a ton of money to stay comfortable on a bike. You&rsquo;re going to be hot and sweaty no matter what, so you might as well wear stuff you don&rsquo;t mind trashing. I also brought plenty of breathable, stretchy underwear and only packed Merino wool socks. Merino wool is awesome&mdash;it keeps your feet warm when it&rsquo;s cold, wicks away sweat when it&rsquo;s hot, and adds a nice bit of cushioning, especially if you end up doing some hiking after a long day of riding.</p>
+				<p class="indented">I had a couple of extra t-shirts for off days and hanging out in town. Weirdly, I only brought one pair of pants, but it worked out fine. For shoes, I relied on my Salomon boots. Fun fact: as I&rsquo;m writing this segment in December 2024, I&rsquo;m still wearing the same boots I started my bike trip in. They&rsquo;ve got thousands (and I for real mean thousands) of miles on them, and somehow, they&rsquo;re still going strong.</p>
+				<p class="indented">When it rained, I had a Marmot rain jacket that did the job. If you&rsquo;re getting a rain jacket, make sure it has pit zips. Sweating inside a raincoat is so much worse than getting a little wet from the rain. I&rsquo;d rather deal with rain than feel like I&rsquo;m in a portable salt sauna. I also brought a puff jacket that could pack into itself, which was super convenient. I didn&rsquo;t use it much since I was biking in the summer, but it was nice to have just in case.</p>
+				<p class="indented">For gadgets, one of my best finds was this small Anker power strip. It packs down tiny, and I used it to charge everything&mdash;lights, portable chargers, my phone, and even a Bluetooth speaker. Speaking of portable chargers, bring more than one. Trust me, having multiple is a lifesaver. I also tried using a portable solar panel strapped to my trunk bag. Honestly, it didn&rsquo;t work as well as I hoped, even though it was in the sun all day. It was honestly pretty cheap so that&rsquo;s probably on me.</p>
+				<p class="indented">When it came to laundry, I carried one of those travel-sized detergent bottles that you can find at Dollar Tree or really any grocery store. My trick? Every time I stayed at a Warm Showers house, I&rsquo;d refill it. Same deal with shampoo and body wash&mdash;I just made a mix of shampoo, conditioner, and body wash in one bottle to save space. Another pro tip: double-check that the caps on your bottles are tight. Once, I hit a big bump, crashed, and later discovered that all my clothes were soaked in detergent. I had to wear the same clothes that I had on for a couple of days until I could wash everything. Lesson learned.</p>
+				<p class="indented">One random but clutch thing I brought: U.S. Army-issued dust goggles. I packed them for the desert in case of sandstorms (yeah kind of random but who knows), but they ended up being great for mountain passes. When you&rsquo;re bombing down a hill at 30 to 35 mph, bugs are a real problem. The goggles saved me from getting smacked in the eyes, which, let&rsquo;s be honest, is kind of important when you&rsquo;re going that fast with nearly zero protection.</p>
+				<p class="indented">Oh, and here&rsquo;s a solid water tip. If you&rsquo;re using disposable water bottles, suck the air out, crush them down to take up less space. Then, before you hit a stretch where there&rsquo;s no access to water for a while, just blow them back up and fill them up at a gas station. It&rsquo;s an easy way to carry extra reserves for those long, dry gaps between towns.</p>
+				<p class="indented">OK, I think that&rsquo;s about all I&rsquo;ll get into about the gear I used. I want to make this book equally readable for potential, former, and non travelers alike. So I won&rsquo;t dive into anything too specific but I did my best to highlight gear I enjoyed and valued using. There will be more gear oriented tips and whatnot later on in the coming pages I&rsquo;m sure. So why don&rsquo;t we move onto the next section I suppose. Can you tell that I don&rsquo;t know how writing works yet?</p>
+				<p class="indented">--------------------------------------------------------------------------------------------------------------------</p>
+				<p><strong> May 14th 2023, I have a lot to learn. </strong> I feel like this first day was supposed to be overwhelming, but I got used to it once I got my hair cut off, about 12 miles away from home.</p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/a87d5180cf8ee48dd79d4cb4e697e9f6.png" alt="" />
+					<figcaption>Before and After</figcaption>
+				</figure>
+				<p>This is life now. The second I rounded the bend heading northbound from my childhood home, I had committed all the way. In my head it became impossible to turn around. The first day was moderately easy, 39 miles. The most I&rsquo;ve ever ridden in one day up to that point. It was honestly crazy to me in that moment that I was able to pull it off. <strong> Day 2 was miserable </strong> , 53 miles. I only spent 7 hours on the road that day but it really did have me thinking twice. Was I really cut out for this? All the YouTube bike people said I&rsquo;ll force myself into shape in no time. It sure didn&rsquo;t feel like it. Thankfully I was greeted by a wonderful Super 8 motel, and was promptly told I had to be 21 to book a room (I was 19 at the time). Great. I turn around in pure defeat and head for the door. The front desk lady realizes I&rsquo;m headed for a <span class="ql-ignore-spelling"> 110lb </span> bike instead of a one ton car and graciously lends me a king sized suite. <em> Nice </em> .</p>
+				<p class="indented">By Day 3, I crossed into Illinois and my basic routine was set. Wake up, tear down/eat, ride for a few hours,take a break, ride, eventually find a spot to sleep. Most things get easier with time, finding a good place to sleep was an exception. When you have money, no problem. Out west in the barren plains of Wyoming, no problem. <span class="ql-ignore-spelling"> NFS </span> (National Forest Service) and BLM (Bureau of Land Management) land, no problem. Effectively homeless on a one hundred ten pound bicycle with $700 that is supposed to last me potentially a year or two? Yeah maybe paying for a $60 hotel room like on my second day wasn&rsquo;t going to cut it.</p>
+				<p class="indented">&nbsp;</p>
+				<p>&nbsp;</p>
+				<p><strong> Slumber Blunder </strong></p>
+				<p class="indented">Around Day <span class="ql-ignore-spelling"> 5-ish </span> , I ran into my first slumber blunder. I finished up a wonderful evening exploring Buffalo Rock State Park. My phone glitched that afternoon, So I was temporarily stranded. I was helped by this dad and his two boys. A few YouTube tutorials later, my phone was fixed.</p>
+				<p class="indented">I rode my bike down this trail I found earlier that I had thought was nice and empty and started to set up camp. After my tent was up, I went to do a little sight seeing in this area that had &ldquo;No People Past This Point&rdquo; signs set up. About an hour later or so I hear a honking noise. <em> I&rsquo;m probably just imagining things. </em> <strong> <em> Honk </em> </strong> . Nope, it&rsquo;s close. I climbed over the hill and It&rsquo;s the 2 kids from earlier. They explained that I can&rsquo;t camp here and I was lucky I met them earlier. They pretty much just told me to slip on out before the real park people get here, So at around <span class="ql-ignore-spelling"> 10pm </span> I find myself in an empty parking lot with no back up plan. My first real stressful situation of the trip, honestly I was kind of freaking out. I called all the homies, told them about my situation, really just to make myself feel less lonely. About 30 minutes later everyone needs to sleep, so now I&rsquo;m alone again. I check Google Maps for places nearby, nothing. All I know right now is that I can&rsquo;t sleep here. I gotta go somewhere else. I hop on the bike and start riding. At this point of the journey, the little stick cracks and scamper noises in the far away bushes still scare me. I decided randomly to open my voice memos app and start talking to fill up the empty space.</p>
+				<p class="indented">Guys, <u> talking to yourself is not weird </u> . It really helps me get out of my bubble of stress and take a look at my situation and how I am currently handling it. I stop in the cute little town of North Utica. There was one bar open but I was too anxious to walk in. I open Google Maps again and spot a truck stop with an RV park about a mile away from it. It&rsquo;s risky but what other shot do I have? At midnight I&rsquo;m sitting on the sidewalk in front of this gas station, I have a few little snacks and I have the website for the RV park open.</p>
+				<p class="indented">Long story short I was able to buy a reservation, slip into the park undetected and get an OK sleep. I went to the front office early in the morning and told them my current situation and I got a free day and another night to rest up. Just about every time you have to deal with a stressful situation, you will be rewarded as long as you work your way to the other side. There were so many times where I had similar situations to this one where the solution was to put my head down and cycle another 10-15 miles in the dark and stealth camp. Actually you know what, on that note here&rsquo;s a quick <strong> guide to stealth camping. </strong></p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/78640f05828b2b1e435b792ce1416698.jpg" alt="" /> ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+					<figcaption class="empty"></figcaption>
+				</figure>
+				<p>One of the more influential people that I met on the road, I actually met only a few days into the journey. His name is Steven <span class="ql-ignore-spelling"> Beto </span> , and he was walking from Minnesota all the way to Philadelphia and then eventually make his way to Boston, Massachusetts. What I didn&rsquo;t know at the time is that a lot of the things that he was trying to tell me and educate me about, I actually started to hold very valuable in my current way of life. He talked about Sigmund Freud and Carl Jung, which are two people that I do find very influential on my current world view and I have actually now, at this point in writing, become quite interested in psychology, especially when it comes to analytical psychology, which Carl Jung actually started. It&rsquo;s interesting looking back now, sometimes I wonder to myself if I somehow stumbled across a fortune teller of sorts. I thing I am sure of though, he was a darn good motivational speaker.</p>
+				<p class="indented">&nbsp;</p>
+				<p class="ql-align-center"><strong> <u> *This section is an AI transcription of a 37 minute voice memo with Steven <span class="ql-ignore-spelling"> Beto </span> * </u> </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;The following conversation you&rsquo;re going to read is a conversation with a man I met on the <span class="ql-ignore-spelling"> Hennepin </span> Canal Trail today, which is, I believe, the 21st of May. It is the eighth day of my bike trip, and we were both sitting under this visitor center canopy just getting some shade. I was charging my electronics, and he comes up and he&rsquo;s pushing this big cart. It has two rubber bike wheels on the back and kind of like an office chair or shopping cart wheel, but heavy duty in the front with all this stuff in it.</p>
+				<p class="indented">&nbsp;</p>
+				<p>He just introduces himself, and he probably talked for about 15 minutes before I decided to record what he was talking about, just because I could tell he was a very intelligent man. He&rsquo;s seen a lot, but he does say some personal things in this conversation, some information that might be sensitive to him. But he talks about an investigation that he&rsquo;s currently undergoing, and I haven&rsquo;t quite decided if I want to censor what he said, but I think he would like people to know about what he&rsquo;s doing.</p>
+				<p class="indented">&nbsp;</p>
+				<p>He wants justice for these people that he talks about in this; it&rsquo;s not really an interview. I really just listen to him talk and let him do his thing and let his mind wander. So, me and you guys can kind of explore his thoughts and his mannerisms and where his brain goes whenever another issue arises. It was a really intriguing conversation. We ended up talking for like an hour or something like that. He was a pretty cool guy; he says he&rsquo;s going to write a book eventually. So maybe I&rsquo;ll make it on the book someday. Who knows?</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;How do you feel about your education? I have two degrees and when I came out of them, I realized I don&rsquo;t know much about anything, but I know how to research. When you came out of your high school, did you know how to at least do that? If you have a question, I was always told, ask the library. And that was true for many, many years. And for the old librarians that still exist, like only they&rsquo;re good too. But do you feel like you know how to research? If you had a question, certainly ask the library. But would you know anything about how to make it right or even if what you were told was true?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;How do you feel about your education?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;What&rsquo;s your first name?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Lonnie.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Lonnie, Steven. How do you feel about your education, Lonnie?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;I don&rsquo;t know. I always looked more fondly upon my, I guess, more of the elementary years because I felt like I was more engaged.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;A what?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Well, we had kind of like, I guess, like a gifted program or whatever, right?&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;What program?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Like a gifted program. It kept changing names throughout the years, but&hellip;&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Yes, I can tell that you&rsquo;re an intelligent person. Go ahead.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;And we would&hellip; They made us take a test every year that would ask all sorts of weird questions and have different word associations and things like that to determine if you would get into these classes. And they only had an English version of the class and a math version now, and both, even though I never liked the math. And they talked a lot about critical thinking. They would show you a picture with a few items and they&rsquo;re like, figure out how to solve this problem with these items and how you do something like that.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;It&rsquo;s not just a formula now. It becomes a real-life picture. How do you do this if you&rsquo;re a farmer? How do you run a business?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Yeah. Go ahead.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;And I was really grateful to take those classes that would show you concepts that would be a couple years down the road and just expose you to those things. I think it was a pretty beneficial class. I&rsquo;m not sure if they do it anymore, but I think it was after&hellip; I think it&rsquo;s a little bit different to a <span class="ql-ignore-spelling"> dumbed-down </span> class. </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;There&rsquo;s a benefit to, how do you run a business? But it&rsquo;s a silo effect in that you&rsquo;re only learning about one silo and then that silo is corn. But in this silo of business, how do you run a business? You don&rsquo;t learn about art history. You don&rsquo;t worry about philosophy. You don&rsquo;t worry about anything else. But then they turned the University of Minnesota, a university, into a STEM college: science, technology, engineering, and mathematics. And they removed the element of critical thinking.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>And what happens? Well, in a STEM college, you find out that you can do something. At a university, you find out whether or not you should. And like the fire bombings of Japanese cities during World War II, these cities had nothing to do with the military or corporations that supported their military. And yet, 63 of them were bombed and almost entirely burned out. Why? Because of a statistic. They just decided the citizens were enemy soldiers and that fewer American soldiers would die when they had to invade the country. Well, fine. Statistically, that was correct. But morally, man, they used the atomic bomb on two cities, just people. You know, there was a photograph of Hiroshima. And it was determined biochemically that there was this shadow on a staircase. Somebody was sitting there, and the heat of that explosion greased that person. And now on that staircase, or at least at the time the photo was taken, there&rsquo;s just a shadow of a person there. We should never have done that, in my opinion. That was an immoral thing to do. But there were only concerns about statistics back then. And the persons who did that were Robert McNamara and at that time, Colonel <span class="ql-ignore-spelling"> LeMay </span> . Who the hell were they?</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;You&rsquo;re 19, you probably don&rsquo;t even know those names.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Not really no.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Okay, Robert McNamara became the Secretary of State under John Kennedy. And you can bet he knew something about the assassination. Because of Colonel <span class="ql-ignore-spelling"> LeMay </span> , people loved him so much in the military; he did the hard things, the immoral things. He was in charge of the entire Pentagon. Now, you know, I think it&rsquo;s easy to suspect that he had some knowledge of the assassination before it happened. And it&rsquo;s that level of thinking that doesn&rsquo;t exist in Minnesota hardly anymore. But you are blessed if you were taught how to think critically. And you are testing those skills on the road with you now. Now, how far west do you intend to go?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;My first major goal is to get to Yellowstone and then after that, go up through the Rockies. And then hit the west coast and go down to California, because I know some people there and make my way back east.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;You do that. And don&rsquo;t you stop until you&rsquo;ve got it done. You do that. Don&rsquo;t wait until you&rsquo;re 72; it gets harder to do.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;And so old I&rsquo;ll be in August. But by God, I&rsquo;m going. I can&rsquo;t carry a backpack anymore, but I can push The Endurance. And I&rsquo;ve done that; I&rsquo;m doing quite well. It&rsquo;ll take me 20 more days to get to Bloomington alone. But I&rsquo;m going to do it.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;What are you averaging out a day for distance?&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;I haven&rsquo;t worked out the math on an average because I kept a point inside. I stayed three days camping out to rest and recuperate. Other days I was doing half a day. Other days I was doing sun-up to sun-down. What the average is, I&rsquo;m trying to get there as safely as I can to Philadelphia. And I&rsquo;m stubborn enough to keep on going. I do stop at libraries along the way and contact three people. My son, who is in his 30th year now; he was 29 last September. So he&rsquo;s working on his 30th year. He doesn&rsquo;t get the 30 married badge until September. He&rsquo;s against my walking. But there are some things, man, and I think you know it&rsquo;s true intuitively. But there are some things you&rsquo;re willing to give up everything for in order to have an experience or to find out a truth. <strong> I&rsquo;m moving to the East to find out a truth. A friend of mine is missing and is likely dead. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>I was looking into, in 2016, the financial records of the <span class="ql-ignore-spelling"> Northfield </span> Senior Center, a non-profit. My life was threatened three times just for asking about&hellip; I was inquiring about a missing three million dollars. How did I know that? Because I got the&hellip; it&rsquo;s a non-profit, so I got the tax records for 2012 to 2019. And at no point in those years was any fund drive money, $100,000 a year on average, ever declared on their taxes. And they have to declare them. They don&rsquo;t pay taxes on it, but they have to declare them. And furthermore, there&rsquo;s a two million dollar security deposit that was made in 1970, somewhere between 1979 and 1980. What happened to that is gone. So I was just making inquiries. I wasn&rsquo;t saying anybody took it. But my life was <strong> threatened three times. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>And the last time it was plausible. It was late September 2021. One of the guys who lived in my apartment building, Daryl (he mentioned a last name but for privacy&rsquo;s sake I&rsquo;m keeping it out), went missing just a few days after that threat was made. And he was my age. He was about my height. He wore glasses, wore a baseball cap; my glasses are broken. I&rsquo;m not wearing them right now. He walked at night. He walked all the time. He worked for the Eagles Club. He wore a yellow security vest. And he walked at night; the cars could see him better. He never made it home. And he lived upstairs in apartment 20 or 23, I think. Just after seeing that, the police weren&rsquo;t even going to investigate</p>
+				<p class="indented">&nbsp;</p>
+				<p><u> I have his picture inside The Endurance there. </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>Now, every year, every September, <span class="ql-ignore-spelling"> Northfield </span> celebrates the defeat of Jesse James. That&rsquo;s a real big deal. It lasts about three or four days. And they&rsquo;re always claiming what a hero the banker was who got killed for not turning over any cash. And Jesse James did not get a dime out of that. Oh yeah, they&rsquo;re proud of that. But it took an inside job to grab three million dollars. And possibly to kill people to prevent it from coming out.</p>
+				<p class="indented">&nbsp;</p>
+				<p>So, I&rsquo;m actually on the road moving east looking for a business library. I know of one in Springfield, Massachusetts, and in Boston. And if I have to get to the Atlantic, I&rsquo;m not going to be able to do it before you get to the Pacific because I&rsquo;m much slower than you are. Although I do hope to take a train from Pittsburgh to Springfield and spend the winter there, but I still won&rsquo;t get to Boston until the springtime. So, I want to find out the truth. What business records would identify a security deposit? Surely something must have been signed with a banker. But I&rsquo;ve also learned that security deposits are often a con game and no records are ever kept on it. So, that could be the thing. I might come in where I could prove it. I might come in where it&rsquo;s just beyond proof. I have been told that a clever CPA can hide an elephant behind a sapling. And I say bullshit.</p>
+				<p class="indented">&nbsp;</p>
+				<p>During World War II, the Japanese code and the German codes were considered impossible to break. Well, we broke the Japanese and the English broke the German. And they never knew that our side knew. And everything that a human mind can make is false. They have problems with it. Plus, they get so <span class="ql-ignore-spelling"> hubristic </span> about the whole idea. They think they are as brilliant as others think they are. Well, they&rsquo;re not. They get lazy. Plus, they&rsquo;re not the ones doing the job. Some lazier person is doing the job, and they always make a mistake. So, that must be true with these documents too.</p>
+				<p class="indented">&nbsp;</p>
+				<p>There&rsquo;s a federal element to non-profit law, and there&rsquo;s a state element. One of the states refused to look at anything. Records available to them. They refused to look. Well, I&rsquo;m hoping to find some information that maybe the feds will look into. If the United States is still the United States by the time I find that elephant. Yes, I&rsquo;m a stubborn old man. I was trained, conditioned by Catholic nuns. The Catholic nuns told me there might be a time in my life when I would be willing to give up everything. <strong> And I have to be willing to give up everything in order to find the truth, and I still might not find it. But Lonnie, if you give up your trip anywhere along the line, you&rsquo;ll never make it to the Pacific Ocean or to see your friends by bicycle. Bullshit, you do it. <u> You get out there. </u> </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>Yes, I&rsquo;m sure you&rsquo;re checking in with people back home just like I am. I&rsquo;m not the kind of person that cared about me. I&rsquo;m the kind of people I care about. I want them to know where I&rsquo;m at. I can only do it at a library. Because I don&rsquo;t have a cell phone with me. And besides that, I like people. I like being alone. I like being on the road. I really do. You&rsquo;ve got a dream going for you, Lonnie. You lived up to that dream. Don&rsquo;t wait until you&rsquo;re 72. You can do a lot then. Trust me, you can do a lot if you&rsquo;re as stubborn as I am. Of course, I was also in the military. And my job was to be willing to sacrifice my own well-being for my fellow soldier. That&rsquo;s the job of what a medic is.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> And if you&rsquo;re willing to do that, Lonnie, if you&rsquo;re willing to get on that damn bike and keep on going to the West, and when you meet a challenge, you correct it, you work that challenge out, you find a way around. You&rsquo;re gonna learn more things on the road than you ever thought you could learn at school or in college. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>And then you get your ass right back to school, too. God damn it, you go to a decent school, a college, find out more about the humanities, find out more about critical thinking, find out more about who the hell you are. You&rsquo;re going to find that out on the road.</p>
+				<p class="indented">&nbsp;</p>
+				<p>And there will be good things that you&rsquo;re going to find out about yourself, and there are not so good things. And you&rsquo;re going to have to accept that, because none of us are perfect, not a single one of us. And we&rsquo;re not better than anybody else. Jesus Christ, the chief financial officer of the senior center, and the senior citizen&rsquo;s nursing home in the hospital. This man served as the chief financial officer on both. And my God, he&rsquo;s a pastor for Christ&rsquo;s sake, a retired pastor, and he&rsquo;s still responsible for any of that stuff that went on. You can&rsquo;t trust anybody anymore. You have to find the truth out.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Don&rsquo;t rely on presupposition, what a pastor is, what a Catholic priest is. People haven&rsquo;t learned anything from the Catholic priest&rsquo;s tragedy as much. Learn about something called game theory. Learn about something called the logical fallacies. Learn as much as you can about these things, because these are how people con the hell out of you, and by twisting English around and making you feel, getting you to have a feeling response instead of a rational response.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Professor Sapolsky from Stanford, you&rsquo;re going by there on your route in Sacramento. You might stop by that campus and see if Bob&rsquo;s around still. But he said the best moral decisions we can make are made with a balance of reason and emotion, because it was pure reason that got those Japanese cities firebombed. It was pure reason that stopped and got those atomic bombs dropped. But it was also pure emotion that created <span class="ql-ignore-spelling"> pauldrons </span> , the hangings of all those Native Americans for no reason, no good reason. And lynch mobs. You can talk anyone into anything.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Oh yeah, that&rsquo;s one more thing to learn, buddy. You find out and you should mark this down right now. The man&rsquo;s name is Edward Bernays, E-D-W-A-R-D, Bernays, B-E-R-N-A-Y-S. Now this son of a bitch was Sigmund Freud&rsquo;s nephew, and a little bastard grabbed up Sigmund Freud&rsquo;s ideas, and he applied them to his business advertising. But he didn&rsquo;t have the moral background our Sigmund had, and he turned out to be highly successful. He taught people how to get people to think the way you want them to think, behave the way you want them to behave, and feel, even feel, Lonnie, the way you want them to feel.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Yes, that is possible, and it&rsquo;s being done every day. He wrote the book, *Crystallizing Public Opinion*, in 1923, and in 1926 he wrote the book *Propaganda*. And those two books were picked up by a man named Joseph Gables. Do you remember him?</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;And Joseph who?&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;I&rsquo;m sorry?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;And Joseph <span class="ql-ignore-spelling"> Ozilov </span> ?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Joseph Gobles.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;I don&rsquo;t think I&rsquo;ve heard the name.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;He was Adolf Hitler&rsquo;s propaganda minister, and most likely, in my opinion, most likely the true author of * <span class="ql-ignore-spelling"> Das </span> <span class="ql-ignore-spelling"> Mein </span> <span class="ql-ignore-spelling"> Kampf </span> *, attributed to Adolf Hitler for having written it. I don&rsquo;t think so, because this man, Gables, read the books written by Bernays and revised them to meet his needs, the destruction of so many Jews and so many other people. Again, all reason why we don&rsquo;t want to have psychiatric problems around that are genetic. We don&rsquo;t want to have really short people. We want to have blond people with blue eyes, because that&rsquo;s the perfect person. And, God damn, that&rsquo;s what he tried to do. And they killed 10 million people, and then Stalin, remember a guy named Stalin, Joseph Stalin?</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Was that a yes?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Yeah.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;All right, you got a little bit of going for you there. There&rsquo;s a Russian, same time frame as Winston Churchill, a similar time frame as Winston Churchill and Franklin Delano Roosevelt. You hear about those two people?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Yeah.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;All right. They were World War II, just like Gables and Germany, and you didn&rsquo;t know much about that part. But American corporations supported Hitler. They sold him weaponry. They sold him a lot of things that he needed to get the job done. And they even allowed them to come to New York City for a special, and Philadelphia as well, I think, for special Nazi meetings. And I actually had a copy of my cough in English from those 1938 meetings, a full copy of the whole book. And I had to get rid of it to come on this trip, actually.</p>
+				<p class="indented">&nbsp;</p>
+				<p>You have to give up everything that you found of value. Now, why would I find that book of value? Because it&rsquo;s important, Lonnie. It&rsquo;s goddamn important for you to know the behavioral manifestations of psychopathy and <span class="ql-ignore-spelling"> sociopathy </span> , how the crazy evil minds work, how are they expressed on paper or in art. You have to know art symbolism. Do these things. This is all part of humanity that they&rsquo;re destroying. And do as much as you can to find out about a man called Carl Jung. He&rsquo;s a psychoanalyst in the <span class="ql-ignore-spelling"> 20s </span> and <span class="ql-ignore-spelling"> 30s </span> , and I think he died in the <span class="ql-ignore-spelling"> 1950s </span> or <span class="ql-ignore-spelling"> 60s </span> .</p>
+				<p class="indented">&nbsp;</p>
+				<p>There&rsquo;s so much to learn that they got rid of. They threw out of the university. The only place you&rsquo;re going to find that is schools that you can attend. Stanford, you can find out because they&rsquo;re not taking public funding</p>
+				<p class="indented">&nbsp;</p>
+				<p>So there is a group, like your group, that you came from that is capable of learning that. God damn it, Lonnie, you do it. And don&rsquo;t wait to go back to college. You can get on that little phone right now, and you can go to Amazon and you can type in Edward Bernays, *Crystallizing Public Opinion* and the second book, *Propaganda*. And you can have those books delivered to wherever you want them delivered in the next 10 days. You can get amazing things still in print. And you can do this, but you have to know what to look at. That&rsquo;s the key. So Edward Bernays is a big one.</p>
+				<p class="indented">&nbsp;</p>
+				<p>I call him up because he&rsquo;s a jerk. He used the information from his uncle, Sigmund Freud, for bad things. It turned out very bad for this country and others. But you can find out exactly the games that they&rsquo;re playing. Go to the teaching company and you order a copy of it called *Argumentation*. It&rsquo;s a whole lecture series. *Argumentation* is one that&rsquo;s worthwhile getting. And game theory. You can get a good head start on what game theory is. These are books for con men now. They use them to mess with your mind. Government, CIA, corporations, schools now even use it to dumb you down. Dumb other classes, if I have to say it.</p>
+				<p class="indented">&nbsp;</p>
+				<p>You seem to come from what I would call an upper class. And that&rsquo;s to your benefit. Use it, Lonnie. Find out as much as you can about yourself on the road. But you stop at Stanford, Sacramento on your way. Spend a couple of days there. Look up Robert Sapolsky. See if he&rsquo;s still around. <span class="ql-ignore-spelling"> Zimbardo </span> is probably still around. You ever hear about Professor <span class="ql-ignore-spelling"> Zimbardo </span> ?</p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Yeah, he did the prison experiment in the <span class="ql-ignore-spelling"> 1950s </span> , I think. They allowed such experiments. They don&rsquo;t allow it anymore. Because he set up a real prison experiment at the college. He had jail cells. Half of the men were assigned to be prison guards. The other half of the men were assigned to be prisoners. God damn, that place got so vile. People were getting seriously injured before <mark class="ql-spelling"> Zimbardo&rsquo;s </mark> girlfriend told him she would leave him if he didn&rsquo;t stop it right now. He suffered for many years as being the man who did that to students without stopping it in time. But he&rsquo;s still a celebrated scientist because he was working on it. And that&rsquo;s what people want. They want to know how this stuff actually works.</p>
+				<p class="indented">&nbsp;</p>
+				<p>There&rsquo;s a bit of immorality to that because real students get real harmed. And so you have to know about how the evil mind works. So mark it down. Logical fallacies. Mark it down. Game theory. John Van <span class="ql-ignore-spelling"> Neumann </span> and John Nash began that out. But many, even Harvard and Princeton and Yale schools like that, Stanford, have worked that out and refined that. So find these Edward Bernays, *Crystallizing Public Opinion* and *Propaganda*. You have a remarkable mind, I can tell. And you can find these things out as a young man and maybe hopefully find an answer to help these people because I think in your lifetime there will be a great loss of life in the United States.</p>
+				<p class="indented">&nbsp;</p>
+				<p>There will be a significant amount of people who will die in the next 50 years. And you&rsquo;re what now, 20?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;19.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;Still 19?&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> &ldquo;Mm-hmm.&rdquo; </em></p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> &ldquo;Well, you&rsquo;re still going to be around, kid. And maybe you&rsquo;ll reflect on this old man talking to you about it, and maybe you will have done something about it. Maybe you would have learned about these things and maybe you would have made a difference because you can do that, Lonnie. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>I fucked up. Vietnam fucked me up, and I dropped out of the university in 1977, disappointed that I couldn&rsquo;t be in the Humanities Department anymore. And also, I moved out to <span class="ql-ignore-spelling"> Hippieville </span> in Oregon. I came back, I took another semester, and I dropped out again. And it wasn&rsquo;t until 2012 that I finally finished my degree.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Well, don&rsquo;t you fucking do that. Because it&rsquo;s too late then. Yes, I&rsquo;m proud of having completed my degree, completely what I started. And also getting a second degree, a two-year degree in medical administration assistant. They got me a job at the VA. But don&rsquo;t do that because there are so many great things that someone like you can accomplish in your life. Don&rsquo;t lose that opportunity.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Take it a year; take it two years to get to California. Do this trip, find out who you are. Keep in touch with the people back home, let them know that you&rsquo;re safe. Your mom and your dad, if they&rsquo;re still around. Certain important friends and you know the difference between a friend and someone who is a fake friend. You know the difference between who really is and who is not. You find out who through them; you find out through this trip who you are. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>And you get your ass back inside an academic area. Stanford would be nice. You get out to California, maybe you should just stay there. Maybe you&rsquo;re as smart as I think you are; maybe you&rsquo;re even smarter than you think you are. So put an app in to Stanford. See if you can&rsquo;t find out more about Robert Sapolsky and what was that was <span class="ql-ignore-spelling"> Ambruda </span> . They&rsquo;ll be famous for decades to come. And maybe you will too.</p>
+				<p class="indented">&nbsp;</p>
+				<p>Well, that&rsquo;s the news from Lake Wobegon. <strong> There&rsquo;s something even better, something even more difficult, something even more potentially great or challenging or downright horrible. You have to be prepared for what this is; you&rsquo;re being prepared for it. That&rsquo;s the mission that you push yourself on. You think you push yourself on that bullshit; I think that it&rsquo;s done for you. And for a damn good reason, you do it; you get it done. Because there&rsquo;s something else greater in your life. </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p>I fucked mine up, but I didn&rsquo;t do it. You have a chance to be successful. <strong> Go for it. </strong> Stop at Stanford, Sacramento, at least look at the damn things.</p>
+				<p class="indented">&nbsp;</p>
+				<p>And reflect on the old man, I have. I think in some sort of inexplicable way, Mr. <span class="ql-ignore-spelling"> Beto </span> started a spark in me. I met a man that seemed to different and yet so familiar in mind to me. He really showed me a whole reality to be lived that I was always told to be useless. &ldquo;Do the easy stuff, work to live, live to work. You think too much.&rdquo; Then there&rsquo;s Steven. &ldquo;Discover a path to a truth, lean into your stubbornness, take advantage of your brain and just learn.&rdquo; He started one of the mantras that I carry with myself these days. <em> &ldquo;People are the purpose.&rdquo; </em> To be born a human is to experience humanity, all of its aspects. I headed west to see mountains and in my narrow <span class="ql-ignore-spelling"> sightedness </span> , I learned how to love and appreciate better. I know the chance of you reading this is very low, Mr. <span class="ql-ignore-spelling"> Beto </span> . But if your legs and eyes have made it this far. <strong> Thank you for handing me a ticket to the new world. </strong></p>
+				<p><strong> ----------------------------------------------------------------------------------------------------------------- </strong></p>
+				<p><strong> Example of What One Week of Riding Looks Like </strong></p>
+				<p>I tried journaling for the first couple of weeks of my trip but quickly ran out of patience and energy. Here&rsquo;s what the second week of my trip looked like.</p>
+				<p class="indented">&nbsp;</p>
+				<p>&nbsp;</p>
+				<p><strong> Day 7: May 20th </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 32 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>After the off day, I head back onto the I&amp;M Canal Trail and use the laundromat in Peru, IL. After some more hilly cycling I make it to DePue, IL. I make a stop at the Casey&rsquo;s and see this cool mural. More cycling ensues and I finally make it to the Hennepin Canal Trail and camp for the night at the Lock 6 campground</p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/155f4b9be65a6dc5578f11be75aa11b6.jpg" alt="" />
+					<figcaption>Interesting Mural in DePue, IL</figcaption>
+				</figure>
+				<p><strong> Day 8: May 21st </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 31 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>First stop is Tiskilwa, a quick gas station food resupply and back on the Hennepin Canal Trail. 5 hours of pretty much nonstop cycling on the canal trail until I make it to Annawan. Luckily there is a gas station where I can sit down and charge my devices. I camp at the Hennepin Canal Bridge 23 site, which is only about a mile away from the gas station. This campsite is my first encounter with the gnats, more about them later.</p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/7aaf221b0e2b8f80b66f1e0436737a34.jpg" alt="" />
+					<figcaption>Tunnel under I-80 interstate on the Hennepin Canal Trail</figcaption>
+				</figure>
+				<p>&nbsp;</p>
+				<p><strong> Day 9: May 22nd </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 48 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>Lots of cycling today. About 6 hours on the trail, making a pit stop in Geneseo. I reach my destination for the day at around <span class="ql-ignore-spelling"> 5pm </span> , Fisherman&rsquo;s Corner, right on the Mississippi.</p>
+				<p class="indented">I take a little trip into town for about 9 miles to hit up a gas station and chill out at a park on the river for little while. Into Iowa tomorrow.</p>
+				<p class="indented"><em> Gnat intensity: 6.4/10. </em></p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/c8ad296791bf7ce876b47a61b6af22c2.jpg" alt="" />
+					<figcaption>Cool flag outside of <mark class="ql-spelling"> Maysville </mark> , IA</figcaption>
+				</figure>
+				<p>&nbsp;</p>
+				<p><strong> Day 10: May 23rd </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 40 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>I&rsquo;m excited to head into Iowa today. I take the Great River Trail which follows alongside the mighty Mississippi. It takes about 10 miles to get to the only bike accessible bridge that crosses over and then another bridge on the Rock Island Arsenal to get in Davenport. The rolling hills of Iowa hit me almost immediately. It takes me a while but I find myself in a KFC charging my power banks and speaker while eating a Famous Bowl. 7 more miles, a quick truck stop break, then Iowa 130 for 20 more miles. I really wasn&rsquo;t ready for the infinite hills. I make it to Bennet Park and after looking for a site (there were none), these 2 gracious campers let me place my tent in their site. They also offered me food and water :).</p>
+				<p class="indented"><em> Gnat intensity: 7.6/10. </em></p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Day 11: May 24th </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 40 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>I leave Bennet Park and ride 3 miles into Bennet where I consume some very tasty corn nuggets and burger. 10 more miles leads me into Tipton, IA where I find the tiniest little Walmart ever, I replace my old, stinky riding shirts for new breathable ones. <span class="ql-ignore-spelling"> 22ish </span> miles gets me to Solon where I leech more electricity from a gas station. 6 miles later I&rsquo;m at Lake McBride State Park.</p>
+				<p class="indented"><em> Gnat intensity: 8.1/10. </em></p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Day 12: May 25th </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 42 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>I leave the park around 10 and ride into Ely, IA where the Cedar Valley Nature Trail starts and cycle to Cedar Rapids. I stop at Goldfinch Bike Shop and buy a new bottle cage to replace a broken I had. I get some food and electricity from the Newbo City Market, I highly recommend for anyone in the area. 25 miles of flat-ish trail to Wildcat Bluff Recreation Area.</p>
+				<p class="indented"><em> Gnat Intensity: 8.6/10 </em></p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/ee6b7dd2863ffefcc43fe38f10b84da2.jpg" alt="" />
+					<figcaption>Another Mural in Ely, IA</figcaption>
+				</figure>
+				<p>&nbsp;</p>
+				<p><strong> Day 13: May 26th </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 44 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>I quickly evacuate camp as the gnats are becoming increasingly unbearable, a 9.2/10 I&rsquo;d say. 3.5 miles to a Casey&rsquo;s in Urbana then 29 miles of the Cedar Valley Trail. I couldn&rsquo;t stop because all the gnats in a 500 sq mile radius would track me down and torment me mercilessly. A quick break in Gilbertsville then another 12 miles to George Wyth State Park. About 10 minutes before the park closes, dad and Ethan arrive and set up camp in the dark. We chat until around 12:30am and hit the hay.</p>
+				<p class="indented"><em> Gnat intensity: 9/10 </em></p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/75ec80211819e0f07ee518113c1855a6.jpg" alt="" />
+					<figcaption>I still have scars from these sunburns</figcaption>
+				</figure>
+				<p>&nbsp;</p>
+				<p><strong> Day 14: May 27th </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><u> 262 miles </u></p>
+				<p class="indented">&nbsp;</p>
+				<p>So I get offered a little boost and an off day, of course I take that offer. We stop at a truck stop for some Subway and hit the road again. We originally planned to camp at Kennedy Memorial Park north of Fort Dodge. Because of Memorial Day weekend, it was packed full. So we found another park called Gotch Park, stuffed. We planned on heading west to Twin Lakes State Park where we kinda figured the same story would play out. So as I&rsquo;m writing this out we are at the Sibley Inn, which is in&hellip; Sibley, IA. I was able to wash my clothes which was a plus at least, I&rsquo;d estimate we are about 10 miles south of Minnesota and 60-70 East of South Dakota currently.</p>
+				<p class="indented"><em> Gnat intensity: 0/10. Nice. </em></p>
+				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/f756527b0341a86d32d835897eb86371.jpg" alt="" />
+					<figcaption>Lobby of the Sibley Inn</figcaption>
+				</figure>
+				<p>&nbsp;------------------------------------------------------------------------------------------------------------------------------</p>
+				<p><strong> Around two and a half weeks in, it hits. </strong> Three or four social interactions a day ranging from a friendly nod to an intermediate length chat. A week earlier I met Mr. Beto. His only connection to the internet is library computers. His plans consist of; looking for the library the next town over, and then walk. <em> That&rsquo;s lonely. </em></p>
+				<p class="indented">He said all his family is either dead or moved away and the only person in his life he keeps in contact with (by email) is his son. I told him before I continued on that I would contact him and keep him updated, I suppose I should get to that soon. Loneliness is so fascinating. One moment it can be the most therapeutic experience. The next moment you are suffocating within the vast emptiness. The west is full of wide open spaces, jaw dropping beauty, all the stars in the galaxy swimming in the sky, wildlife, vivid sound, and a lot of the time, not a single human for hours. After a while you don&rsquo;t associate cars and houses with people, they just kind of blend in with the surroundings. When you do finally come across someone there is kind of an internal struggle of being happy and grateful to interact with another person and just wanting to be left alone for just a little bit longer.</p>
+				<p class="indented">Music is a very critical tool that I use to stifle loneliness. I had a Bluetooth speaker that I attached to my handlebar bag with a lone bungee cord that quickly became a valuable asset. Music always helped me before the trip whenever I was working. It kind of gets me in a state where I can maintain a repetitive cadence for prolonged amounts of time. Very handy for 8+ hours a day of riding a bike. I looked into some studies regarding the matter, one conducted in Australia showed music listening was not only one of the most effective activities for improving individuals&rsquo; moods but also became a crucial tool for emotional regulation. Younger adults seemed to integrate music into their lives to express identity and navigate their emotions easier.</p>
+				<p class="indented">Additionally, a survey that took place on three continents highlighted how music served as a replacement for social interaction sometimes, especially for those with increased negative emotions. Music therapy is a form of therapy that uses music to address physical, emotional ,and social needs of individuals. Trained music therapists use a variety of musical interventions, such as listening to music to enhance the overall well-being of clients. It is applied in all sorts of fields with the aim of improving mood, causing relaxation, and supporting emotional expression and healing. Music therapy sessions were found to provide a unique form of communication, offering a sense of control, creativity, and comfort.</p>
+				<p class="indented">I know a lot of us first hand can definitely attest to the effects of music, especially when you are laying in bed late at night. The effects really get cranked up when you&rsquo;re utterly alone for weeks on end. I would go whole days where there had to be some sort of audio playing because I needed something to fill the air around me. Inversely though, sometimes pure silence can have the same calming effect as your favorite song or comfort podcast.</p>
+				<p class="indented">The crushing effects of loneliness really hit me hardest in the vast wilderness of Montana. I developed this very negative head space while rolling through Wyoming and Montana. I was put into so many extremely tough and taxing situations that truly tested my mental fortitude. Money was just beginning to become an issue, my body was aching trying to cover as much ground as possible. Not to say I didn&rsquo;t have my moments of bliss though, seeing gorgeous mountains, real mountains, for the first time in my life and all by my own power. I&rsquo;d met amazing people and had some interesting interactions, but a pit was opening up. All of these issues and stressors were adding up, even the small inconveniences were heavy.</p>
+				<p class="indented">These small towns became huge cities, almost cold and uninviting. Shunning me out into the wild again once I shilled over my dwindling supply of currency. Every friendly, food bearing, mattress providing, air conditioned Warmshowers host acted as a reminder of the comfort I had abandoned. The mattresses, pillows, and blankets just delighted to see me on the road again, as to serve as a lesson to never forsake their embrace again. It was rough and to be honest, I cried a few times. Even when the most beautiful mountains I&rsquo;ve ever laid my eyes upon rested ahead of me, I was sometimes hard to even push out a smile. For example at Glacier National Park. I honestly felt like I had lost my way. Not in a physical sense but in a purpose kind of way. I probably spent most of that day complaining, about what? Who cares. I had finally slipped past the gates in the cover of darkness and was descending upon my campsite. I felt the tickle of tears in my head, I was so over it, I had to vent. I powered on my phone, opened voice memos, and tapped on that familiar red circle.</p>
+				<p class="indented">&nbsp;</p>
+				<p class="ql-align-center"><strong> <u> *This section is an edited transcription of a 43 minute voice memo recorded inside of Glacier National Park* </u> </strong></p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> July 22nd, Saturday, 10:31 PM - Glacier National Park </strong></p>
+				<p class="indented">&ldquo;I&rsquo;ve entered Glacier National Park. I figured I should archive my thoughts&mdash;that&rsquo;s what I&rsquo;ve been trying to do with this: document my state of mind so I can go back and revisit it later.</p>
+				<p class="indented">I&rsquo;ve been feeling a weird sense of burnout ever since I got into Montana. It&rsquo;s strange; I don&rsquo;t feel the same way about this trip anymore. I used to be so excited and ready for this. I&rsquo;m still happy with my progress, but something just feels&hellip; off. This trip has been really stressful, and the weight of it has been wearing on me.</p>
+				<p class="indented">I thought I was going to feel free, like I&rsquo;d escaped the system. But the system is everywhere. I&rsquo;m in the United States&mdash;it&rsquo;s not something you can just run away from. I&rsquo;ve even come to the conclusion a few times that maybe I want to turn around. Still, I&rsquo;m determined to make it to California. <u> If I have to walk, I&rsquo;ll walk. </u></p>
+				<p class="indented">Right now, I&rsquo;m at the campsite I reserved, but I don&rsquo;t even know where my spot is. I&rsquo;m logging into the National Parks website to check, but I put in the wrong password.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><em> Great&mdash;just what I needed. I&rsquo;m already stressed out enough. </em></p>
+				<p class="indented">&nbsp;</p>
+				<p>&ldquo;I love this trip, and I&rsquo;m content with everything I&rsquo;ve done so far. Glacier National Park was the first place I put on the map when I planned this route. And now I&rsquo;m here. &ldquo;Yippee,&rdquo; I guess. But I don&rsquo;t feel anything. I just&hellip; don&rsquo;t know.</p>
+				<p class="indented"><em> Pause. </em></p>
+				<p class="indented">I think I found my campsite&mdash;site 129. But yeah, I just don&rsquo;t like how I&rsquo;m feeling right now. I&rsquo;ve realized something about life: most of the things we do to validate ourselves are done in vain. There aren&rsquo;t many things that can truly satisfy a person.</p>
+				<p class="indented">At the same time, I&rsquo;m grateful for this opportunity to explore myself. This journey has hardened me physically and mentally, but it&rsquo;s also opened me up to new ideas and made me better at connecting with people. I&rsquo;ve seen how generous, forgiving, and beautiful people can be.</p>
+				<p class="indented">In America, everything revolves around money, and it feels like I barely have enough to get by. Today, for example, I snuck into Glacier. There&rsquo;s a bike trail that leads right to this campground I reserved. It&rsquo;s like I&rsquo;m just riding this strange streak of luck.</p>
+				<p class="indented">And about luck&hellip; I&rsquo;ve been thinking about it a lot. I don&rsquo;t think it&rsquo;s just blind luck anymore. I&rsquo;ve been so fortunate, consistently, that it doesn&rsquo;t make sense. It feels like something is guiding me&mdash;some force that&rsquo;s influencing these events. It&rsquo;s made me more spiritual, more aware. Maybe it&rsquo;s God giving me little nudges. I don&rsquo;t know. But <u> I shouldn&rsquo;t even be here; I shouldn&rsquo;t have made it this far. Yet here I am, in Glacier National Park. </u></p>
+				<p class="indented">I&rsquo;m constantly struggling with money, though. I barely have enough for food. I&rsquo;ll go days where I&rsquo;m painfully hungry, to the point that I just ride my bike until my legs hurt enough to distract me. Then I try to fall asleep and deal with it tomorrow. Recently, I spent $13 at Walmart on granola bars, protein bars, and some drink mix. It was cheap and it&rsquo;ll last me a few days, but it&rsquo;s not enough.</p>
+				<p class="indented">On my worst days, I spend money in more than one place. On my best days, I spend no money at all. Usually, I eat one meal a day&mdash;sometimes none&mdash;and snack through the pain until I can sleep it off. I can eat a whole pizza in 20 minutes and still feel hungry immediately after. That&rsquo;s when I realized how malnourished I am.</p>
+				<p class="indented">It&rsquo;s a vicious cycle: the more frugal I am, the more pain I endure. If I spend more money, the pain temporarily goes away. I guess I&rsquo;ve programmed myself to believe that&rsquo;s the trade off. And it&rsquo;s not just physical pain&mdash;it&rsquo;s mental and emotional too. I&rsquo;ve put myself through so much strain to get this far. Some days it feels worth it; other days, it doesn&rsquo;t.</p>
+				<p class="indented">Friends have told me they want to walk to Yellowstone, almost a thousand miles. A part of me wants to encourage them, but another part&mdash;especially how I&rsquo;m feeling now&mdash;wants to tell them not to do it. You don&rsquo;t need some grand adventure to fix yourself. There are other ways to find satisfaction and peace.</p>
+				<p class="indented">Today is Day 69 of this journey. I can&rsquo;t believe I&rsquo;ve been doing this for so long with practically no plan&mdash;just winging it. But everything costs money, and money is something I don&rsquo;t have. Money solves a lot of problems in America, especially hunger and bike repairs.</p>
+				<p class="indented">Water, at least, is easier to find. Americans generally believe everyone has a right to water, even if they don&rsquo;t believe in free access to food. And access to nature? Forget it. I&rsquo;ve already complained enough about that.</p>
+				<p class="indented">I&rsquo;ve been thinking about ending this trip. I&rsquo;m not feeling the same as I used to. Glacier will be beautiful&mdash;I know it will&mdash;but I feel like I can always come back later when I&rsquo;m better prepared, when I won&rsquo;t risk being penalized for being broke.</p>
+				<p class="indented">Most, no all of the bad things that have happened to me are because of my own decisions. The good things? I attribute most of them to God. Maybe that turns you off, but I&rsquo;m not preaching. I&rsquo;m just telling you what I&rsquo;ve seen. For every bad thing, there&rsquo;s been ten great things. I&rsquo;ve started keeping a gratitude journal, and it&rsquo;s easy to do. We take so much for granted.</p>
+				<p class="indented">I hope, even if you don&rsquo;t believe in God, you&rsquo;re still listening. Maybe next time you think, &ldquo;Wow, that&rsquo;s lucky,&rdquo; take a second to look at it differently. Look around. Think about it again. It can&rsquo;t just be luck. There have been too many little things&mdash;tiny, perfect moments&mdash;that align too well to be a coincidence.</p>
+				<p class="indented">I&rsquo;m just grateful. That&rsquo;s all I can say. Thank you.&rdquo;</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> 1-19-25: </strong> I&rsquo;ve taken a bit of a hiatus from writing this book and can now say that loneliness has re-entered my &ldquo;normal life&rdquo;. Loneliness is not a factor of your environment, it&rsquo;s a broad state of existence, a plane maybe.</p>
+				<p class="indented">I think that it takes up a large <span class="ql-ignore-spelling"> 3D </span> space and most of the time you are floating somewhere within it, I suppose like most things, loneliness is a spectrum, there is no escaping the inevitability of loneliness. Use it if you can, utilize the time alone to look at yourself. Why do you feel lonely? You don&rsquo;t &ldquo;deserve&rdquo; to be lonely, you simply inherited it. If one has never been sad, how does one know if they&rsquo;ve ever been happy, kind of thing. Just like any thing else that has ever happened to you, loneliness is a tool.</p>
+				<p class="indented">There is a residual warmth that humans leave with you. After a while, I felt it go away. I cried. I cried a lot in Montana. It was crushingly lonely and heart <span class="ql-ignore-spelling"> breakingly </span> painful that I couldn&rsquo;t share the same space with someone while witnessing this reality shattering beauty.</p>
+				<p class="indented">In summary, loneliness is a valuable tool to be used sparingly. Bask in silence but do not sink. I so wished to have anyone with me on this trip, time shared is never time wasted. But I suppose a part of me broke and eventually healed. I am better at dealing with loneliness in &ldquo;normal life&rdquo; because of of the intense emotions and events it brought upon me on the road. Thank you loneliness for making me a better man.</p>
+				<p class="indented">&nbsp;------------------------------------------------------------------------------------------------------------------------</p>
+				<p>Now, I suppose to preface, loitering is frowned upon, and sometimes it&rsquo;s <strong> <em> illegal. </em> </strong> By loitering, the definition I would give is; using a given location&rsquo;s resources for the longest acceptable time. Those resources could include electricity, food, water, WiFi, a place to sit, bathrooms, laundry, heat/air conditioning, and so on. If there is a <strong> No Loitering </strong> sign posted, that just means <u> try and look like you have a reason to be there </u> . Don&rsquo;t just sit and do absolutely nothing in front of a business. That&rsquo;s how you get your precious rest stop abruptly ended. Here is my list on places you should typically be fine for loitering a <span class="ql-ignore-spelling"> short-ish </span> amount of time. Travel centers/rest stops (Flying J/Pilot, Buc-ee&rsquo;s, TA, etc.) They&rsquo;re literally meant for people to spend hours at just to hang around. Some smaller gas stations also have places to sit), fast food restaurants, coffee shops, city parks, libraries, Walmart super centers, some churches, lodges/resorts, and big campgrounds where you could typically find rich people in their RV&rsquo;s. Now, out of that list, the <u> top three </u> places I would consider loitering would probably probably be <u> gas stations </u> , <u> public parks </u> , and <u> libraries </u> . Here are a few of my favorite parts about each of those options.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Gas stations </strong> . Gas stations provide electricity, seating, food and water, bathrooms, <em> sometimes </em> showers and laundry services, <span class="ql-ignore-spelling"> Wi-Fi </span> , air conditioning and heat. The gas stations that you typically want to look for should be pretty large, and preferably have a fresh food option. A $2 slice of pizza, and a $1.29 bottle of chocolate milk can go a long way. Also, so look into the freezer section for cheap Hot Pockets and burritos. Lots of calories for not a lot of money, and a lot of gas stations typically have microwaves. You can usually find some cheap <span class="ql-ignore-spelling"> ramen </span> which I&rsquo;ve noticed always seems to be suspiciously close to the cans of dog food. In the morning, get a cheap coffee, they&rsquo;re usually not any more than a dollar or two unless you get a really large size. Practically every gas station I went to would let me fill my water bottles for free, either in some sort of sink or even from the drink machine. What I would normally do is pretty much fill my bottles entirely up with ice and water then put a little squirt of pop in there to keep it sweet. If you&rsquo;re the gambling type, you could also always buy some scratch off tickets to test your luck. If you do end up around a larger gas station especially closer to the interstate, look around for brochures and maps. You can usually find them around the register or near the restrooms.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Parks </strong> . Public parks typically will provide electricity, a place to sit, water, basic, shelter interesting people, and sometimes bathrooms, and brochures a place to make a little fire. Now, public parks don&rsquo;t offer as much as gas stations, but at least they offer a little peace and quiet. At the very least, the cool parks will have electricity at pavilions or the bathrooms. The bathrooms are typically arranged from being okay to a literal war zone. A lot of the time you can take a nap for a while, but be sure to sleep lightly because depending on the area that you&rsquo;re in, you can get your stuff yoinked. You can typically find water in the bathrooms, sometimes on the walls of the bathrooms from a spigot or a dedicated water fountain. If you happen to be at a sports complex like a soccer or a baseball field, there&rsquo;s a chance you could find a pop machine and bigger water spigots.</p>
+				<p class="indented">&nbsp;</p>
+				<p><strong> Libraries </strong> . Libraries provide shelter, security, water, bathrooms, WiFi, heating/air conditioning, and a comfortable place to sit. I always love a good library. Probably the friendliest place you can go, and it&rsquo;s definitely the quietest. Plenty of places to sit and charge everything. Access to computers as well. If you&rsquo;re a bike traveler like I was, there&rsquo;s almost always a place out front to park your bike at a bike rack. The bathrooms are always so nice and typically have a water fountain around nearby as well. Some libraries will have an area with free books and sometimes pamphlets for the local areas, so you might be able to snag yourself a map and at the very least, some stuff to make fires with. Typically the librarians are pretty knowledgeable of the area, being locals of whatever town or city you&rsquo;re in, so they can be a valuable resource when it comes to finding places to eat or set up camp for the night.</p>
+				<p>----------------------------------------------------------------------------------------------------------------------</p>
+				<p class="ql-align-center"><strong> The road is dangerous. </strong></p>
+				<p class="indented">Cars, animals, debris, unexpected weather, road <span class="ql-ignore-spelling"> closages </span> , wild fires, poisonous plants, violent individuals, dehydration, cacti, falling rocks, broken spokes, flat tires, failing brakes, 11% grades, low visibility, pot holes, money problems, no phone service, people stealing your Sony <span class="ql-ignore-spelling"> XB-33 </span> Bluetooth speaker in Florence, Oregon, and getting lost. All things I had to contend with on my journey. <em> How am I supposed to move forward knowing that only more <u> dangers lie ahead </u> . How do I know there&rsquo;s not homeless people at the next place I want to camp? </em> <strong> <u> I <span class="ql-ignore-spelling"> dont </span> . </u> </strong> I suppose when it comes down to bike travel and wild camping, there&rsquo;s no way you are entirely avoiding cars and animals and things of that sort.</p>
+				<p class="indented">I think a good place to start is to <u> identify the least comfortable position that you are willing to tolerate for a night </u> . For me one example was walking around Hollywood all night long, blending in with the homeless population, until the morning came. I did that for two nights and for one of those nights it rained. For the three total nights I spent in Hollywood, I aimlessly walked around for about 36 miles.</p>
+				<p class="indented">The next thing I would recommend is getting several different resources for looking for routes and places to sleep. Obviously, Google Maps is probably the best place to start. Here is a diagram of some apps that I used on on my phone. [Insert Diagram Here]</p>
+				<p class="indented">&nbsp;</p>
+				<p>Now this next point may seem vague and kind of obvious. <strong> <u> ALWAYS </u> </strong> practice situational awareness <u> at all times </u> . Take mental notes of all the sights, sounds and smells of where you are. Give your attention to things that break the normal patterns. Areas where you can take your tent, excessive trash, signs of frequent foot traffic, road signs, broken glass, animal/human poop. <u> Anything that could indicate potential danger should be noted </u> .</p>
+				<p class="indented">This last tip cannot be easily explained or taught, so I will just leave you with this. <u> Listen to your instincts </u> . If something feels off, proceed with caution. If you are in the wild and your hair and ears prick up, stop and observe your surroundings for a moment. I don&rsquo;t know how many instances where listening to that little gut feeling has gotten me out of potentially bad situations.</p>
+				<ul>
+					<li>Move when it feels right.</li>
+					<li>Stay put if it feels right.</li>
+					<li>If you feel as if you are in danger, <strong> you probably are </strong> .</li>
+					<li>Only get comfortable if you feel comfortable.</li>
+				</ul>
+				<p>I really think our gut feelings are just our subconscious. It&rsquo;s trying its best to communicate with us and I advise we listen. I&rsquo;ve heard theorized that when we get that feeling that we are being watched, it&rsquo;s because we noticed something watching us but our brain tries to focus on the &ldquo;most important&rdquo; tasks that are directly effecting us. So yeah think about that the next time you&rsquo;re out in the woods and you feel those pits open up in the back your head.</p>
+				<p>-----------------------------------------------------------------------------------------------------------------------------------</p>
+				<p class="indented">&nbsp;8-8-2025</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+				<p>&nbsp;</p>
+			</div>
+		</div>
+	</div>
+</div>
+    <a href="index.html" class="floating-btn window" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000; width: auto; min-width: 0; max-width: 180px; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">
+        <div class="title-bar" style="padding: 0 8px;">
+            <div class="title-bar-text" style="font-size: 14px;">← Back to Home</div>
+        </div>
+    </a>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
 </body>
 </html>
