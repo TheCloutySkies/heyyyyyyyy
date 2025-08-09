@@ -4,92 +4,128 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Clouty Skies</title>
-  <meta name="description" content="Clouty Skies — Windows 7-style personal site, games, blog, and portfolio." />
+
+  <meta name="description" content="Clouty Skies — Windows XP–style personal site, games, blog, and portfolio." />
   <meta property="og:title" content="Clouty Skies" />
-  <meta property="og:description" content="Windows 7-style personal site, games, blog, and portfolio." />
+  <meta property="og:description" content="Windows XP–style personal site, games, blog, and portfolio." />
   <meta property="og:image" content="/Net003_result.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Clouty Skies" />
-  <meta name="twitter:description" content="Windows 7-style personal site, games, blog, and portfolio." />
+  <meta name="twitter:description" content="Windows XP–style personal site, games, blog, and portfolio." />
   <meta name="twitter:image" content="/Net003_result.png" />
+
   <link rel="icon" type="image/png" sizes="32x32" href="/Net003.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="Img29_(Windows_Vista).jpg" />
-  <meta name="theme-color" content="#0a5fad" />
+  <meta name="theme-color" content="#245EDC" />
+
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="stylesheet" href="https://unpkg.com/7.css" />
+
+  <!-- XP.css (WinXP look) -->
+  <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+
+  <!-- Icons (optional, for Spotify title icons etc.) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <style>
-    :root { --desk-gap: 14px; --maxw: 1024px; --glass-bg: rgba(255,255,255,.65); --glass-border: rgba(0,0,0,.12); --text-color: #1b1b1b; }
+    :root { --desk-gap: 14px; --maxw: 1024px; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-      background: #0a5fad url("Img29_(Windows_Vista).jpg") center/cover fixed;
+      font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+      background: #245EDC url("https://wallpaperaccess.com/full/528434.jpg") center/cover fixed;
     }
     @media (max-width: 820px) {
       body { background-attachment: scroll; }
     }
-    .topbar-wrap { position: sticky; top: 0; z-index: 9999; margin: 0; }
-    .topbar-bg { background: var(--glass-bg); backdrop-filter: blur(6px); border-bottom: 1px solid rgba(0,0,0,.1); }
-    .menubar { max-width: var(--maxw); margin: 0 auto; padding: 0 6px; }
-    .menubar ul[role="menubar"] { margin: 0; }
+
+    /* Top Menu Container */
+
+    /* Vertical layout stack */
     .stack { max-width: var(--maxw); margin: 12px auto; padding: 12px; display: flex; flex-direction: column; gap: var(--desk-gap); }
     .window { width: 100%; }
-    .hero-wall { background: rgba(255,255,255,.5); }
-    .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-    .icons a { text-decoration: none; color: inherit; }
-    .icons figure { margin: 0; text-align: center; }
-    .icons img { width: 48px; height: 48px; display: block; margin: 8px auto 6px; }
+    .hero-wall { background: #f0f0f0; }
+
+    .icons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 16px;
+      padding: 8px;
+    }
+    .icons a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      text-align: center;
+    }
+    .icons figure {
+      margin: 0;
+      padding: 4px;
+      border-radius: 2px;
+    }
+    .icons a:focus figure,
+    .icons a:hover figure {
+      background: rgba(0,0,255,0.1);
+      outline: 1px dotted #000;
+    }
+    .icons img {
+      width: 32px;
+      height: 32px;
+      display: block;
+      margin: 0 auto 6px;
+      image-rendering: pixelated;
+    }
+    .icons figcaption {
+      font-size: 11px;
+      line-height: 1.2;
+      overflow-wrap: break-word;
+    }
+
+    /* Boot overlay */
     #boot { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.35); z-index: 10000; }
     #boot .window { max-width: 420px; }
-    body.is-mobile { background-attachment: scroll; }
-    body.is-mobile ul[role="menubar"] { overflow-x: auto; white-space: nowrap; }
+
+    /* Mobile */
     body.is-mobile .window { max-width: 100%; }
-    body.is-mobile .icons img { width: 40px; height: 40px; }
-    #spotify-player-container.window { position: fixed; bottom: 20px; right: 20px; width: 320px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+    @media (max-width: 480px) {
+      .icons {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 12px;
+      }
+      .icons img {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    /* Spotify window (XP window floating) */
+    #spotify-player-container.window { position: fixed; bottom: 20px; right: 20px; width: 320px; z-index: 1000; }
     #spotify-player-container.hidden { transform: translateX(110%); transition: transform .35s ease; }
     #spotify-player-container .window-body { padding: 8px; }
     .spotify-iframe-wrapper { height: 100px; transition: height 0.3s ease, opacity 0.3s ease; opacity: 1; }
     #spotify-player-container.minimized .spotify-iframe-wrapper { height: 0; opacity: 0; overflow: hidden; }
+
+    /* Skip link */
     .skip-link {
-      position: absolute;
-      left: -999px;
-      top: auto;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      z-index: 10001;
-      background: #fff;
-      color: #0a5fad;
-      border-radius: 4px;
-      padding: 8px 16px;
-      font-weight: bold;
+      position: absolute; left: -999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10001;
+      background: #fff; color: #245EDC; border-radius: 4px; padding: 8px 16px; font-weight: bold;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .skip-link:focus {
-      left: 16px;
-      top: 16px;
-      width: auto;
-      height: auto;
-      outline: 2px solid #0a5fad;
+      left: 16px; top: 16px; width: auto; height: auto; outline: 2px solid #245EDC;
     }
-    /* New CSS for Sticky Notes */
-.note {
-  position: absolute;
-  min-width: 120px;
-  max-width: 240px;
-  padding: 8px 10px;
-  border: 1px solid rgba(0,0,0,.15);
-  border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.15);
-  cursor: move;
-  user-select: none;
-  white-space: pre-wrap;
-}
-.note .note-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
-.note .note-btn { border: 1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.6); padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+
+    /* Sticky Notes */
+    .note {
+      position: absolute;
+      min-width: 120px; max-width: 240px;
+      padding: 8px 10px; border: 1px solid #7f9db9; background: #fffbe6;
+      box-shadow: inset 1px 1px #fff, inset -1px -1px #e6e6e6, 0 2px 10px rgba(0,0,0,.15);
+      cursor: move; user-select: none; white-space: pre-wrap;
+    }
+    .note .note-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+    .note .note-btn { border: 1px solid #7f9db9; background: #e4ecf7; padding: 2px 6px; cursor: pointer; }
 
     @media (prefers-reduced-motion: reduce) {
       progress.marquee { animation: none !important; }
@@ -98,15 +134,17 @@
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
+
+  <!-- Boot -->
   <div id="boot" role="dialog" aria-labelledby="boot-title">
-    <div class="window glass is-bright">
+    <div class="window">
       <div class="title-bar">
-        <div class="title-bar-text" id="boot-title">Starting Up CloutOS</div>
+        <div class="title-bar-text" id="boot-title">Starting Windows XP — CloutOS</div>
         <div class="title-bar-controls">
           <button aria-label="Close" onclick="dismissBoot(true)"></button>
         </div>
       </div>
-      <div class="window-body has-space">
+      <div class="window-body">
         <div class="field-row" style="align-items:center; gap:8px">
           <progress class="marquee" style="width:100%" aria-label="Loading"></progress>
           <span>Loading…</span>
@@ -117,99 +155,85 @@
       </div>
     </div>
   </div>
-  <div class="topbar-wrap" id="menu">
-    <div class="topbar-bg">
-      <div class="menubar">
-        <ul role="menubar" class="can-hover">
-          <li role="menuitem" tabindex="0" aria-haspopup="true">
-            File
-            <ul role="menu">
-              <li role="menuitem"><a href="index.html">Home</a></li>
-              <li role="menuitem"><a href="about.html">About</a></li>
-              <li role="menuitem"><a href="blog.html">Blog</a></li>
-              <li role="menuitem" class="has-divider"><a href="watch.html">Watch</a></li>
-            </ul>
-          </li>
-          <li role="menuitem" tabindex="0" aria-haspopup="true">
-            Links
-            <ul role="menu">
-              <li role="menuitem"><a href="https://lonniejohnston.com" target="_blank" rel="noopener">Portfolio</a></li>
-              <li role="menuitem"><a href="https://www.youtube.com/@CloutySkies" target="_blank" rel="noopener">Main Channel</a></li>
-              <li role="menuitem"><a href="https://www.youtube.com/@CloutySkies2" target="_blank" rel="noopener">Second Channel</a></li>
-              <li role="menuitem"><a href="https://www.instagram.com/thecloutyskies" target="_blank" rel="noopener">Instagram</a></li>
-              <li role="menuitem"><a href="https://www.tiktok.com/@clouty_skies" target="_blank" rel="noopener">TikTok</a></li>
-              <li role="menuitem"><a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank" rel="noopener">Spotify</a></li>
-              <li role="menuitem"><a href="https://soundcloud.com/clouty-skies-extras" target="_blank" rel="noopener">SoundCloud</a></li>
-              <li role="menuitem"><a href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank" rel="noopener">Merch</a></li>
-            </ul>
-          </li>
-          <li role="menuitem" tabindex="0" aria-haspopup="true">
-            Gaming
-            <ul role="menu">
-              <li role="menuitem"><a href="cloutris.html">Cloutris</a></li>
-              <li role="menuitem"><a href="clouty-hops.html">Clouty Hops</a></li>
-              <li role="menuitem"><a href="tic.html">Clouty Toes</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+
+  <!-- Main -->
   <main class="stack" id="main-content">
-    <section class="window glass active hero-wall">
+    <section class="window hero-wall">
       <div class="title-bar">
-        <div class="title-bar-text">Computer — Clouty Skies</div>
+        <div class="title-bar-text">My Computer — Clouty Skies</div>
         <div class="title-bar-controls">
           <button aria-label="Minimize"></button>
           <button aria-label="Maximize"></button>
           <button aria-label="Close"></button>
         </div>
       </div>
-      <div class="window-body has-space">
-        <menu role="tablist" aria-label="Sections">
+      <div class="window-body">
+        <menu role="tablist" aria-label="Sections" class="field-row" style="gap:6px;">
           <button role="tab" aria-controls="tab-home" aria-selected="true">Home</button>
           <button role="tab" aria-controls="tab-media">Media</button>
           <button role="tab" aria-controls="tab-games">Games</button>
         </menu>
+
         <article role="tabpanel" id="tab-home">
           <fieldset>
-            <legend>Folders</legend>
+            <legend>Main</legend>
             <div class="icons" aria-label="Site navigation">
-              <a href="about.html"><figure><img alt="About" src="https://unpkg.com/emoji-datasource-apple/img/apple/64/1f464.png" /><figcaption>About</figcaption></figure></a>
-              <a href="blog.html"><figure><img alt="Blog" src="https://unpkg.com/emoji-datasource-apple/img/apple/64/1f4d1.png" /><figcaption>8,000 MofM Blog</figcaption></figure></a>
-              <a href="watch.html"><figure><img alt="Watch" src="https://www.rw-designer.com/icon-image/23999-48x48x8.png" /><figcaption>Watch</figcaption></figure></a>
+              <a href="about.html"><figure><img alt="About" src="https://win98icons.alexmeub.com/icons/png/user-2.png" /><figcaption>About</figcaption></figure></a>
+              <a href="blog.html"><figure><img alt="Blog" src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" /><figcaption>8,000 MofM Blog</figcaption></figure></a>
+              <a href="watch.html"><figure><img alt="Watch" src="https://win98icons.alexmeub.com/icons/png/movie_clip-0.png" /><figcaption>Watch</figcaption></figure></a>
+              <a href="https://lonniejohnston.com" target="_blank" rel="noopener"><figure><img alt="Portfolio" src="https://win98icons.alexmeub.com/icons/png/camera-0.png" /><figcaption>Portfolio</figcaption></figure></a>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Shop</legend>
+            <div class="icons">
+              <a href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank" rel="noopener"><figure><img alt="Merch" src="https://win98icons.alexmeub.com/icons/png/shopping_bag-0.png" /><figcaption>Merch Store</figcaption></figure></a>
             </div>
           </fieldset>
         </article>
+
         <article role="tabpanel" id="tab-media" hidden>
           <fieldset>
-            <legend>Links</legend>
-            <div class="group">
-              <div><a class="button" href="https://www.youtube.com/@CloutySkies" target="_blank">YouTube</a></div>
-              <div><a class="button" href="https://www.instagram.com/cloutyskies" target="_blank">Instagram</a></div>
-              <div><a class="button" href="https://www.tiktok.com/@cloutyskies" target="_blank" rel="noopener">TikTok</a></div>
+            <legend>Videos & Social</legend>
+            <div class="icons">
+              <a href="https://www.youtube.com/@CloutySkies" target="_blank" rel="noopener"><figure><img alt="YouTube Main" src="https://win98icons.alexmeub.com/icons/png/video_-1.png" /><figcaption>Main Channel</figcaption></figure></a>
+              <a href="https://www.youtube.com/@CloutySkies2" target="_blank" rel="noopener"><figure><img alt="YouTube Second" src="https://win98icons.alexmeub.com/icons/png/video_-2.png" /><figcaption>Second Channel</figcaption></figure></a>
+              <a href="https://www.instagram.com/thecloutyskies" target="_blank" rel="noopener"><figure><img alt="Instagram" src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-4.png" /><figcaption>Instagram</figcaption></figure></a>
+              <a href="https://www.tiktok.com/@clouty_skies" target="_blank" rel="noopener"><figure><img alt="TikTok" src="https://win98icons.alexmeub.com/icons/png/movie_maker-0.png" /><figcaption>TikTok</figcaption></figure></a>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Music</legend>
+            <div class="icons">
+              <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank" rel="noopener"><figure><img alt="Spotify" src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" /><figcaption>Spotify</figcaption></figure></a>
+              <a href="https://soundcloud.com/clouty-skies-extras" target="_blank" rel="noopener"><figure><img alt="SoundCloud" src="https://win98icons.alexmeub.com/icons/png/cd_music-5.png" /><figcaption>SoundCloud</figcaption></figure></a>
             </div>
           </fieldset>
         </article>
+
         <article role="tabpanel" id="tab-games" hidden>
           <fieldset>
             <legend>Games</legend>
-            <div class="group">
-              <div><a class="button" href="cloutris.html">Cloutris</a></div>
-              <div><a class="button" href="clouty-hops.html">Clouty Hops</a></div>
-              <div><a class="button" href="tic.html">Clouty Toes</a></div>
+            <div class="icons">
+              <a href="cloutris.html"><figure><img alt="Cloutris" src="https://win98icons.alexmeub.com/icons/png/game_tetris-0.png" /><figcaption>Cloutris</figcaption></figure></a>
+              <a href="clouty-hops.html"><figure><img alt="Clouty Hops" src="https://win98icons.alexmeub.com/icons/png/game_mine_1-0.png" /><figcaption>Clouty Hops</figcaption></figure></a>
+              <a href="tic.html"><figure><img alt="Clouty Toes" src="https://win98icons.alexmeub.com/icons/png/game_cards-0.png" /><figcaption>Clouty Toes</figcaption></figure></a>
             </div>
           </fieldset>
         </article>
+
         <section class="window" style="margin-top:24px;">
           <div class="title-bar">
             <div class="title-bar-text">Photography Portfolio</div>
           </div>
-          <div class="window-body has-space">
+          <div class="window-body">
             <p>To view my photography portfolio, please visit <a href="https://lonniejohnston.com" target="_blank" rel="noopener">lonniejohnston.com</a>.</p>
           </div>
         </section>
       </div>
+
       <div class="status-bar">
         <p class="status-bar-field">Ready</p>
         <p class="status-bar-field">Items: 7</p>
@@ -217,8 +241,8 @@
       </div>
     </section>
 
-    <!-- Sticky Notes Section -->
-    <section id="notes-window" class="window glass">
+    <!-- Sticky Notes -->
+    <section id="notes-window" class="window">
       <div class="title-bar">
         <div class="title-bar-text">Sticky Notes</div>
         <div class="title-bar-controls">
@@ -227,8 +251,8 @@
           <button aria-label="Close"></button>
         </div>
       </div>
-      <div class="window-body has-space">
-        <form id="note-form" class="group">
+      <div class="window-body">
+        <form id="note-form" class="field-row" style="gap:6px;">
           <input id="note-input" maxlength="140" placeholder="Leave a short note (max 140 chars)" />
           <select id="note-color">
             <option value="#fff8b0">Yellow</option>
@@ -236,14 +260,14 @@
             <option value="#d5ffd3">Green</option>
             <option value="#ffd4e5">Pink</option>
           </select>
-          <button type="submit" class="button default">Pin</button>
+          <button type="submit" class="button">Pin</button>
         </form>
         <div id="notes-canvas" style="position:relative; min-height:220px;"></div>
       </div>
     </section>
 
-    <!-- Windows 7–styled Command Prompt -->
-    <section id="cmd-window" class="window glass">
+    <!-- Command Prompt -->
+    <section id="cmd-window" class="window">
       <div class="title-bar">
         <div class="title-bar-text">Command Prompt</div>
         <div class="title-bar-controls">
@@ -252,9 +276,9 @@
           <button aria-label="Close"></button>
         </div>
       </div>
-      <div class="window-body has-space">
+      <div class="window-body">
         <div id="cmd-screen" style="background:#000;color:#0f0;font-family:Consolas,monospace; padding:10px; height:260px; overflow:auto; border:1px solid #333;">
-          <div>CloutySkiesIntelligence (CSI) [Version 6.1.7601]</div>
+          <div>CloutySkiesIntelligence (CSI) [Version 5.1.2600]</div>
           <div>(c) CloutAI Protocol V.1.02. All rights reserved.</div>
           <div></div>
         </div>
@@ -266,7 +290,8 @@
     </section>
   </main>
 
-  <div id="spotify-player-container" class="window glass is-bright">
+  <!-- Spotify -->
+  <div id="spotify-player-container" class="window">
     <div class="title-bar">
       <div class="title-bar-text">Spotify Player</div>
       <div class="title-bar-controls">
@@ -277,16 +302,17 @@
     </div>
     <div class="window-body">
       <div class="spotify-iframe-wrapper">
-        <iframe style="border:0; border-radius:8px;" src="https://open.spotify.com/embed/artist/3QbHatr8OY2onxDhLD4dmC?utm_source=generator&theme=0" width="100%" height="100%" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        <iframe style="border:0;" src="https://open.spotify.com/embed/artist/3QbHatr8OY2onxDhLD4dmC?utm_source=generator&theme=0" width="100%" height="100%" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
       </div>
     </div>
   </div>
 
+  <!-- Core init + mobile + spotify + tabs + boot -->
   <script>
     (function(){
       if (window.__cloutyInit) return;
       window.__cloutyInit = true;
-      // Boot screen: skip for 24h if visited
+
       if (localStorage.getItem('cloutyBootSkip') === '1') {
         document.getElementById('boot').style.display = 'none';
       } else {
@@ -298,11 +324,9 @@
         b.style.display='none';
         if(window.bootTimer){clearTimeout(window.bootTimer);window.bootTimer=null;}
         localStorage.setItem('cloutyBootSkip','1');
-        setTimeout(()=>{
-          localStorage.setItem('cloutyBootSkip','0');
-        }, 24*60*60*1000);
+        setTimeout(()=>{ localStorage.setItem('cloutyBootSkip','0'); }, 24*60*60*1000);
       };
-      // Menu bar: tap-to-toggle for mobile
+
       document.querySelectorAll('.menubar [role="menuitem"]').forEach(function(item){
         item.addEventListener('touchstart',function(e){
           if(document.body.classList.contains('is-mobile')){
@@ -314,7 +338,7 @@
           }
         });
       });
-      // Tabs
+
       (function(){
         const explorer = document.querySelector('section.window.hero-wall');
         if(!explorer) return;
@@ -325,7 +349,7 @@
           panels.forEach(p => p.hidden = (p.id !== tab.getAttribute('aria-controls')));
         }));
       })();
-      // Spotify: remember minimized/closed state per session
+
       const spotifyPlayer = document.getElementById('spotify-player-container');
       const spotifyMinimizeBtn = document.getElementById('spotify-minimize');
       const spotifyCloseBtn = document.getElementById('spotify-close');
@@ -347,9 +371,7 @@
           spotifyPlayer.classList.add('hidden');
         }
       }
-      // Accessibility: skip link focus
-      document.querySelector('.skip-link').addEventListener('focus',function(){this.style.left='16px';});
-      // Mobile detection
+
       window.detectMobile = function(){
         const ua = navigator.userAgent || navigator.vendor || window.opera;
         const small = window.matchMedia('(max-width: 820px)').matches;
@@ -362,419 +384,185 @@
     })();
   </script>
 
-  <!-- New Feature Scripts: Sticky Notes, Profile Gadget, Theme Switcher, Desktop Shortcuts, Command Prompt -->
-<script>
-(function notesFeature(){
-  const KEY = "clouty_notes_v1";
-  const canvas = document.getElementById('notes-canvas');
-  const form = document.getElementById('note-form');
-  const input = document.getElementById('note-input');
-  const colorSel = document.getElementById('note-color');
-  if(!canvas || !form) return;
-
-  const sanitize = s => (s||"").replace(/[<]/g, "&lt;").slice(0,140);
-  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)||"[]"); } catch(_){ return []; } };
-  const save = arr => localStorage.setItem(KEY, JSON.stringify(arr));
-
-  let notes = load();
-  const rnd = () => Math.random().toString(36).slice(2,10);
-
-  function render(){
-    canvas.innerHTML = "";
-    notes.forEach(n => {
-      const el = document.createElement('div');
-      el.className = 'note';
-      el.style.left = (n.x||10)+'px';
-      el.style.top  = (n.y||10)+'px';
-      el.style.background = n.color || '#fff8b0';
-      el.dataset.id = n.id;
-      el.innerHTML = `<div>${sanitize(n.text)}</div>\n        <div class="note-actions">\n          <button class="note-btn" data-act="del">Delete</button>\n        </div>`;
-      canvas.appendChild(el);
-      makeDraggable(el);
-    });
-  }
-
-  function makeDraggable(el){
-    let sx=0, sy=0, ox=0, oy=0, dragging=false;
-    el.addEventListener('pointerdown', e => {
-      if(e.target.closest('.note-btn')) return;
-      dragging = true; el.setPointerCapture(e.pointerId);
-      sx = e.clientX; sy = e.clientY;
-      const r = el.getBoundingClientRect();
-      ox = r.left - canvas.getBoundingClientRect().left;
-      oy = r.top  - canvas.getBoundingClientRect().top;
-    });
-    el.addEventListener('pointermove', e => {
-      if(!dragging) return;
-      const nx = Math.max(0, ox + (e.clientX - sx));
-      const ny = Math.max(0, oy + (e.clientY - sy));
-      el.style.left = nx + 'px';
-      el.style.top  = ny + 'px';
-    });
-    el.addEventListener('pointerup', e => {
-      if(!dragging) return;
-      dragging = false;
-      const id = el.dataset.id;
-      const n = notes.find(x=>x.id===id);
-      if(n){ n.x = parseInt(el.style.left,10)||0; n.y = parseInt(el.style.top,10)||0; save(notes); }
-    });
-  }
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const text = sanitize(input.value);
-    if(!text) return;
-    const color = colorSel.value || '#fff8b0';
-    const n = { id: rnd(), text, x: 10 + Math.floor(Math.random()*80), y: 20 + Math.floor(Math.random()*60), color };
-    notes.push(n); save(notes); input.value=""; render();
-  });
-
-  canvas.addEventListener('click', e => {
-    const btn = e.target.closest('.note-btn');
-    if(!btn) return;
-    const id = e.target.closest('.note').dataset.id;
-    notes = notes.filter(n => n.id!==id); save(notes); render();
-  });
-
-  render();
-})();
-
-(function cmd(){
-  const scr = document.getElementById('cmd-screen');
-  const inp = document.getElementById('cmd-input');
-  if(!scr || !inp) return;
-  
-  const write = (s="") => { const d=document.createElement('div'); d.textContent=s; scr.appendChild(d); scr.scrollTop = scr.scrollHeight; };
-  const prompt = (line) => write("C:\\Users\\Guest> " + (line||""));
-
-  const safeMath = (expr) => {
-    if(!/^[0-9+\-*/().%\s^]+$/.test(expr)) return "Invalid expression";
-    return Function('"use strict";return (' + expr.replace(/\^/g,'**') + ')')();
-  };
-
-  const openUrl = (u) => window.open(u.startsWith('http') ? u : `https://${u}`, '_blank');
-
-  async function notesFetchAll() {
-    const r = await fetch(NOTES_API, {cache:'no-store'}).catch(()=>null);
-    if(!r || !r.ok) return null;
-    return r.json();
-  }
-  async function notesAdd(text, color="#fff8b0") {
-    const r = await fetch(NOTES_API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, color, x: 20+Math.floor(Math.random()*120), y: 30+Math.floor(Math.random()*80), author: getProfileName()})}).catch(()=>null);
-    return r && r.ok ? r.json() : null;
-  }
-  async function notesDelete(id) {
-    const r = await fetch(`${NOTES_API}/${encodeURIComponent(id)}`, {method:'DELETE'}).catch(()=>null);
-    return !!(r && (r.ok || r.status===204));
-  }
-  function getProfileName(){
-    try{ const p=JSON.parse(localStorage.getItem('clouty_profile_v1')||'{}'); return p.name || 'Guest'; }catch(_){ return 'Guest'; }
-  }
-
-  function refreshNotesCanvas() {
-    const ev = new Event('submit'); ev.preventDefault = ()=>{};
+  <!-- Local sticky notes (frontend, can point to API later if needed) -->
+  <script>
+  (function notesFeature(){
+    const KEY = "clouty_notes_v1";
+    const canvas = document.getElementById('notes-canvas');
     const form = document.getElementById('note-form');
-    if (form && typeof form.dispatchEvent === 'function') { /* noop */ }
-  }
+    const input = document.getElementById('note-input');
+    const colorSel = document.getElementById('note-color');
+    if(!canvas || !form) return;
 
-  const cmds = {
-    help(){
-      write("Commands:");
-      write("  help                     Show this help");
-      write("  clear                    Clear the console");
-      write("  whoami                   Show profile name");
-      write("  time                     Show local time");
-      write("  calc <expr>              Calculate math (supports + - * / % ^ )");
-      write("  open <url>               Open URL (e.g. open clouty-skies.com)");
-      write("  goto <page>              about | blog | portfolio | watch | cloutris | tetris | home");
-      write("  glass <on|off|toggle>    Control window glass effect");
-      write("  wallpaper <on|off>       Show or hide wallpaper");
-      write("  spotify <open|min|close> Control Spotify widget");
-      write("  notes list               List shared notes");
-      write("  notes add <text>         Add a shared sticky note");
-      write("  notes del <id>           Delete note by id");
-      write("  bsod                     Show boot overlay");
-      write("  reload                   Reload the page");
-    },
-    clear(){ scr.innerHTML=""; },
-    whoami(){ write(getProfileName()); },
-    time(){ write(new Date().toString()); },
-    calc(arg){
-      if(!arg){ write("Usage: calc <expr>"); return; }
-      try { write(String(safeMath(arg))); } catch(e){ write("Error"); }
-    },
-    open(arg){
-      if(!arg){ write("Usage: open <url>"); return; }
-      openUrl(arg); write(`Opening ${arg}...`);
-    },
-    goto(arg){
-      const map = { home:'index.html', about:'about.html', blog:'blog.html', portfolio:'portfolio.html', watch:'watch.html', cloutris:'cloutris.html', tetris:'tetris.html' };
-      const p = map[(arg||"").toLowerCase()];
-      if(!p){ write("Pages: home, about, blog, portfolio, watch, cloutris, tetris"); return; }
-      location.href = p;
-    },
-    glass(arg){
-      const act=(arg||'toggle').toLowerCase();
-      const winEls = document.querySelectorAll('.window');
-      if(act==='on'){ winEls.forEach(w=>w.classList.add('glass')); write("Glass on"); return; }
-      if(act==='off'){ winEls.forEach(w=>w.classList.remove('glass')); write("Glass off"); return; }
-      winEls.forEach(w=>w.classList.toggle('glass')); write("Glass toggled");
-    },
-    wallpaper(arg){
-      if(!arg){ write("Usage: wallpaper on|off"); return; }
-      if(arg==='off'){ document.body.classList.add('no-wall'); document.body.style.background='#eef3fb'; write("Wallpaper off"); return; }
-      if(arg==='on'){ document.body.classList.remove('no-wall'); document.body.style.background="#0a5fad url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1920&auto=format&fit=crop') center/cover fixed"; write("Wallpaper on"); return; }
-    },
-    spotify(arg){
-      if(!spotify){ write("Spotify widget not found"); return; }
-      const a=(arg||'').toLowerCase();
-      if(a==='open'){ spotify.classList.remove('hidden'); spotify.classList.remove('minimized'); write("Spotify opened"); return; }
-      if(a==='min'){ spotify.classList.toggle('minimized'); write("Spotify minimized toggled"); return; }
-      if(a==='close'){ spotify.classList.add('hidden'); write("Spotify closed"); return; }
-      write("Usage: spotify open|min|close");
-    },
-    async "notes list"(){
-      const data = await notesFetchAll();
-      if(!data){ write("Notes API unavailable"); return; }
-      if(!data.length){ write("(no notes)"); return; }
-      data.forEach(n=> write(`${n.id}: ${n.text}${n.author?` — ${n.author}`:''}`));
-    },
-    async "notes add"(text){
-      if(!text){ write("Usage: notes add <text>"); return; }
-      const n = await notesAdd(text);
-      if(n){ write(`Added ${n.id}`); } else { write("Failed to add"); }
-    },
-    async "notes del"(id){
-      if(!id){ write("Usage: notes del <id>"); return; }
-      const ok = await notesDelete(id);
-      write(ok ? "Deleted" : "Failed to delete");
-    },
-    bsod(){
-      const b=document.getElementById('boot');
-      if(!b){ write("Boot overlay missing"); return; }
-      b.style.display='grid'; write("Boot overlay shown");
-    },
-    reload(){ location.reload(); }
-  };
+    const sanitize = s => (s||"").replace(/[<]/g, "&lt;").slice(0,140);
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY)||"[]"); } catch(_){ return []; } };
+    const save = arr => localStorage.setItem(KEY, JSON.stringify(arr));
+    let notes = load();
+    const rnd = () => Math.random().toString(36).slice(2,10);
 
-  const history = [];
-  let hIdx = -1;
+    function render(){
+      canvas.innerHTML = "";
+      notes.forEach(n => {
+        const el = document.createElement('div');
+        el.className = 'note';
+        el.style.left = (n.x||10)+'px';
+        el.style.top  = (n.y||10)+'px';
+        el.style.background = n.color || '#fff8b0';
+        el.dataset.id = n.id;
+        el.innerHTML = `<div>${sanitize(n.text)}</div>
+          <div class="note-actions">
+            <button class="note-btn" data-act="del">Delete</button>
+          </div>`;
+        canvas.appendChild(el);
+        makeDraggable(el);
+      });
+    }
 
-  const parse = (line) => {
-    const t = line.trim();
-    if(!t) return {cmd:"", arg:""};
-    const parts = t.split(/\s+/);
-    if(parts[0]==='notes' && parts[1]==='add'){ return {cmd:"notes add", arg: t.replace(/^notes\s+add\s+/i,'')}; }
-    if(parts[0]==='notes' && parts[1]==='del'){ return {cmd:"notes del", arg: parts.slice(2).join(' ')}; }
-    if(parts[0]==='notes' && parts[1]==='list'){ return {cmd:"notes list", arg:""}; }
-    const [c, ...rest] = parts;
-    return {cmd:c.toLowerCase(), arg: rest.join(' ')};
-  };
+    function makeDraggable(el){
+      let sx=0, sy=0, ox=0, oy=0, dragging=false;
+      el.addEventListener('pointerdown', e => {
+        if(e.target.closest('.note-btn')) return;
+        dragging = true; el.setPointerCapture(e.pointerId);
+        sx = e.clientX; sy = e.clientY;
+        const r = el.getBoundingClientRect();
+        ox = r.left - canvas.getBoundingClientRect().left;
+        oy = r.top  - canvas.getBoundingClientRect().top;
+      });
+      el.addEventListener('pointermove', e => {
+        if(!dragging) return;
+        const nx = Math.max(0, ox + (e.clientX - sx));
+        const ny = Math.max(0, oy + (e.clientY - sy));
+        el.style.left = nx + 'px';
+        el.style.top  = ny + 'px';
+      });
+      el.addEventListener('pointerup', () => {
+        if(!dragging) return;
+        dragging = false;
+        const id = el.dataset.id;
+        const n = notes.find(x=>x.id===id);
+        if(n){ n.x = parseInt(el.style.left,10)||0; n.y = parseInt(el.style.top,10)||0; save(notes); }
+      });
+    }
 
-  write(); // spacer
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = sanitize(input.value);
+      if(!text) return;
+      const color = colorSel.value || '#fff8b0';
+      const n = { id: rnd(), text, x: 10 + Math.floor(Math.random()*80), y: 20 + Math.floor(Math.random()*60), color };
+      notes.push(n); save(notes); input.value=""; render();
+    });
 
-  inp.addEventListener('keydown', async (e)=>{
-    if(e.key==='Enter'){
-      const line = inp.value; inp.value='';
-      prompt(line);
-      if(!line.trim()){ write(); return; }
-      history.unshift(line); hIdx = -1;
+    canvas.addEventListener('click', e => {
+      const btn = e.target.closest('.note-btn');
+      if(!btn) return;
+      const id = e.target.closest('.note').dataset.id;
+      notes = notes.filter(n => n.id!==id); save(notes); render();
+    });
 
-      const {cmd, arg} = parse(line);
-      const fn = cmds[cmd];
-      if(typeof fn === 'function'){
-        const out = fn(arg);
-        if(out && typeof out.then==='function') { await out; }
-      } else {
-        write(`'${cmd}' is not recognized as an internal or external command.`);
+    render();
+  })();
+  </script>
+
+  <!-- Command Prompt: actions -->
+  <script>
+  (function(){
+    if (window.__cloutyCmdInit) return; window.__cloutyCmdInit = true;
+
+    const scr = document.getElementById('cmd-screen');
+    const inp = document.getElementById('cmd-input');
+    if(!scr || !inp) return;
+
+    const spotify = document.getElementById('spotify-player-container');
+    const write = (s="") => { const d=document.createElement('div'); d.textContent=s; scr.appendChild(d); scr.scrollTop = scr.scrollHeight; };
+    const prompt = (line) => write("C:\\Users\\Guest> " + (line||""));
+    const safeMath = (expr) => { if(!/^[0-9+\-*/().%\s^]+$/.test(expr)) return "Invalid expression"; return Function('"use strict";return (' + expr.replace(/\^/g,'**') + ')')(); };
+    const openUrl = (u) => window.open(u.startsWith('http') ? u : `https://${u}`, '_blank');
+
+    const cmds = {
+      help(){
+        write("Commands:");
+        write("  help                     Show this help");
+        write("  clear                    Clear the console");
+        write("  time                     Show local time");
+        write("  calc <expr>              Calculate math (supports + - * / % ^ )");
+        write("  open <url>               Open URL (e.g. open clouty-skies.com)");
+        write("  goto <page>              about | blog | portfolio | watch | cloutris | tetris | home");
+        write("  wallpaper <on|off>       Show or hide wallpaper");
+        write("  spotify <open|min|close> Control Spotify widget");
+        write("  reload                   Reload the page");
+      },
+      clear(){ scr.innerHTML=""; },
+      time(){ write(new Date().toString()); },
+      calc(arg){ if(!arg){ write("Usage: calc <expr>"); return; } try { write(String(safeMath(arg))); } catch(e){ write("Error"); } },
+      open(arg){ if(!arg){ write("Usage: open <url>"); return; } openUrl(arg); write(`Opening ${arg}...`); },
+      goto(arg){
+        const map = { home:'index.html', about:'about.html', blog:'blog.html', portfolio:'portfolio.html', watch:'watch.html', cloutris:'cloutris.html', tetris:'tetris.html' };
+        const p = map[(arg||"").toLowerCase()];
+        if(!p){ write("Pages: home, about, blog, portfolio, watch, cloutris, tetris"); return; }
+        location.href = p;
+      },
+      wallpaper(arg){
+        if(!arg){ write("Usage: wallpaper on|off"); return; }
+        if(arg==='off'){ document.body.style.background='#3a6ea5'; write("Wallpaper off"); return; }
+        if(arg==='on'){ document.body.style.background = '#245EDC url("https://wallpaperaccess.com/full/528434.jpg") center/cover fixed'; write("Wallpaper on"); return; }
+      },
+      spotify(arg){
+        if(!spotify){ write("Spotify widget not found"); return; }
+        const a=(arg||'').toLowerCase();
+        if(a==='open'){ spotify.classList.remove('hidden'); spotify.classList.remove('minimized'); write("Spotify opened"); return; }
+        if(a==='min'){ spotify.classList.toggle('minimized'); write("Spotify minimized toggled"); return; }
+        if(a==='close'){ spotify.classList.add('hidden'); write("Spotify closed"); return; }
+        write("Usage: spotify open|min|close");
+      },
+      reload(){ location.reload(); }
+    };
+
+    const history = []; let hIdx = -1;
+    const parse = (line) => { const t = line.trim(); if(!t) return {cmd:"", arg:""}; const [c, ...rest] = t.split(/\s+/); return {cmd:c.toLowerCase(), arg: rest.join(' ')}; };
+
+    write();
+    inp.addEventListener('keydown', async (e)=>{
+      if(e.key==='Enter'){
+        const line = inp.value; inp.value=''; prompt(line);
+        if(!line.trim()){ write(); return; }
+        history.unshift(line); hIdx = -1;
+        const {cmd, arg} = parse(line);
+        const fn = cmds[cmd];
+        if(typeof fn === 'function'){
+          const out = fn(arg); if(out && typeof out.then==='function') { await out; }
+        } else { write(`'${cmd}' is not recognized as an internal or external command.`); }
+        return;
       }
-      return;
-    }
-    if(e.key==='ArrowUp'){
-      if(history.length && hIdx+1 < history.length){ hIdx++; inp.value = history[hIdx]; }
-      e.preventDefault(); return;
-    }
-    if(e.key==='ArrowDown'){
-      if(hIdx>0){ hIdx--; inp.value = history[hIdx]; }
-      else { hIdx=-1; inp.value=""; }
-      e.preventDefault(); return;
-    }
-  });
-})();
-</script>
+      if(e.key==='ArrowUp'){ if(history.length && hIdx+1 < history.length){ hIdx++; inp.value = history[hIdx]; } e.preventDefault(); }
+      if(e.key==='ArrowDown'){ if(hIdx>0){ hIdx--; inp.value = history[hIdx]; } else { hIdx=-1; inp.value=""; } e.preventDefault(); }
+    });
+  })();
+  </script>
 
-<!-- Windows 7–styled Command Prompt logic (separate script) -->
-<script>
-(function(){
-  if (window.__cloutyCmdInit) return; window.__cloutyCmdInit = true;
-
-  const scr = document.getElementById('cmd-screen');
-  const inp = document.getElementById('cmd-input');
-  if(!scr || !inp) return;
   
-  const spotify = document.getElementById('spotify-player-container');
-  const notesCanvas = document.getElementById('notes-canvas');
-  const NOTES_API = '/api/notes';
 
-  const write = (s="") => { const d=document.createElement('div'); d.textContent=s; scr.appendChild(d); scr.scrollTop = scr.scrollHeight; };
-  const prompt = (line) => write("C:\\Users\\Guest> " + (line||""));
-
-  const safeMath = (expr) => {
-    if(!/^[0-9+\-*/().%\s^]+$/.test(expr)) return "Invalid expression";
-    return Function('"use strict";return (' + expr.replace(/\^/g,'**') + ')')();
-  };
-
-  const openUrl = (u) => window.open(u.startsWith('http') ? u : `https://${u}`, '_blank');
-
-  async function notesFetchAll() {
-    const r = await fetch(NOTES_API, {cache:'no-store'}).catch(()=>null);
-    if(!r || !r.ok) return null;
-    return r.json();
-  }
-  async function notesAdd(text, color="#fff8b0") {
-    const r = await fetch(NOTES_API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, color, x: 20+Math.floor(Math.random()*120), y: 30+Math.floor(Math.random()*80), author: getProfileName()})}).catch(()=>null);
-    return r && r.ok ? r.json() : null;
-  }
-  async function notesDelete(id) {
-    const r = await fetch(`${NOTES_API}/${encodeURIComponent(id)}`, {method:'DELETE'}).catch(()=>null);
-    return !!(r && (r.ok || r.status===204));
-  }
-  function getProfileName(){
-    try{ const p=JSON.parse(localStorage.getItem('clouty_profile_v1')||'{}'); return p.name || 'Guest'; }catch(_){ return 'Guest'; }
-  }
-
-  function refreshNotesCanvas() {
-    const ev = new Event('submit'); ev.preventDefault = ()=>{};
-    const form = document.getElementById('note-form');
-    if (form && typeof form.dispatchEvent === 'function') { /* noop */ }
-  }
-
-  const cmds = {
-    help(){
-      write("Commands:");
-      write("  help                     Show this help");
-      write("  clear                    Clear the console");
-      write("  whoami                   Show profile name");
-      write("  time                     Show local time");
-      write("  calc <expr>              Calculate math (supports + - * / % ^ )");
-      write("  open <url>               Open URL (e.g. open clouty-skies.com)");
-      write("  goto <page>              about | blog | portfolio | watch | cloutris | tetris | home");
-      write("  glass <on|off|toggle>    Control window glass effect");
-      write("  wallpaper <on|off>       Show or hide wallpaper");
-      write("  spotify <open|min|close> Control Spotify widget");
-      write("  notes list               List shared notes");
-      write("  notes add <text>         Add a shared sticky note");
-      write("  notes del <id>           Delete note by id");
-      write("  bsod                     Show boot overlay");
-      write("  reload                   Reload the page");
-    },
-    clear(){ scr.innerHTML=""; },
-    whoami(){ write(getProfileName()); },
-    time(){ write(new Date().toString()); },
-    calc(arg){
-      if(!arg){ write("Usage: calc <expr>"); return; }
-      try { write(String(safeMath(arg))); } catch(e){ write("Error"); }
-    },
-    open(arg){
-      if(!arg){ write("Usage: open <url>"); return; }
-      openUrl(arg); write(`Opening ${arg}...`);
-    },
-    goto(arg){
-      const map = { home:'index.html', about:'about.html', blog:'blog.html', portfolio:'portfolio.html', watch:'watch.html', cloutris:'cloutris.html', tetris:'tetris.html' };
-      const p = map[(arg||"").toLowerCase()];
-      if(!p){ write("Pages: home, about, blog, portfolio, watch, cloutris, tetris"); return; }
-      location.href = p;
-    },
-    glass(arg){
-      const act=(arg||'toggle').toLowerCase();
-      const winEls = document.querySelectorAll('.window');
-      if(act==='on'){ winEls.forEach(w=>w.classList.add('glass')); write("Glass on"); return; }
-      if(act==='off'){ winEls.forEach(w=>w.classList.remove('glass')); write("Glass off"); return; }
-      winEls.forEach(w=>w.classList.toggle('glass')); write("Glass toggled");
-    },
-    wallpaper(arg){
-      if(!arg){ write("Usage: wallpaper on|off"); return; }
-      if(arg==='off'){ document.body.classList.add('no-wall'); document.body.style.background='#eef3fb'; write("Wallpaper off"); return; }
-      if(arg==='on'){ document.body.classList.remove('no-wall'); document.body.style.background="#0a5fad url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1920&auto=format&fit=crop') center/cover fixed"; write("Wallpaper on"); return; }
-    },
-    spotify(arg){
-      if(!spotify){ write("Spotify widget not found"); return; }
-      const a=(arg||'').toLowerCase();
-      if(a==='open'){ spotify.classList.remove('hidden'); spotify.classList.remove('minimized'); write("Spotify opened"); return; }
-      if(a==='min'){ spotify.classList.toggle('minimized'); write("Spotify minimized toggled"); return; }
-      if(a==='close'){ spotify.classList.add('hidden'); write("Spotify closed"); return; }
-      write("Usage: spotify open|min|close");
-    },
-    async "notes list"(){
-      const data = await notesFetchAll();
-      if(!data){ write("Notes API unavailable"); return; }
-      if(!data.length){ write("(no notes)"); return; }
-      data.forEach(n=> write(`${n.id}: ${n.text}${n.author?` — ${n.author}`:''}`));
-    },
-    async "notes add"(text){
-      if(!text){ write("Usage: notes add <text>"); return; }
-      const n = await notesAdd(text);
-      if(n){ write(`Added ${n.id}`); } else { write("Failed to add"); }
-    },
-    async "notes del"(id){
-      if(!id){ write("Usage: notes del <id>"); return; }
-      const ok = await notesDelete(id);
-      write(ok ? "Deleted" : "Failed to delete");
-    },
-    bsod(){
-      const b=document.getElementById('boot');
-      if(!b){ write("Boot overlay missing"); return; }
-      b.style.display='grid'; write("Boot overlay shown");
-    },
-    reload(){ location.reload(); }
-  };
-
-  const history = [];
-  let hIdx = -1;
-
-  const parse = (line) => {
-    const t = line.trim();
-    if(!t) return {cmd:"", arg:""};
-    const parts = t.split(/\s+/);
-    if(parts[0]==='notes' && parts[1]==='add'){ return {cmd:"notes add", arg: t.replace(/^notes\s+add\s+/i,'')}; }
-    if(parts[0]==='notes' && parts[1]==='del'){ return {cmd:"notes del", arg: parts.slice(2).join(' ')}; }
-    if(parts[0]==='notes' && parts[1]==='list'){ return {cmd:"notes list", arg:""}; }
-    const [c, ...rest] = parts;
-    return {cmd:c.toLowerCase(), arg: rest.join(' ')};
-  };
-
-  write(); // spacer
-
-  inp.addEventListener('keydown', async (e)=>{
-    if(e.key==='Enter'){
-      const line = inp.value; inp.value='';
-      prompt(line);
-      if(!line.trim()){ write(); return; }
-      history.unshift(line); hIdx = -1;
-
-      const {cmd, arg} = parse(line);
-      const fn = cmds[cmd];
-      if(typeof fn === 'function'){
-        const out = fn(arg);
-        if(out && typeof out.then==='function') { await out; }
-      } else {
-        write(`'${cmd}' is not recognized as an internal or external command.`);
-      }
-      return;
+  <!-- Title bar dropdown logic -->
+  <script>
+  (function(){
+    var btn = document.getElementById('tb-options-btn');
+    var dd = document.getElementById('tb-dropdown');
+    if(btn && dd){
+      btn.addEventListener('click',function(e){
+        dd.style.display = dd.style.display==='block' ? 'none' : 'block';
+        e.stopPropagation();
+      });
+      btn.addEventListener('touchstart',function(e){
+        dd.style.display = dd.style.display==='block' ? 'none' : 'block';
+        e.stopPropagation();
+      });
+      document.addEventListener('click',function(){ dd.style.display='none'; });
+      dd.addEventListener('click',function(e){ e.stopPropagation(); });
+      btn.addEventListener('keydown',function(e){
+        if(e.key==='Escape'){ dd.style.display='none'; }
+      });
     }
-    if(e.key==='ArrowUp'){
-      if(history.length && hIdx+1 < history.length){ hIdx++; inp.value = history[hIdx]; }
-      e.preventDefault(); return;
-    }
-    if(e.key==='ArrowDown'){
-      if(hIdx>0){ hIdx--; inp.value = history[hIdx]; }
-      else { hIdx=-1; inp.value=""; }
-      e.preventDefault(); return;
-    }
-  });
-})();
-</script>
-
-<!-- End New Feature Scripts -->
+  })();
+  </script>
 </body>
 </html>
