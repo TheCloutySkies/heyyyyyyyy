@@ -4,402 +4,75 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Watch - Clouty Skies</title>
+  <link rel="stylesheet" href="https://unpkg.com/7.css" />
   <style>
-    :root {
-      --vista-bg: #1a1f2b;
-      --vista-glass: rgba(40, 65, 95, 0.65);
-      --vista-border: rgba(100, 150, 200, 0.3);
-      --vista-shadow: 0 0 20px rgba(0, 30, 60, 0.6);
-      --vista-text: #e0e5ef;
-    }
-
     body {
-      margin: 0;
-      padding: 0;
-      background: url("https://c4.wallpaperflare.com/wallpaper/845/501/105/windows-vista-aero-45-wallpaper-preview.jpg");
-      background-size: cover;
-      background-attachment: fixed;
-      font-family: "Segoe UI", sans-serif;
+      background: #0a5fad url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1920&auto=format&fit=crop') center/cover fixed;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      color: var(--vista-text);
-    }
-
-    .header {
-      background: var(--vista-glass);
-      padding: 20px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--vista-border);
-      color: var(--vista-text);
-    }
-
-    .header h1 {
-      color: #335c81;
       margin: 0;
-    }
-
-    .back-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      padding: 12px 24px;
-      background: var(--vista-glass);
-      color: var(--vista-text);
-      border: 1px solid var(--vista-border);
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      box-shadow: 
-        0 2px 5px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      z-index: 1000;
-    }
-
-    .back-button:hover {
-      transform: translateY(-2px);
-      background: var(--vista-glass-dark);
-      box-shadow: 
-        0 4px 10px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    }
-
-    .video-container {
-      flex: 1;
       display: flex;
-      justify-content: center;
       align-items: center;
-      padding: 20px;
-    }
-
-    .player-wrapper {
-      width: 90vw;
-      max-width: 1200px;
-      aspect-ratio: 16/9;
-      background: var(--vista-glass);
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: var(--vista-shadow);
-      border: 1px solid var(--vista-border);
-      backdrop-filter: blur(15px);
-    }
-
-    #player {
-      width: 100%;
-      height: 100%;
-    }
-
-    .playlist-controls {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      width: max-content;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(15px);
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    .control-button {
-      padding: 12px 24px;
-      background: var(--vista-glass);
-      color: var(--vista-text);
-      border: 1px solid var(--vista-border);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-      box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-
-    .control-button:hover {
-      transform: translateY(-2px);
-      background: var(--vista-glass-dark);
-    }
-
-    .control-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .video-card {
-      background: var(--vista-glass);
-      backdrop-filter: blur(15px);
-      border: 1px solid var(--vista-border);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: var(--vista-shadow);
-      transition: transform 0.3s ease;
-    }
-
-    .video-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .video-card iframe {
-      width: 100%;
-      aspect-ratio: 16/9;
-      border: none;
-    }
-
-    .video-info {
-      padding: 15px;
-    }
-
-    .video-title {
-      color: var(--vista-text);
-      margin: 0 0 10px 0;
-    }
-
-    .video-description {
-      color: var(--vista-text);
-      opacity: 0.8;
-      font-size: 0.9em;
-    }
-
-    .channel-container {
-      position: relative;
-      width: 100%;
-      max-width: 1200px;
-      margin: 20px auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .channel-embed {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: var(--vista-glass);
-      border-radius: 15px;
-      overflow: hidden;
-      border: 1px solid var(--vista-border);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .channel-embed iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--vista-glass);
-      display: flex;
       justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(5px);
     }
-
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid var(--vista-border);
-      border-top-color: #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .window {
+      max-width: 900px;
+      margin: auto;
     }
-
-    .channel-label {
-      background: var(--vista-glass);
-      color: var(--vista-text);
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid var(--vista-border);
-      backdrop-filter: blur(5px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .window-body {
+      padding: 24px;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
     .channel-buttons {
       display: flex;
       justify-content: center;
       gap: 20px;
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-
-    .channel-button {
-      padding: 12px 24px;
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.15) 0%,
-        rgba(60, 120, 180, 0.5) 50%,
-        rgba(40, 80, 120, 0.7) 100%
-      );
-      color: var(--vista-text);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      text-decoration: none;
+    .channel-buttons .button {
+      min-width: 160px;
+    }
+    .channel-embed {
+      margin-bottom: 32px;
+    }
+    .channel-label {
+      margin-top: 8px;
       font-weight: bold;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      box-shadow: 
-        0 2px 5px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      position: relative;
-      overflow: hidden;
+      color: #1b1b1b;
     }
-
-    .channel-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-      );
-      transition: left 0.5s ease;
-    }
-
-    .channel-button:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.2) 0%,
-        rgba(70, 130, 190, 0.6) 50%,
-        rgba(50, 90, 130, 0.8) 100%
-      );
-      box-shadow: 
-        0 4px 10px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    }
-
-    .channel-button:hover::before {
-      left: 100%;
+    @media (max-width: 900px) {
+      .window { max-width: 100vw; }
+      .window-body { padding: 8px; }
     }
   </style>
 </head>
 <body>
-  <a href="index.html" class="back-button">Back to Home</a>
-  
-  <div class="header">
-    <h1>Clouty Skies YouTube Channels</h1>
-    <div class="channel-buttons">
-      <a href="https://www.youtube.com/@CloutySkies" target="_blank" class="channel-button">
-        Visit Main Channel
-      </a>
-      <a href="https://www.youtube.com/@CloutySkies2" target="_blank" class="channel-button">
-        Visit Second Channel
-      </a>
+  <a href="index.html" class="button" style="position:fixed;top:20px;left:20px;z-index:1000;">Back to Home</a>
+  <section class="window glass is-bright">
+    <div class="title-bar">
+      <div class="title-bar-text">Clouty Skies YouTube Channels</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize"></button>
+        <button aria-label="Maximize"></button>
+        <button aria-label="Close"></button>
+      </div>
     </div>
-  </div>
-
-  <div class="channel-container">
-    <div class="channel-embed">
-        <div class="loading-overlay">
-            <div class="loading-spinner"></div>
-        </div>
-        <iframe 
-            src="https://www.youtube.com/embed/videoseries?list=UUlGZ1mVWqeLSfKySDC-DS0Q"
-            title="Main Channel"
-            allowfullscreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            onload="handleIframeLoad(this)"
-            onerror="handleIframeError(this)">
-        </iframe>
+    <div class="window-body has-space">
+      <div class="channel-buttons">
+        <a href="https://www.youtube.com/@CloutySkies" target="_blank" class="button default">Visit Main Channel</a>
+        <a href="https://www.youtube.com/@CloutySkies2" target="_blank" class="button">Visit Second Channel</a>
+      </div>
+      <div class="channel-embed">
+        <iframe style="width:100%;aspect-ratio:16/9;border-radius:8px;border:1px solid #ccc;" src="https://www.youtube.com/embed/videoseries?list=UUlGZ1mVWqeLSfKySDC-DS0Q" title="Main Channel" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
         <div class="channel-label">Main Channel - Original Content</div>
-    </div>
-
-    <div class="channel-embed">
-        <div class="loading-overlay">
-            <div class="loading-spinner"></div>
-        </div>
-        <iframe 
-            src="https://www.youtube.com/embed/videoseries?list=UUQZChf2yw5yPupP8W2y_Yyg"
-            title="Second Channel"
-            allowfullscreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            onload="handleIframeLoad(this)"
-            onerror="handleIframeError(this)">
-        </iframe>
+      </div>
+      <div class="channel-embed">
+        <iframe style="width:100%;aspect-ratio:16/9;border-radius:8px;border:1px solid #ccc;" src="https://www.youtube.com/embed/videoseries?list=UUQZChf2yw5yPupP8W2y_Yyg" title="Second Channel" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
         <div class="channel-label">Second Channel - Behind the Scenes</div>
+      </div>
     </div>
-</div>
-
-  <script>
-    function handleIframeLoad(iframe) {
-        const loadingOverlay = iframe.previousElementSibling;
-        loadingOverlay.style.display = 'none';
-        console.log('Successfully loaded:', iframe.title);
-    }
-
-    function handleIframeError(iframe) {
-        const loadingOverlay = iframe.previousElementSibling;
-        loadingOverlay.innerHTML = `
-            <div style="text-align: center; color: var(--vista-text);">
-                <h3>Failed to load channel</h3>
-                <button onclick="reloadIframe(this)" class="control-button">
-                    Retry Loading
-                </button>
-            </div>
-        `;
-        console.error('Failed to load:', iframe.title);
-    }
-
-    function reloadIframe(button) {
-        const iframe = button.closest('.channel-embed').querySelector('iframe');
-        const loadingOverlay = iframe.previousElementSibling;
-        loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
-        iframe.src = iframe.src;
-    }
-
-    // Add error logging
-    window.addEventListener('error', function(e) {
-        if (e.target.tagName === 'IFRAME') {
-            console.error('Video loading error:', e);
-            handleIframeError(e.target);
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const iframes = document.querySelectorAll('.channel-embed iframe');
-        
-        iframes.forEach(iframe => {
-            // Add error handling for each iframe
-            iframe.addEventListener('load', function() {
-                console.log('Successfully loaded:', this.title);
-            });
-            
-            iframe.addEventListener('error', function() {
-                handleIframeError(this);
-            });
-        });
-    });
-  </script>
+    <div class="status-bar">
+      <p class="status-bar-field">Ready</p>
+      <p class="status-bar-field">© Clouty Skies</p>
+    </div>
+  </section>
 </body>
 </html>
