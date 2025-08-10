@@ -4,45 +4,127 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About</title>
-  <link rel="stylesheet" href="https://unpkg.com/7.css" />
+  <link rel="stylesheet" href="https://unpkg.com/xp.css" />
   <style>
     body {
-      background: #0a5fad url('horrid.png') center/cover fixed;
+      background: #245EDC url('horrid.png') center/cover fixed;
       min-height: 100vh;
       margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+      padding: 20px;
     }
     .window {
-      max-width: 480px;
+      width: 480px;
+      max-width: 90vw;
       margin: auto;
     }
     .window-body {
+      padding: 24px;
+      background: #fff;
+    }
+    h1 {
+      margin: 0 0 20px 0;
       text-align: center;
-      font-size: 1.1em;
+      color: #003399;
+      font-size: 24px;
+      font-weight: normal;
+      text-shadow: 1px 1px #fff;
+    }
+    p {
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: auto;
+    }
+    .back-button.window {
+      resize: none;
+      width: auto;
+      margin: 0;
+      background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+    }
+    .back-button .window-body {
+      margin: 0;
+      padding: 4px 8px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .back-button:hover .window-body {
+      background: rgba(0,0,0,0.1);
+    }
+    .back-button img {
+      width: 16px;
+      height: 16px;
+    }
+    .avatar {
+      display: block;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
+      border-radius: 4px;
+      border: 1px solid #919b9c;
+      padding: 4px;
+      background: #fff;
     }
   </style>
 </head>
 <body>
-  <section class="window glass is-bright">
+  <a href="index.html" class="back-button window">
+    <div class="title-bar">
+      <div class="title-bar-text">Back</div>
+      <div class="title-bar-controls">
+        <button aria-label="Close"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <img src="https://win98icons.alexmeub.com/icons/png/system_restore-4.png" alt="" style="width:14px;height:14px;" />
+      Home</div>
+  </a>
+
+  <div class="window">
     <div class="title-bar">
       <div class="title-bar-text">About</div>
       <div class="title-bar-controls">
+        <button aria-label="Help"></button>
         <button aria-label="Minimize"></button>
         <button aria-label="Maximize"></button>
         <button aria-label="Close"></button>
       </div>
     </div>
-    <div class="window-body has-space">
-      <h1>Heyyyyy</h1>
-      <p>Yeah idk, I was super bored one night—October 18, 2024 actually—and decided to make the most low effort website of all time.</p>
-      <p></p>
+    <div class="window-body">
+      <img src="https://i.scdn.co/image/ab67616d00001e025b772aec90e8dc0cd1c0acd1" alt="Clouty Skies" class="avatar" />
+      <h1><img src="https://win98icons.alexmeub.com/icons/png/help_book_cool-3.png" style="width:24px;height:24px;vertical-align:bottom;margin-right:8px;" />Heyyyyy</h1>
+      <fieldset>
+        <legend><img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />About Me</legend>
+        <div style="padding: 10px;">
+          <p>Hello. My name is Lonnie, I'm pretty much just addicted to creating things and movement. Whether it's the movement of the body, the camera, or traveling 8,370 miles around the US by bike.</p>
+          <p>I'm pretty much always brewing ideas and want to put them out there as sort of a public archive for all to see. I hope to bring new perspectives and processes into everything I throw myself into. I want to do my best in everything I attempt, differently.</p>
+          <p>xoxo.</p>
+        </div>
+      </fieldset>
+      <fieldset style="margin-top: 16px;">
+        <legend><img src="https://win98icons.alexmeub.com/icons/png/date_time-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />Website Creation Info</legend>
+        <div style="padding: 10px;">
+          <p style="margin:0;">Created: October 18, 2024 <img src="https://win98icons.alexmeub.com/icons/png/calendar_date-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-left:4px;" /></p>
+        </div>
+      </fieldset>
     </div>
     <div class="status-bar">
-      <p class="status-bar-field">1 item</p>
+      <p class="status-bar-field">Page loaded</p>
+      <p class="status-bar-field">Last updated: Aug 10, 2025</p>
       <p class="status-bar-field">© Clouty Skies</p>
     </div>
-  </section>
+  </div>
 </body>
 </html>
