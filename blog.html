@@ -3,19 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8,000 Miles of Mirrors</title>
-    <link rel="stylesheet" href="https://unpkg.com/7.css">
+    <title>8,000 Miles of Mirrors - Clouty Skies</title>
+    <link rel="stylesheet" href="https://unpkg.com/xp.css">
     <style>
+        @font-face {
+            font-family: 'Franklin Gothic Medium';
+            src: local('Franklin Gothic Medium'), local('Franklin-Gothic-Medium');
+        }
         body {
-            max-width: 1200px;
-            margin: 0 auto;
+            background: #245EDC url('horrid.png') center/cover fixed;
+            margin: 0;
             padding: 20px;
+            font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
+            color: #222;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         .window {
             margin-bottom: 20px;
+            background: #fff;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
         }
         .window-body {
-            padding: 24px 28px;
+            padding: 16px;
+            background: #fff;
+            font-size: 13px;
+            letter-spacing: normal;
+            line-height: 1.4;
         }
         .window-body img,
         .window-body figure img {
@@ -23,7 +44,9 @@
             height: auto;
             display: block;
             margin: 0 auto;
-            box-sizing: border-box;
+            border: 1px solid #919b9c;
+            padding: 2px;
+            background: #fff;
         }
         .ql-figure {
             margin: 1em 0;
@@ -32,17 +55,98 @@
         .indented {
             margin-left: 20px;
         }
+        figcaption {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #444;
+            text-align: center;
+        }
+        blockquote {
+            margin: 8px 0;
+            padding: 8px 16px;
+            background: #ececec;
+            border-left: 2px solid #919b9c;
+            font-style: italic;
+        }
+        h1, h2 {
+            color: #003399;
+            font-weight: normal;
+            margin-top: 1.5em;
+            font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, Arial, sans-serif;
+        }
+        fieldset {
+            margin: 12px 0;
+            padding: 8px;
+            border: 1px solid #919b9c;
+        }
+        legend {
+            color: #003399;
+            padding: 0 4px;
+            font-weight: bold;
+        }
+        ul {
+            margin: 1em 0;
+            padding-left: 24px;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: auto;
+        }
+        .back-button.window {
+            resize: none;
+            width: auto;
+            margin: 0;
+            background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+        }
+        .back-button .window-body {
+            margin: 0;
+            padding: 4px 8px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+        .back-button:hover .window-body {
+            background: rgba(0,0,0,0.1);
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
             .window-body {
-                padding: 12px 8px;
+                padding: 16px;
             }
+            .indented {
+                margin-left: 12px;
+            }
+        }
+        h1 {
+            font-size: 20px;
+            color: #003399;
+            text-shadow: 1px 1px #fff;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 16px;
+            color: #003399;
+            border-bottom: 1px solid #919b9c;
+            padding-bottom: 4px;
+            margin-top: 24px;
+            font-weight: bold;
+        }
+        p {
+            margin: 16px 0;
         }
     </style>
 </head>
 <body>
+    <div class="container">
     <div class="window" style="width: 100%">
         <div class="title-bar">
             <div class="title-bar-text">8,000 Miles of Mirrors</div>
@@ -120,6 +224,7 @@
 					<li><strong> Metric Allen Wrench Set </strong> - $15.99</li>
 					<li><strong> Walmart Tire Repair Kit </strong> - $9.99</li>
 					<li><strong> Hafney Bar End Mirror </strong> - $24.99</li>
+					<li><strong> Approx. Total Cost </strong> - $1,799.85</li>
 				</ul>
 				<figure class="ql-figure"><img draggable="true" src="https://editor-cdn.reedsy.com/books/671c6229c1b7ab2bb63f7391/images/f7079698e3bd673913090039083e97af.jpg" alt="" />
 					<figcaption>Fence posts are handy when you don&rsquo;t have a kickstand</figcaption>
@@ -138,6 +243,7 @@
 					<li><strong> Foldable Solar Panel </strong> - $40.00</li>
 					<li><strong> Bear Spray </strong> - (gifted)</li>
 					<li><strong> Cold Steel Tanto Knife </strong> - $49.99</li>
+					<li><strong> Approx. Total Cost </strong> - $579.85 </li>
 				</ul>
 				<p>On the self defense side of safety, I recommend on having <strong> <u> at least </u> </strong> bear spray with you. When I had to wild/stealth camp I would always sleep with my fixed blade knife, flashlight, phone, and bear spray right next to my head. Luckily I never had to use any of my self defense tools on any animals or humans. I did once wake up to the sound of rustling on the side of my tent. I groggily picked my head up slightly to see if I could figure out what curious little critter was looking for food in my camp as I did make myself some beef stew earlier that day.</p>
 				<blockquote>* <span class="ql-ignore-spelling"> Hmmmpf </span> *</blockquote>
@@ -175,6 +281,10 @@
 					<li><strong> 4 T-Shirts </strong></li>
 					<li><strong> Toiletries </strong></li>
 					<li><strong> Gorilla Tape </strong></li>
+					<li><strong> Approx. Total Cost </strong> -  $3,167.82</li>
+					<li><strong> Approx. Grand Total: </strong> - $5,547.52.
+</li>
+
 				</ul>
 				<p>Now onto clothes and gadgets. Having the right clothes is super important for a long bike trip. For me, I started out simple: a couple of yellow t-shirts with the sleeves cut off as my riding shirts and one pair of padded bike shorts. They weren&rsquo;t the tight, Tour <span class="ql-ignore-spelling"> De </span> France kind&mdash;more rugged, with a tough exterior that held up the entire trip. They dried out pretty quickly too, which was a bonus.</p>
 				<p class="indented">Later, I switched out the t-shirts for some breathable tank tops made for more athletic purposes. I got them cheap at Walmart, and honestly, they worked great. You don&rsquo;t need to drop a ton of money to stay comfortable on a bike. You&rsquo;re going to be hot and sweaty no matter what, so you might as well wear stuff you don&rsquo;t mind trashing. I also brought plenty of breathable, stretchy underwear and only packed Merino wool socks. Merino wool is awesome&mdash;it keeps your feet warm when it&rsquo;s cold, wicks away sweat when it&rsquo;s hot, and adds a nice bit of cushioning, especially if you end up doing some hiking after a long day of riding.</p>
@@ -501,22 +611,20 @@
 		</div>
 	</div>
 </div>
-    <a href="index.html" class="floating-btn window" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000; width: auto; min-width: 0; max-width: 180px; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">
-        <div class="title-bar" style="padding: 0 8px;">
-            <div class="title-bar-text" style="font-size: 14px;">← Back to Home</div>
+    <a href="index.html" class="back-button window">
+        <div class="title-bar">
+            <div class="title-bar-text">Back</div>
+            <div class="title-bar-controls">
+                <button aria-label="Close"></button>
+            </div>
+        </div>
+        <div class="window-body">
+            <img src="https://win98icons.alexmeub.com/icons/png/arrow_left_blue_cool-0.png" alt="" style="width:14px;height:14px;" />
+            Home
         </div>
     </a>
 
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
     </script>
 </body>
 </html>
