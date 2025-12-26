@@ -22,7 +22,6 @@
   <link rel="stylesheet" href="https://unpkg.com/xp.css" />
 
   <style>
-    /* --- Core & Background --- */
     :root { 
       --desk-gap: 14px; 
       --maxw: 1024px; 
@@ -31,23 +30,52 @@
     
     html, body { 
       height: 100%; 
-      overflow-x: hidden; /* Prevent horizontal scroll on mobile */
-    }
-
-    body {
+      overflow-x: hidden; 
       margin: 0;
       font-family: Tahoma, "Segoe UI", Arial, sans-serif;
-      /* High-Quality Bliss Wallpaper */
+      background-color: var(--xp-blue);
+    }
+
+    /* --- Layers --- */
+    
+    /* 1. Wallpaper Layer (Fixed, Back) */
+    #wallpaper {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
       background: var(--xp-blue) url("https://upload.wikimedia.org/wikipedia/en/7/7d/Bliss.png") center/cover no-repeat fixed;
-      color: #000;
-      /* Prepared for blur transition */
       transition: filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    /* The blur effect class */
-    body.is-blurred {
-      filter: blur(12px) brightness(0.9);
-      overflow: hidden; /* Lock scrolling during boot */
+    /* 2. Desktop/Content Layer (Scrollable, Middle) */
+    #desktop {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      transition: filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* 3. Boot Layer (Fixed, Top, Never Blurred) */
+    #boot {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.25); /* Slight tint over the blur */
+      z-index: 99999;
+      transition: opacity 0.8s ease, visibility 0.8s;
+    }
+
+    /* Blur State Classes */
+    .blur-target {
+      filter: blur(15px) brightness(0.9);
+    }
+
+    /* Boot Fade Out */
+    #boot.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     /* --- Layout --- */
@@ -55,15 +83,11 @@
       max-width: var(--maxw); 
       margin: 12px auto; 
       padding: 12px; 
-      padding-bottom: 120px; /* Space for Spotify widget */
+      padding-bottom: 120px; 
       display: flex; 
       flex-direction: column; 
       gap: var(--desk-gap); 
-      opacity: 0; /* Hidden until boot finishes or skipped */
-      animation: fadeInContent 0.5s forwards;
     }
-
-    @keyframes fadeInContent { to { opacity: 1; } }
 
     .window { width: 100%; }
     .hero-wall { background: #f0f0f0; }
@@ -90,7 +114,6 @@
       border: 1px solid transparent;
       transition: background 0.1s, border-color 0.1s;
     }
-    /* Hover/Focus states for icons */
     .icons a:focus figure,
     .icons a:hover figure {
       background: rgba(49, 106, 197, 0.2);
@@ -102,34 +125,11 @@
       height: 32px;
       display: block;
       margin: 0 auto 6px;
-      image-rendering: pixelated; /* Crisp icons */
+      image-rendering: pixelated;
     }
     .icons figcaption {
       font-size: 11px;
       line-height: 1.3;
-      text-shadow: none;
-    }
-
-    /* --- Boot Screen --- */
-    #boot {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0, 0, 0, 0.4); /* Dark overlay */
-      z-index: 99999;
-      backdrop-filter: blur(2px); /* Slight glass on the overlay itself */
-      transition: opacity 0.6s ease, visibility 0.6s;
-    }
-    #boot.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    #boot .window { 
-      max-width: 400px; 
-      width: 90%;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.5);
     }
 
     /* --- Spotify Widget --- */
@@ -139,12 +139,10 @@
       right: 20px; 
       width: 300px; 
       z-index: 9000; 
-      /* Safe area for mobile devices with home bars */
       bottom: max(20px, env(safe-area-inset-bottom) + 10px);
       transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
     
-    /* Minimize Logic: We shrink the body, but keep the header visible */
     #spotify-player-container .window-body { 
       padding: 8px; 
       transition: padding 0.3s ease;
@@ -158,50 +156,23 @@
       overflow: hidden;
     }
 
-    /* State: Minimized */
-    #spotify-player-container.minimized .spotify-iframe-wrapper { 
-      height: 0; 
-      opacity: 0; 
-    }
-    #spotify-player-container.minimized .window-body {
-      padding-top: 0;
-      padding-bottom: 0;
-      border-top: 0;
-    }
+    #spotify-player-container.minimized .spotify-iframe-wrapper { height: 0; opacity: 0; }
+    #spotify-player-container.minimized .window-body { padding-top: 0; padding-bottom: 0; border-top: 0; }
+    #spotify-player-container.closed { transform: translateX(120%); }
 
-    /* State: Closed (Hidden offscreen) */
-    #spotify-player-container.closed { 
-      transform: translateX(120%); 
-    }
+    /* Touch targets */
+    .title-bar-controls button { min-width: 20px; min-height: 20px; }
+    @media (pointer: coarse) { .title-bar-controls button { min-width: 32px; min-height: 32px; } }
 
-    /* Touch targets for window controls on mobile */
-    .title-bar-controls button {
-      min-width: 20px;
-      min-height: 20px;
-    }
-    @media (pointer: coarse) {
-      .title-bar-controls button {
-        min-width: 32px;
-        min-height: 32px;
-      }
-    }
-
-    /* --- Mobile Optimizations --- */
+    /* Mobile */
     @media (max-width: 600px) {
       .stack { margin: 6px; padding: 6px; width: auto; padding-bottom: 140px; }
       .icons { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-      
-      #spotify-player-container.window {
-        width: 92%;
-        left: 4%;
-        right: 4%;
-        /* Snap to bottom on small screens */
-      }
-      
+      #spotify-player-container.window { width: 92%; left: 4%; right: 4%; }
       .term-embed { height: 350px; }
     }
 
-    /* --- Terminal / AI Embed --- */
+    /* Terminal */
     .term-embed {
       background: #000;
       border: 1px solid #7f9db9;
@@ -210,22 +181,21 @@
     }
     .term-embed iframe {
       width: 100%; height: 100%; border: 0;
-      filter: grayscale(1) contrast(1.2) sepia(0.2) invert(0); /* Matrix feel */
+      filter: grayscale(1) contrast(1.2) sepia(0.2) invert(0);
     }
 
-    /* Sticky Notes Canvas */
+    /* Sticky Notes */
     #notes-canvas { position: relative; min-height: 200px; overflow: hidden; }
-
-    /* Helper classes */
-    .hidden { display: none !important; }
   </style>
 </head>
-<!-- Initial state: blurred if logic allows, handled by JS immediately -->
-<body class="is-blurred">
+<body>
 
-  <!-- Boot Screen -->
+  <!-- 1. Background Layer -->
+  <div id="wallpaper" class="blur-target"></div>
+
+  <!-- 2. Boot Overlay (Top Layer, Not Blurred) -->
   <div id="boot" role="dialog" aria-modal="true">
-    <div class="window">
+    <div class="window" style="max-width: 350px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
       <div class="title-bar">
         <div class="title-bar-text">CloutOS Boot Manager</div>
         <div class="title-bar-controls">
@@ -233,9 +203,9 @@
         </div>
       </div>
       <div class="window-body">
-        <div style="text-align: center; margin-bottom: 15px;">
+        <div style="text-align: center; margin-bottom: 15px; margin-top:5px;">
           <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer_2k-4.png" alt="" width="48" style="image-rendering:pixelated; margin-bottom:8px;">
-          <p style="margin:0; font-size:14px;">Starting Clouty Skies Environment...</p>
+          <p style="margin:0; font-size:14px;">Initializing Environment...</p>
         </div>
         <div class="field-row" style="margin-bottom: 15px;">
           <progress class="marquee" style="width:100%"></progress>
@@ -247,143 +217,146 @@
     </div>
   </div>
 
-  <!-- Main Content -->
-  <main class="stack" id="main-content">
-    
-    <!-- Hero Window -->
-    <section class="window hero-wall">
+  <!-- 3. Desktop Content (Blurred initially) -->
+  <div id="desktop" class="blur-target">
+    <main class="stack" id="main-content">
+      
+      <!-- Main Window -->
+      <section class="window hero-wall">
+        <div class="title-bar">
+          <div class="title-bar-text">CloutyOS V.8.68 (User: Guest)</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="window-body">
+          <menu role="tablist" class="field-row" style="margin-bottom:12px;">
+            <button role="tab" aria-selected="true" aria-controls="tab-home">Start</button>
+            <button role="tab" aria-controls="tab-media">Media</button>
+            <button role="tab" aria-controls="tab-games">Games</button>
+          </menu>
+
+          <div class="tab-content">
+            <!-- Home Tab -->
+            <article role="tabpanel" id="tab-home">
+              <fieldset>
+                <legend>System</legend>
+                <div class="icons">
+                  <a href="about.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/certificate_2-0.png" alt="" /><figcaption>About</figcaption></figure></a>
+                  <a href="blog.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" /><figcaption>Blog</figcaption></figure></a>
+                  <a href="https://thecloutyskies.github.io/Clouty-Skies-Research-Institute/" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/world-0.png" alt="" /><figcaption>Research</figcaption></figure></a>
+                  <a href="watch.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/wm-2.png" alt="" /><figcaption>Watch</figcaption></figure></a>
+                  <a href="https://lonniejohnston.com" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/camera-0.png" alt="" /><figcaption>Portfolio</figcaption></figure></a>
+                </div>
+              </fieldset>
+              <fieldset style="margin-top:10px;">
+                <legend>Marketplace</legend>
+                <div class="icons">
+                  <a href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/network_internet_pcs_installer-2.png" alt="" /><figcaption>Merch</figcaption></figure></a>
+                </div>
+              </fieldset>
+            </article>
+
+            <!-- Media Tab -->
+            <article role="tabpanel" id="tab-media" hidden>
+              <fieldset>
+                <legend>Social Connections</legend>
+                <div class="icons">
+                  <a href="https://www.youtube.com/@CloutySkies" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/camera3_vid-2.png" alt="" /><figcaption>YouTube</figcaption></figure></a>
+                  <a href="https://www.instagram.com/thecloutyskies" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/network_cool_two_pcs-0.png" alt="" /><figcaption>Instagram</figcaption></figure></a>
+                  <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" /><figcaption>Spotify</figcaption></figure></a>
+                </div>
+              </fieldset>
+            </article>
+
+            <!-- Games Tab -->
+            <article role="tabpanel" id="tab-games" hidden>
+              <fieldset>
+                <legend>Applications</legend>
+                <div class="icons">
+                  <a href="cloutris.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/defragment-0.png" alt="" /><figcaption>Cloutris</figcaption></figure></a>
+                  <a href="clouty-hops.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/game_mine_1-0.png" alt="" /><figcaption>Hops</figcaption></figure></a>
+                  <a href="tic.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/joystick-5.png" alt="" /><figcaption>TicTac</figcaption></figure></a>
+                </div>
+              </fieldset>
+            </article>
+          </div>
+        </div>
+        <div class="status-bar">
+          <p class="status-bar-field">Ready</p>
+          <p class="status-bar-field">Online</p>
+        </div>
+      </section>
+
+      <!-- Sticky Notes -->
+      <section class="window" id="notes-window">
+        <div class="title-bar">
+          <div class="title-bar-text">Sticky Notes</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="window-body">
+          <form id="note-form" class="field-row" style="gap:6px; margin-bottom:8px;">
+            <input id="note-input" type="text" style="flex:1" placeholder="Type a note..." maxlength="100">
+            <select id="note-color">
+              <option value="#fff8b0">Yellow</option>
+              <option value="#c9f5ff">Blue</option>
+              <option value="#d5ffd3">Green</option>
+            </select>
+            <button type="submit">Pin</button>
+          </form>
+          <div id="notes-canvas"></div>
+        </div>
+      </section>
+
+      <!-- Command Prompt (Updated Title & Copyright) -->
+      <section class="window">
+        <div class="title-bar">
+          <div class="title-bar-text">CloutAI Interface</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="window-body" style="padding:0; overflow:hidden;">
+          <div style="background:black; color:#0f0; padding:6px; font-family:Consolas, monospace; border-bottom:1px solid #333; line-height:1.4;">
+            <div>CloutySkiesOS [Version 8.68]</div>
+            <div>(C) Copyright 2023-2026 Clouty Skies Research Institute.</div>
+            <br>
+          </div>
+          <div class="term-embed">
+            <iframe src="https://studio.pickaxe.co/_embed/DTCTYCUGCU?d=deployment-66e1cd16-605c-461f-9f5e-b842a4ce63d4&hideInput=false" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Spotify Widget -->
+    <div id="spotify-player-container" class="window">
       <div class="title-bar">
-        <div class="title-bar-text">CloutyOS V.8.68 (User: Guest)</div>
+        <div class="title-bar-text">
+          <img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">
+          Music Player
+        </div>
         <div class="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
+          <button aria-label="Minimize" id="btn-spotify-min"></button>
+          <button aria-label="Close" id="btn-spotify-close"></button>
         </div>
       </div>
       <div class="window-body">
-        <menu role="tablist" class="field-row" style="margin-bottom:12px;">
-          <button role="tab" aria-selected="true" aria-controls="tab-home">Start</button>
-          <button role="tab" aria-controls="tab-media">Media</button>
-          <button role="tab" aria-controls="tab-games">Games</button>
-        </menu>
-
-        <div class="tab-content">
-          <!-- Home Tab -->
-          <article role="tabpanel" id="tab-home">
-            <fieldset>
-              <legend>System</legend>
-              <div class="icons">
-                <a href="about.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/certificate_2-0.png" alt="" /><figcaption>About</figcaption></figure></a>
-                <a href="blog.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" /><figcaption>Blog</figcaption></figure></a>
-                <a href="https://thecloutyskies.github.io/Clouty-Skies-Research-Institute/" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/world-0.png" alt="" /><figcaption>Research</figcaption></figure></a>
-                <a href="watch.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/wm-2.png" alt="" /><figcaption>Watch</figcaption></figure></a>
-                <a href="https://lonniejohnston.com" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/camera-0.png" alt="" /><figcaption>Portfolio</figcaption></figure></a>
-              </div>
-            </fieldset>
-            <fieldset style="margin-top:10px;">
-              <legend>Marketplace</legend>
-              <div class="icons">
-                <a href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/network_internet_pcs_installer-2.png" alt="" /><figcaption>Merch</figcaption></figure></a>
-              </div>
-            </fieldset>
-          </article>
-
-          <!-- Media Tab -->
-          <article role="tabpanel" id="tab-media" hidden>
-            <fieldset>
-              <legend>Social Connections</legend>
-              <div class="icons">
-                <a href="https://www.youtube.com/@CloutySkies" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/camera3_vid-2.png" alt="" /><figcaption>YouTube</figcaption></figure></a>
-                <a href="https://www.instagram.com/thecloutyskies" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/network_cool_two_pcs-0.png" alt="" /><figcaption>Instagram</figcaption></figure></a>
-                <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank"><figure><img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" /><figcaption>Spotify</figcaption></figure></a>
-              </div>
-            </fieldset>
-          </article>
-
-          <!-- Games Tab -->
-          <article role="tabpanel" id="tab-games" hidden>
-            <fieldset>
-              <legend>Applications</legend>
-              <div class="icons">
-                <a href="cloutris.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/defragment-0.png" alt="" /><figcaption>Cloutris</figcaption></figure></a>
-                <a href="clouty-hops.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/game_mine_1-0.png" alt="" /><figcaption>Hops</figcaption></figure></a>
-                <a href="tic.html"><figure><img src="https://win98icons.alexmeub.com/icons/png/joystick-5.png" alt="" /><figcaption>TicTac</figcaption></figure></a>
-              </div>
-            </fieldset>
-          </article>
+        <div class="spotify-iframe-wrapper">
+          <iframe style="border-radius:0px; border:0;" 
+            src="https://open.spotify.com/embed/artist/3QbHatr8OY2onxDhLD4dmC?utm_source=generator&theme=0" 
+            width="100%" height="80" frameborder="0" 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy">
+          </iframe>
         </div>
-      </div>
-      <div class="status-bar">
-        <p class="status-bar-field">Ready</p>
-        <p class="status-bar-field">Online</p>
-      </div>
-    </section>
-
-    <!-- Sticky Notes -->
-    <section class="window" id="notes-window">
-      <div class="title-bar">
-        <div class="title-bar-text">Sticky Notes</div>
-        <div class="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Close"></button>
-        </div>
-      </div>
-      <div class="window-body">
-        <form id="note-form" class="field-row" style="gap:6px; margin-bottom:8px;">
-          <input id="note-input" type="text" style="flex:1" placeholder="Type a note..." maxlength="100">
-          <select id="note-color">
-            <option value="#fff8b0">Yellow</option>
-            <option value="#c9f5ff">Blue</option>
-            <option value="#d5ffd3">Green</option>
-          </select>
-          <button type="submit">Pin</button>
-        </form>
-        <div id="notes-canvas"></div>
-      </div>
-    </section>
-
-    <!-- Command Prompt -->
-    <section class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">Command Prompt - AI Link</div>
-        <div class="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
-        </div>
-      </div>
-      <div class="window-body" style="padding:0; overflow:hidden;">
-        <div style="background:black; color:#0f0; padding:4px; font-family:monospace; border-bottom:1px solid #333;">
-          Microsoft Windows XP [Version 5.1.2600]<br>(C) Copyright 1985-2001 Microsoft Corp.
-        </div>
-        <div class="term-embed">
-          <!-- AI Embed -->
-          <iframe src="https://studio.pickaxe.co/_embed/DTCTYCUGCU?d=deployment-66e1cd16-605c-461f-9f5e-b842a4ce63d4&hideInput=false" loading="lazy"></iframe>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Spotify Widget -->
-  <div id="spotify-player-container" class="window">
-    <div class="title-bar">
-      <div class="title-bar-text">
-        <img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">
-        Music Player
-      </div>
-      <div class="title-bar-controls">
-        <button aria-label="Minimize" id="btn-spotify-min"></button>
-        <button aria-label="Close" id="btn-spotify-close"></button>
-      </div>
-    </div>
-    <div class="window-body">
-      <div class="spotify-iframe-wrapper">
-        <iframe style="border-radius:0px; border:0;" 
-          src="https://open.spotify.com/embed/artist/3QbHatr8OY2onxDhLD4dmC?utm_source=generator&theme=0" 
-          width="100%" height="80" frameborder="0" 
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy">
-        </iframe>
       </div>
     </div>
   </div>
@@ -392,28 +365,26 @@
     /* --- Boot & Focus Logic --- */
     (function() {
       const bootScreen = document.getElementById('boot');
-      const body = document.body;
-      // Check session storage (resets when browser closes)
+      const blurTargets = document.querySelectorAll('.blur-target');
+      
       const hasBooted = sessionStorage.getItem('cloutySessionBoot');
 
       window.finishBoot = function() {
         // 1. Fade out boot screen
         bootScreen.classList.add('fade-out');
-        // 2. Remove blur from body (Focus effect)
-        body.classList.remove('is-blurred');
+        
+        // 2. Remove blur from background and desktop content
+        blurTargets.forEach(el => el.classList.remove('blur-target'));
+        
         // 3. Mark session as booted
         sessionStorage.setItem('cloutySessionBoot', 'true');
         
-        // Remove boot screen from DOM after animation to free memory
-        setTimeout(() => {
-          bootScreen.style.display = 'none';
-        }, 650);
+        setTimeout(() => { bootScreen.style.display = 'none'; }, 800);
       };
 
       if (hasBooted === 'true') {
-        // Skip animation if already visited in this session
         bootScreen.style.display = 'none';
-        body.classList.remove('is-blurred');
+        blurTargets.forEach(el => el.classList.remove('blur-target'));
       } else {
         // Auto-enter after 2.5 seconds if user doesn't click
         setTimeout(() => {
@@ -426,13 +397,10 @@
     (function() {
       const tabs = document.querySelectorAll('[role="tab"]');
       const panels = document.querySelectorAll('[role="tabpanel"]');
-
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-          // Deselect all
           tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
           panels.forEach(p => p.hidden = true);
-          // Select clicked
           tab.setAttribute('aria-selected', 'true');
           const target = document.getElementById(tab.getAttribute('aria-controls'));
           if (target) target.hidden = false;
@@ -445,41 +413,34 @@
       const widget = document.getElementById('spotify-player-container');
       const btnMin = document.getElementById('btn-spotify-min');
       const btnClose = document.getElementById('btn-spotify-close');
-
-      // Minimize Toggle
       btnMin.addEventListener('click', (e) => {
-        e.stopPropagation(); // prevent window focus fighting
+        e.stopPropagation();
         widget.classList.toggle('minimized');
       });
-
-      // Close (Hide)
       btnClose.addEventListener('click', (e) => {
         e.stopPropagation();
         widget.classList.add('closed');
       });
     })();
 
-    /* --- Sticky Notes (Basic) --- */
+    /* --- Sticky Notes --- */
     (function() {
       const form = document.getElementById('note-form');
       const input = document.getElementById('note-input');
       const color = document.getElementById('note-color');
       const canvas = document.getElementById('notes-canvas');
-
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         if(!input.value.trim()) return;
-
         const note = document.createElement('div');
-        note.className = 'note';
-        note.style.cssText = `
-          position:absolute; top:${Math.random()*100}px; left:${Math.random()*100}px;
-          background:${color.value}; padding:8px; border:1px solid #999; 
-          box-shadow:2px 2px 5px rgba(0,0,0,0.2); font-size:12px; width:120px;
-          font-family:'Comic Sans MS', cursive, sans-serif;
+        note.className = 'window'; 
+        note.style.cssText = `position:absolute; top:${Math.random()*100}px; left:${Math.random()*100}px; width:150px; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:10;`;
+        note.innerHTML = `
+          <div class="window-body" style="background:${color.value}; padding:8px;">
+            <p style="margin:0; font-size:12px; word-wrap:break-word;">${input.value.replace(/</g,'&lt;')}</p>
+            <div style="text-align:right; margin-top:5px;"><button style="font-size:10px; padding:2px;" onclick="this.closest('.window').remove()">Del</button></div>
+          </div>
         `;
-        note.innerHTML = input.value + '<div style="text-align:right; margin-top:4px; cursor:pointer; color:red;" onclick="this.parentNode.remove()">x</div>';
-        
         canvas.appendChild(note);
         input.value = '';
       });
