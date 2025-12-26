@@ -1,489 +1,447 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clouty Tic-Tac-Toe</title>
-    <style>
-        :root {
-            --vista-bg: #1a1f2b;
-            --vista-glass: rgba(26, 26, 26, 0.75);
-            --vista-glass-dark: rgba(20, 20, 20, 0.85);
-            --vista-border: rgba(69, 128, 196, 0.3);
-            --vista-shadow: 0 0 20px rgba(69, 128, 196, 0.3);
-            --vista-text: #e0e5ef;
-            --aero-highlight: rgba(69, 128, 196, 0.5);
-            --aero-gradient: linear-gradient(
-                to bottom,
-                rgba(40, 40, 40, 0.95),
-                rgba(26, 26, 26, 0.95)
-            );
-        }
+import React, { useState, useEffect, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 
-        body {
-            margin: 0;
-            padding: 0;
-            background: url("https://frutiger-aero.org/img/dark-aero-1.webp") no-repeat center center fixed;
-            background-size: cover;
-            font-family: "Segoe UI", sans-serif;
-            color: var(--vista-text);
-            min-height: 75vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+// --- Constants & Assets ---
+const ASSETS = {
+  X: 'Sign006_result.png',
+  O: 'Net003_result.png',
+  AVATAR: 'nerdy skies.jpg',
+  STAR_1: 'sign026_result.png',
+  STAR_2: 'sign027_result.png'
+};
 
-        .game-container {
-            background: var(--vista-glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 50px;
-            box-shadow: var(--vista-shadow),
-                        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
+const WIN_COMBOS = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
 
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            gap: 10px;
-            margin: 20px 0;
-        }
+// --- Minimax Logic (Pure Functions) ---
+function checkWinner(board: string[]) {
+  for (let combo of WIN_COMBOS) {
+    if (board[combo[0]] && 
+        board[combo[0]] === board[combo[1]] && 
+        board[combo[0]] === board[combo[2]]) {
+      return board[combo[0]];
+    }
+  }
+  if (!board.includes('')) return 'draw';
+  return null;
+}
 
-        .cell {
-            width: 100px;
-            height: 100px;
-            background: var(--aero-gradient);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
+function minmax(board: string[], depth: number, isMaximizing: boolean): number {
+  const result = checkWinner(board);
+  if (result === 'O') return 10 - depth;
+  if (result === 'X') return depth - 10;
+  if (result === 'draw') return 0;
 
-        .cell:hover {
-            background: linear-gradient(
-                to bottom,
-                rgba(69, 128, 196, 0.3),
-                rgba(40, 40, 40, 0.95)
-            );
-            transform: translateY(-2px);
-            box-shadow: 
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-        }
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') {
+        board[i] = 'O';
+        let score = minmax(board, depth + 1, false);
+        board[i] = '';
+        bestScore = Math.max(score, bestScore);
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === '') {
+        board[i] = 'X';
+        let score = minmax(board, depth + 1, true);
+        board[i] = '';
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  }
+}
 
-        .cell.marked img {
-            filter: drop-shadow(0 0 5px rgba(69, 128, 196, 0.5));
-        }
+function getBestMove(board: string[]) {
+  // Create a copy to simulate moves
+  const tempBoard = [...board];
+  let bestScore = -Infinity;
+  let moves: number[] = [];
 
-        .status {
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            color: var(--vista-text);
-        }
+  for (let i = 0; i < tempBoard.length; i++) {
+    if (tempBoard[i] === '') {
+      tempBoard[i] = 'O';
+      let score = minmax(tempBoard, 0, false);
+      tempBoard[i] = '';
+      
+      if (score > bestScore) {
+        bestScore = score;
+        moves = [i];
+      } else if (score === bestScore) {
+        moves.push(i);
+      }
+    }
+  }
+  // Add randomness among equal best moves to feel less robotic
+  return moves[Math.floor(Math.random() * moves.length)];
+}
 
-        .reset-btn {
-            padding: 12px 24px;
-            background: var(--aero-gradient);
-            color: var(--vista-text);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 
-                0 2px 5px rgba(0, 0, 0, 0.2),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
+// --- Components ---
 
-        .reset-btn:hover {
-            background: linear-gradient(
-                to bottom,
-                rgba(69, 128, 196, 0.3),
-                rgba(40, 40, 40, 0.95)
-            );
-            transform: translateY(-2px);
-            box-shadow: 
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-        }
+const BackButton = () => (
+  <a href="index.html" style={{
+    position: 'fixed',
+    top: '24px',
+    left: '24px',
+    padding: '12px 24px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    color: '#e0e5ef',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    textDecoration: 'none',
+    fontWeight: 600,
+    fontSize: '14px',
+    letterSpacing: '0.5px',
+    backdropFilter: 'blur(12px)',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    zIndex: 20
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = 'rgba(69, 128, 196, 0.2)';
+    e.currentTarget.style.transform = 'translateY(-2px)';
+    e.currentTarget.style.borderColor = 'rgba(69, 128, 196, 0.4)';
+    e.currentTarget.style.boxShadow = '0 8px 16px rgba(69, 128, 196, 0.2)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+  }}
+  >
+    ← Return Home
+  </a>
+);
 
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
-            background: var(--aero-gradient);
-            color: var(--vista-text);
-            border: 1px solid var(--vista-border);
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: 
-                0 2px 5px rgba(0, 0, 0, 0.2),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
+const FloatingStars = () => {
+  const [stars, setStars] = useState<Array<{id: number, src: string, style: React.CSSProperties}>>([]);
 
-        .back-button:hover {
-            background: linear-gradient(
-                to bottom,
-                rgba(69, 128, 196, 0.3),
-                rgba(40, 40, 40, 0.95)
-            );
-            transform: translateY(-2px);
-            box-shadow: 
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  useEffect(() => {
+    const starCount = 15;
+    const newStars = Array.from({ length: starCount }).map((_, i) => {
+      const duration = 15 + Math.random() * 25;
+      const delay = Math.random() * -20;
+      const floatX = (Math.random() - 0.5) * 300;
+      const floatY = (Math.random() - 0.5) * 300;
+      
+      return {
+        id: i,
+        src: Math.random() > 0.5 ? ASSETS.STAR_1 : ASSETS.STAR_2,
+        style: {
+          position: 'fixed' as const,
+          left: `${Math.random() * 100}vw`,
+          top: `${Math.random() * 100}vh`,
+          width: '24px',
+          height: '24px',
+          opacity: 0.4,
+          pointerEvents: 'none' as const,
+          zIndex: 0,
+          filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))',
+          animation: `float ${duration}s infinite linear ${delay}s`,
+          ['--float-x' as any]: `${floatX}px`,
+          ['--float-y' as any]: `${floatY}px`,
         }
+      };
+    });
+    setStars(newStars);
+  }, []);
 
-        .speech-bubble {
-            background: var(--vista-glass);
-            border: 1px solid var(--vista-border);
-            box-shadow: var(--vista-shadow);
-            color: var(--vista-text);
-        }
-
-        .speech-bubble:after {
-            border-left-color: var(--vista-glass);
-        }
-
-        .cpu-avatar {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid var(--vista-border);
-            box-shadow: var(--vista-shadow);
-            background: var(--vista-glass);
-            padding: 5px;
-        }
-
-        .cpu-avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .speech-bubble {
-            position: fixed;
-            right: 180px;
-            bottom: 100px;
-            background: var(--vista-glass);
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px solid var(--vista-border);
-            box-shadow: var(--vista-shadow);
-            max-width: 200px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-        }
-
-        .speech-bubble.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .speech-bubble:after {
-            content: '';
-            position: absolute;
-            right: -10px;
-            bottom: 20px;
-            border-left: 10px solid var(--vista-glass);
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-        }
-
-        .cell img {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.3s ease;
-        }
-
-        .cell.marked img {
-            opacity: 1;
-            transform: scale(1);
-        }
-
+  return (
+    <>
+      <style>{`
         @keyframes float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(var(--float-x), var(--float-y)) rotate(180deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(var(--float-x), var(--float-y)) rotate(180deg); }
+          100% { transform: translate(0, 0) rotate(360deg); }
         }
-
-        .floating-star {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.6;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
-        }
-
-        .floating-star img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-    </style>
-</head>
-<body>
-    <a href="index.html" class="back-button">Back to Home</a>
-    
-    <div class="game-container">
-        <div class="status">Your turn (X)</div>
-        <div class="board">
-            <div class="cell" data-index="0"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="1"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="2"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="3"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="4"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="5"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="6"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="7"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
-            <div class="cell" data-index="8"><img src="Sign006_result.png" alt="X"><img src="Net003_result.png" alt="O"></div>
+      `}</style>
+      {stars.map(star => (
+        <div key={star.id} style={star.style}>
+          <img src={star.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
-        <button class="reset-btn">Reset Game</button>
+      ))}
+    </>
+  );
+};
+
+const Avatar = ({ isThinking }: { isThinking: boolean }) => (
+  <>
+    {/* Speech Bubble */}
+    <div style={{
+      position: 'fixed',
+      right: '160px',
+      bottom: '120px',
+      background: 'rgba(20, 24, 33, 0.9)',
+      padding: '12px 20px',
+      borderRadius: '16px',
+      border: '1px solid rgba(69, 128, 196, 0.4)',
+      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+      color: '#e0e5ef',
+      fontSize: '14px',
+      fontWeight: 500,
+      opacity: isThinking ? 1 : 0,
+      transform: isThinking ? 'translateY(0) scale(1)' : 'translateY(15px) scale(0.9)',
+      transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      pointerEvents: 'none',
+      zIndex: 10
+    }}>
+      Thinking...
+      <div style={{
+        position: 'absolute',
+        right: '-8px',
+        bottom: '15px',
+        width: 0,
+        height: 0,
+        borderLeft: '8px solid rgba(20, 24, 33, 0.9)',
+        borderTop: '8px solid transparent',
+        borderBottom: '8px solid transparent'
+      }} />
     </div>
-
-    <div class="cpu-avatar">
-        <img src="nerdy skies.jpg" alt="Clouty Skies">
+    
+    {/* Avatar Image */}
+    <div style={{
+      position: 'fixed',
+      right: '25px',
+      bottom: '25px',
+      width: '110px',
+      height: '110px',
+      borderRadius: '50%',
+      border: `2px solid ${isThinking ? 'rgba(69, 128, 196, 0.9)' : 'rgba(69, 128, 196, 0.3)'}`,
+      boxShadow: isThinking ? '0 0 30px rgba(69, 128, 196, 0.5)' : '0 4px 15px rgba(0, 0, 0, 0.4)',
+      background: 'rgba(26, 26, 26, 0.8)',
+      padding: '4px',
+      zIndex: 10,
+      transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: isThinking ? 'scale(1.1)' : 'scale(1)'
+    }}>
+      <img 
+        src={ASSETS.AVATAR} 
+        alt="Clouty Skies" 
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          objectFit: 'cover'
+        }} 
+      />
     </div>
-    <div class="speech-bubble">Clouty Skies is thinking...</div>
+  </>
+);
 
-    <script>
-        const game = {
-            board: Array(9).fill(''),
-            currentPlayer: 'X',
-            finished: false,
-            winCombos: [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-                [0, 4, 8], [2, 4, 6] // Diagonals
-            ]
-        };
+const App = () => {
+  const [board, setBoard] = useState<string[]>(Array(9).fill(''));
+  const [isXNext, setIsXNext] = useState(true);
+  const [winner, setWinner] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+  const [statusText, setStatusText] = useState("Your turn (X)");
 
-        const cells = document.querySelectorAll('.cell');
-        const status = document.querySelector('.status');
-        const resetBtn = document.querySelector('.reset-btn');
+  // Handle game end state
+  useEffect(() => {
+    const res = checkWinner(board);
+    if (res) {
+      setWinner(res);
+      if (res === 'X') setStatusText("Victory!");
+      else if (res === 'O') setStatusText("Clouty Skies wins!");
+      else setStatusText("Draw Game");
+    } else {
+      setStatusText(isXNext ? "Your turn (X)" : "Opponent Turn...");
+    }
+  }, [board]);
 
-        function checkWinner(board) {
-            for (let combo of game.winCombos) {
-                if (board[combo[0]] && 
-                    board[combo[0]] === board[combo[1]] && 
-                    board[combo[0]] === board[combo[2]]) {
-                    return board[combo[0]];
+  // Handle CPU Move
+  useEffect(() => {
+    if (!isXNext && !winner) {
+      setIsThinking(true);
+      // Variable delay to make it feel more "human"
+      const delay = 800 + Math.random() * 600;
+      const timer = setTimeout(() => {
+        const move = getBestMove(board);
+        if (move !== undefined) {
+          setBoard(prev => {
+            const newBoard = [...prev];
+            newBoard[move] = 'O';
+            return newBoard;
+          });
+          setIsXNext(true);
+        }
+        setIsThinking(false);
+      }, delay);
+      return () => clearTimeout(timer);
+    }
+  }, [isXNext, winner, board]);
+
+  const handleCellClick = (index: number) => {
+    // Block interaction if cell occupied, game over, or CPU is thinking
+    if (board[index] || winner || !isXNext) return;
+    
+    const newBoard = [...board];
+    newBoard[index] = 'X';
+    setBoard(newBoard);
+    setIsXNext(false);
+  };
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(''));
+    setIsXNext(true);
+    setWinner(null);
+    setIsThinking(false);
+  };
+
+  return (
+    <>
+      <BackButton />
+      <FloatingStars />
+      <Avatar isThinking={isThinking} />
+      
+      <div style={{
+        background: 'rgba(26, 26, 26, 0.5)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '24px',
+        padding: '40px',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '25px',
+        zIndex: 5,
+        maxWidth: '90vw',
+        transform: 'translateZ(0)' // GPU acceleration hint
+      }}>
+        {/* Status Header */}
+        <div style={{
+          fontSize: '28px',
+          fontWeight: 600,
+          background: 'linear-gradient(to right, #e0e5ef, #a0a5af)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+          minHeight: '42px',
+          display: 'flex',
+          alignItems: 'center',
+          letterSpacing: '-0.5px'
+        }}>
+          {statusText}
+        </div>
+
+        {/* Game Board */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 100px)',
+          gap: '12px',
+          padding: '12px',
+          background: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.03)',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
+        }}>
+          {board.map((cell, index) => (
+            <div
+              key={index}
+              onClick={() => handleCellClick(index)}
+              style={{
+                width: '100px',
+                height: '100px',
+                background: 'linear-gradient(to bottom, rgba(45, 45, 45, 0.9), rgba(25, 25, 25, 0.95))',
+                border: '1px solid rgba(69, 128, 196, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: !cell && !winner && isXNext ? 'pointer' : 'default',
+                transition: 'all 0.2s ease-out',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                if (!cell && !winner && isXNext) {
+                  e.currentTarget.style.background = 'linear-gradient(to bottom, rgba(69, 128, 196, 0.25), rgba(40, 40, 40, 0.9))';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(69, 128, 196, 0.5)';
                 }
-            }
-            
-            if (board.includes('')) return null;
-            return 'draw';
-        }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(to bottom, rgba(45, 45, 45, 0.9), rgba(25, 25, 25, 0.95))';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = 'rgba(69, 128, 196, 0.2)';
+              }}
+            >
+              {cell && (
+                <img 
+                  src={cell === 'X' ? ASSETS.X : ASSETS.O} 
+                  alt={cell}
+                  style={{
+                    width: '65%',
+                    height: '65%',
+                    objectFit: 'contain',
+                    filter: cell === 'X' 
+                      ? 'drop-shadow(0 0 10px rgba(69, 128, 196, 0.6))' 
+                      : 'drop-shadow(0 0 10px rgba(255, 90, 90, 0.5))',
+                    animation: 'popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
-        function minmax(board, depth, isMaximizing) {
-            const result = checkWinner(board);
-            if (result === 'O') return 10 - depth;
-            if (result === 'X') return depth - 10;
-            if (result === 'draw') return 0;
+        <style>{`
+          @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.4) rotate(-10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+          }
+        `}</style>
 
-            if (isMaximizing) {
-                let bestScore = -Infinity;
-                for (let i = 0; i < board.length; i++) {
-                    if (board[i] === '') {
-                        board[i] = 'O';
-                        let score = minmax(board, depth + 1, false);
-                        board[i] = '';
-                        bestScore = Math.max(score, bestScore);
-                    }
-                }
-                return bestScore;
-            } else {
-                let bestScore = Infinity;
-                for (let i = 0; i < board.length; i++) {
-                    if (board[i] === '') {
-                        board[i] = 'X';
-                        let score = minmax(board, depth + 1, true);
-                        board[i] = '';
-                        bestScore = Math.min(score, bestScore);
-                    }
-                }
-                return bestScore;
-            }
-        }
+        {/* Reset Button */}
+        <button 
+          onClick={resetGame}
+          style={{
+            marginTop: '15px',
+            padding: '14px 40px',
+            background: 'linear-gradient(180deg, rgba(60, 65, 75, 0.9) 0%, rgba(30, 32, 40, 0.95) 100%)',
+            color: '#e0e5ef',
+            border: '1px solid rgba(69, 128, 196, 0.3)',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            width: '100%'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(180deg, rgba(69, 128, 196, 0.4) 0%, rgba(30, 32, 40, 0.95) 100%)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.borderColor = 'rgba(69, 128, 196, 0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'linear-gradient(180deg, rgba(60, 65, 75, 0.9) 0%, rgba(30, 32, 40, 0.95) 100%)';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(69, 128, 196, 0.3)';
+          }}
+        >
+          Reset Game
+        </button>
+      </div>
+    </>
+  );
+};
 
-        function getBestMove() {
-            let bestScore = -Infinity;
-            let bestMove;
-            let moves = [];
-
-            // First check for winning move
-            for (let i = 0; i < game.board.length; i++) {
-                if (game.board[i] === '') {
-                    game.board[i] = 'O';
-                    let score = minmax(game.board, 0, false);
-                    game.board[i] = '';
-                    
-                    if (score > bestScore) {
-                        bestScore = score;
-                        moves = [i];
-                    } else if (score === bestScore) {
-                        moves.push(i);
-                    }
-                }
-            }
-
-            // Add some randomness to make CPU less predictable
-            bestMove = moves[Math.floor(Math.random() * moves.length)];
-            return bestMove;
-        }
-
-        async function handleClick(e) {
-            const cell = e.target.closest('.cell');
-            const index = cell.dataset.index;
-
-            if (game.board[index] || game.finished) return;
-
-            // Player move
-            game.board[index] = 'X';
-            markCell(cell, 'X');
-
-            if (checkWinner(game.board) === 'X') {
-                status.textContent = 'You win!';
-                game.finished = true;
-                return;
-            }
-
-            if (!game.board.includes('')) {
-                status.textContent = "It's a draw!";
-                game.finished = true;
-                return;
-            }
-
-            // CPU move
-            status.textContent = "Clouty Skies is thinking...";
-            showSpeechBubble();
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const cpuMove = getBestMove();
-            game.board[cpuMove] = 'O';
-            markCell(cells[cpuMove], 'O');
-            hideSpeechBubble();
-
-            if (checkWinner(game.board) === 'O') {
-                status.textContent = 'Clouty Skies wins!';
-                game.finished = true;
-                return;
-            }
-
-            if (!game.board.includes('')) {
-                status.textContent = "It's a draw!";
-                game.finished = true;
-                return;
-            }
-
-            status.textContent = 'Your turn (X)';
-        }
-
-        // Preload images
-        const images = {
-            X: new Image(),
-            O: new Image()
-        };
-        images.X.src = 'Sign006_result.png';
-        images.O.src = 'Net003_result.png';
-
-        function markCell(cell, player) {
-            // Wait for image to load
-            const img = cell.querySelector(`img[alt="${player}"]`);
-            if (img) {
-                img.style.display = 'block';
-                img.style.opacity = '0';
-                
-                // Ensure image is loaded before showing
-                if (images[player].complete) {
-                    img.style.opacity = '1';
-                } else {
-                    images[player].onload = () => img.style.opacity = '1';
-                }
-                
-                cell.querySelector(`img[alt="${player === 'X' ? 'O' : 'X'}"]`).style.display = 'none';
-                cell.classList.add('marked');
-            }
-        }
-
-        function showSpeechBubble() {
-            document.querySelector('.speech-bubble').classList.add('visible');
-        }
-
-        function hideSpeechBubble() {
-            document.querySelector('.speech-bubble').classList.remove('visible');
-        }
-
-        function resetGame() {
-            game.board = Array(9).fill('');
-            game.finished = false;
-            cells.forEach(cell => {
-                cell.classList.remove('marked');
-                cell.querySelectorAll('img').forEach(img => img.style.display = 'none');
-            });
-            status.textContent = "Your turn (X)";
-            hideSpeechBubble();
-        }
-
-        cells.forEach(cell => cell.addEventListener('click', handleClick));
-        resetBtn.addEventListener('click', resetGame);
-
-        function createFloatingStars() {
-            const starCount = 15;
-            const container = document.body;
-            
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'floating-star';
-                
-                const img = document.createElement('img');
-                img.src = Math.random() > 0.5 ? 'sign026_result.png' : 'sign027_result.png';
-                star.appendChild(img);
-                
-                // Random starting position
-                star.style.left = `${Math.random() * 100}vw`;
-                star.style.top = `${Math.random() * 100}vh`;
-                
-                // Random float animation
-                const floatX = (Math.random() - 0.5) * 200;
-                const floatY = (Math.random() - 0.5) * 200;
-                star.style.setProperty('--float-x', `${floatX}px`);
-                star.style.setProperty('--float-y', `${floatY}px`);
-                
-                // Random animation duration and delay
-                const duration = 5 + Math.random() * 10;
-                star.style.animation = `float ${duration}s infinite`;
-                star.style.animationDelay = `${Math.random() * -10}s`;
-                
-                container.appendChild(star);
-            }
-        }
-
-        // Initialize floating stars
-        document.addEventListener('DOMContentLoaded', createFloatingStars);
-    </script>
-</body>
-</html>
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
