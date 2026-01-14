@@ -1,597 +1,686 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe | Clouty Skies</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
-// --- Inline SVGs (Replaces lucide-react dependency) ---
-const Icon = ({ children, size = 24, color = "currentColor", className = "", style = {} }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke={color} 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-    style={style}
-  >
-    {children}
-  </svg>
-);
-
-const Icons = {
-  X: (props) => <Icon {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>,
-  Circle: (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/></Icon>,
-  ArrowLeft: (props) => <Icon {...props}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></Icon>,
-  RefreshCw: (props) => <Icon {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></Icon>,
-  Bomb: (props) => <Icon {...props}><circle cx="11" cy="13" r="9"/><path d="M14.35 4.65 16.3 2.7a2.41 2.41 0 0 1 3.4 0l1.6 1.6a2.4 2.4 0 0 1 0 3.4l-1.95 1.95"/><path d="m22 2-1.5 1.5"/></Icon>,
-  Zap: (props) => <Icon {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>,
-  Grid3x3: (props) => <Icon {...props}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></Icon>,
-  Grid: (props) => <Icon {...props}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></Icon>,
-  Skull: (props) => <Icon {...props}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></Icon>
-};
-
-// --- Global Styles ---
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-
-    * { box-sizing: border-box; }
-    
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      background: #000;
-      color: #fff;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.5); borderRadius: 4px; }
-
-    /* Dark Aero Glass */
-    .glass-panel {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-
-    .mode-toggle {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 12px;
-      padding: 4px;
-      display: flex;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .toggle-btn {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      color: #94a3b8;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .toggle-btn.active {
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
-      color: #38bdf8;
-      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2), inset 0 0 0 1px rgba(56, 189, 248, 0.2);
-      text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
-    }
-
-    .glossy-btn {
-      background: linear-gradient(to bottom, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1) 50%, rgba(2, 132, 199, 0.15) 51%, rgba(56, 189, 248, 0.2));
-      border: 1px solid rgba(125, 211, 252, 0.3);
-      box-shadow: 0 0 10px rgba(14, 165, 233, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      transition: all 0.2s ease;
-    }
-    .glossy-btn:hover {
-      background: linear-gradient(to bottom, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.2) 50%, rgba(2, 132, 199, 0.25) 51%, rgba(56, 189, 248, 0.3));
-      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
-      transform: translateY(-1px);
-    }
-    
-    .dead-zone {
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(239, 68, 68, 0.1),
-        rgba(239, 68, 68, 0.1) 10px,
-        rgba(239, 68, 68, 0.2) 10px,
-        rgba(239, 68, 68, 0.2) 20px
-      ) !important;
-      border-color: rgba(239, 68, 68, 0.4) !important;
-      animation: shake 0.4s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
-    }
-  `}</style>
-);
-
-// --- Game Logic ---
-
-const getConfigs = (mode) => {
-  switch (mode) {
-    case 'mega': return { size: 6, win: 5 };
-    case 'super': return { size: 6, win: 5 };
-    default: return { size: 3, win: 3 };
-  }
-};
-
-const checkWinner = (board, size, winCondition) => {
-  const getIndex = (r, c) => r * size + c;
-  const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
-
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const player = board[getIndex(r, c)];
-      if (!player || player === 'DEAD') continue;
-
-      for (let [dr, dc] of directions) {
-        let count = 0;
-        for (let k = 0; k < winCondition; k++) {
-          const nr = r + k * dr;
-          const nc = c + k * dc;
-          
-          if (nr >= 0 && nr < size && nc >= 0 && nc < size && board[getIndex(nr, nc)] === player) {
-            count++;
-          } else {
-            break;
-          }
+        :root {
+            --bg-color: #020617;
+            --text-color: #ffffff;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --glass-bg: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
-        if (count === winCondition) return player;
-      }
-    }
-  }
 
-  if (!board.includes('')) return 'draw';
-  return null;
-};
+        * { box-sizing: border-box; }
 
-// --- AI Logic ---
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-// Standard 3x3 Minimax
-function minmax(board, depth, isMaximizing) {
-  const result = checkWinner(board, 3, 3);
-  if (result === 'O') return 10 - depth;
-  if (result === 'X') return depth - 10;
-  if (result === 'draw') return 0;
+        /* --- Background Effects --- */
+        .bg-gradient {
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
+            animation: pulse 10s infinite alternate;
+            z-index: -2;
+        }
 
-  if (isMaximizing) {
-    let bestScore = -Infinity;
-    for (let i = 0; i < board.length; i++) {
-      if (board[i] === '') {
-        board[i] = 'O';
-        let score = minmax(board, depth + 1, false);
-        board[i] = '';
-        bestScore = Math.max(score, bestScore);
-      }
-    }
-    return bestScore;
-  } else {
-    let bestScore = Infinity;
-    for (let i = 0; i < board.length; i++) {
-      if (board[i] === '') {
-        board[i] = 'X';
-        let score = minmax(board, depth + 1, true);
-        board[i] = '';
-        bestScore = Math.min(score, bestScore);
-      }
-    }
-    return bestScore;
-  }
-}
+        .bg-gradient-2 {
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+            filter: blur(80px);
+            animation: pulse 15s infinite alternate-reverse;
+            z-index: -2;
+        }
 
-// Heuristic AI for 6x6
-function getMegaMove(board, size, winLen) {
-  const emptyIndices = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
-  
-  // 1. Instant Win
-  for (let i of emptyIndices) {
-    board[i] = 'O';
-    if (checkWinner(board, size, winLen) === 'O') {
-      board[i] = ''; return i;
-    }
-    board[i] = '';
-  }
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.2) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: -1;
+        }
 
-  // 2. Critical Block
-  for (let i of emptyIndices) {
-    board[i] = 'X';
-    if (checkWinner(board, size, winLen) === 'X') {
-      board[i] = ''; return i;
-    }
-    board[i] = '';
-  }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
 
-  // 3. Strategic Scoring
-  let bestScore = -Infinity;
-  let bestMove = emptyIndices[0];
+        /* --- UI Components --- */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 32px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px; /* Default width */
+            transition: max-width 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
 
-  for (let i of emptyIndices) {
-    let score = 0;
-    const r = Math.floor(i / size);
-    const c = i % size;
+        .back-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            padding: 12px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            color: #e0e5ef;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            z-index: 50;
+        }
+        .back-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
 
-    // Center preference
-    const dist = Math.abs(r - size/2 + 0.5) + Math.abs(c - size/2 + 0.5);
-    score -= dist * 0.5;
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
 
-    const directions = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0], [-1, -1], [-1, 1]];
-    for (let [dr, dc] of directions) {
-      const nr = r + dr;
-      const nc = c + dc;
-      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-         const neighbor = board[nr * size + nc];
-         if (neighbor === 'O') score += 3;
-         if (neighbor === 'X') score += 2;
-         if (neighbor === 'DEAD') score -= 1;
-      }
-    }
+        .subtitle {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-    score += Math.random();
+        /* --- Mode Toggle --- */
+        .mode-toggle {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 4px;
+            display: flex;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = i;
-    }
-  }
+        .toggle-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
 
-  return bestMove;
-}
+        .toggle-btn.active {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
+            color: var(--accent-blue);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2), inset 0 0 0 1px rgba(56, 189, 248, 0.2);
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
 
-function getBestMove(board, mode) {
-  const { size, win } = getConfigs(mode);
-  
-  if (size === 6) return getMegaMove(board, size, win);
+        /* --- Game Board --- */
+        .status-bar {
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+        }
 
-  // Standard 3x3
-  const emptySpots = board.filter(s => s === '').length;
-  if (emptySpots === 9) return 4; 
-  if (emptySpots === 8 && board[4] === '') return 4;
+        #game-board {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+            aspect-ratio: 1;
+        }
 
-  const tempBoard = [...board];
-  let bestScore = -Infinity;
-  let moves = [];
+        .cell {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
 
-  for (let i = 0; i < tempBoard.length; i++) {
-    if (tempBoard[i] === '') {
-      tempBoard[i] = 'O'; 
-      let score = minmax(tempBoard, 0, false); 
-      tempBoard[i] = ''; 
-      
-      if (score > bestScore) {
-        bestScore = score;
-        moves = [i];
-      } else if (score === bestScore) {
-        moves.push(i);
-      }
-    }
-  }
-  return moves[Math.floor(Math.random() * moves.length)];
-}
+        .cell:hover:not(:disabled) {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
 
-// --- Visual Components ---
+        .cell:disabled { cursor: default; }
 
-const BackButton = () => (
-  <a href="index.html" className="glass-panel" style={{
-    position: 'fixed', top: '24px', left: '24px', padding: '12px 20px',
-    color: '#e0e5ef', borderRadius: '24px', display: 'flex', alignItems: 'center',
-    gap: '8px', fontWeight: 600, fontSize: '14px', textDecoration: 'none',
-    zIndex: 50, transition: 'transform 0.2s'
-  }}>
-    <Icons.ArrowLeft size={18} /> <span className="hidden sm:inline">Index</span>
-  </a>
-);
+        .cell.dead-zone {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(239, 68, 68, 0.1),
+                rgba(239, 68, 68, 0.1) 10px,
+                rgba(239, 68, 68, 0.2) 10px,
+                rgba(239, 68, 68, 0.2) 20px
+            ) !important;
+            border-color: rgba(239, 68, 68, 0.4) !important;
+            animation: shake 0.4s ease-in-out;
+        }
 
-const Background = () => (
-  <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: '#020617' }}>
-    <div style={{
-      position: 'absolute', top: '-20%', left: '-10%', width: '80vw', height: '80vh',
-      background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
-      filter: 'blur(60px)', animation: 'pulse 10s infinite alternate'
-    }} />
-    <div style={{
-      position: 'absolute', bottom: '-20%', right: '-10%', width: '80vw', height: '80vh',
-      background: 'radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%)',
-      filter: 'blur(80px)', animation: 'pulse 15s infinite alternate-reverse'
-    }} />
-    <div style={{
-      position: 'absolute', inset: 0, opacity: 0.3, pointerEvents: 'none',
-      background: 'linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.2) 50%)', backgroundSize: '100% 4px'
-    }} />
-    <style>{`@keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.1); opacity: 0.8; } }`}</style>
-  </div>
-);
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
 
-const CloutyAvatar = ({ isThinking }) => {
-  const [imgError, setImgError] = useState(false);
-  return (
-    <div className="relative group">
-      <div style={{
-        width: '100px', height: '100px', borderRadius: '50%',
-        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-        border: `2px solid ${isThinking ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`,
-        boxShadow: isThinking ? '0 0 40px rgba(56, 189, 248, 0.4)' : '0 10px 30px rgba(0,0,0,0.5)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        transform: isThinking ? 'scale(1.05)' : 'scale(1)', overflow: 'hidden'
-      }}>
-        {!imgError ? (
-          <img src="nerdy skies.jpg" alt="Clouty Skies" onError={() => setImgError(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <svg width="60" height="60" viewBox="0 0 100 100" fill="none">
-            <defs>
-              <linearGradient id="cGrad" x1="50" y1="20" x2="50" y2="80"><stop offset="0%" stopColor="#e2e8f0"/><stop offset="100%" stopColor="#94a3b8"/></linearGradient>
-            </defs>
-            <path d="M25 65C16.7 65 10 58.3 10 50C10 41.7 16.7 35 25 35C26.1 35 27.3 35.1 28.3 35.4C30.6 26.7 38.5 20 48 20C58.9 20 67.8 28.7 69.2 39.5C71.3 38.5 73.7 38 76.2 38C84.9 38 92 45.2 92 54C92 62.8 84.9 70 76.2 70H25V65Z" fill="url(#cGrad)"/>
-            <rect x="35" y="48" width="12" height="8" rx="2" stroke="#000" strokeWidth="3" fill="rgba(0,0,0,0.1)"/>
-            <rect x="53" y="48" width="12" height="8" rx="2" stroke="#000" strokeWidth="3" fill="rgba(0,0,0,0.1)"/>
-            <path d="M47 52H53" stroke="#000" strokeWidth="2"/>
-          </svg>
-        )}
-      </div>
-      {isThinking && <div style={{
-        position: 'absolute', right: '110px', top: '25px', background: 'rgba(15, 23, 42, 0.9)',
-        padding: '8px 16px', borderRadius: '16px 16px 0 16px', color: '#e2e8f0', fontSize: '12px',
-        border: '1px solid rgba(56, 189, 248, 0.3)', whiteSpace: 'nowrap'
-      }}>Calculating...</div>}
-    </div>
-  );
-};
+        /* --- Reset Button --- */
+        .reset-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(125, 211, 252, 0.3);
+            background: linear-gradient(to bottom, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.1) 50%, rgba(2, 132, 199, 0.15) 51%, rgba(56, 189, 248, 0.2));
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+        }
 
-// --- Main App ---
-
-const App = () => {
-  const [mode, setMode] = useState('standard');
-  const { size, win } = getConfigs(mode);
-  
-  const [board, setBoard] = useState([]);
-  const [mines, setMines] = useState([]); // Indices of mines
-  const [isXNext, setIsXNext] = useState(true);
-  const [winner, setWinner] = useState(null);
-  const [isThinking, setIsThinking] = useState(false);
-  const [statusText, setStatusText] = useState("Your Turn");
-
-  // Init board logic
-  const initGame = useCallback((currentMode) => {
-    const cfg = getConfigs(currentMode);
-    setBoard(Array(cfg.size * cfg.size).fill(''));
-    setIsXNext(true);
-    setWinner(null);
-    setIsThinking(false);
-    
-    // Generate mines only for Super mode
-    if (currentMode === 'super') {
-      const totalTiles = cfg.size * cfg.size;
-      const mineCount = 5; // 5 hidden mines
-      const newMines = new Set();
-      while(newMines.size < mineCount) {
-        newMines.add(Math.floor(Math.random() * totalTiles));
-      }
-      setMines(Array.from(newMines));
-    } else {
-      setMines([]);
-    }
-  }, []);
-
-  useEffect(() => initGame(mode), [mode, initGame]);
-
-  // Check winner / Update status
-  useEffect(() => {
-    const res = checkWinner(board, size, win);
-    if (res) {
-      setWinner(res);
-      if (res === 'X') setStatusText("Victory!");
-      else if (res === 'O') setStatusText("Clouty Skies Wins");
-      else setStatusText("Draw Game");
-    } else {
-      if (isThinking) setStatusText("Thinking...");
-      else {
-        if (!isXNext) setStatusText("Wait...");
-        else if (mode === 'super') setStatusText("Watch for Mines!");
-        else if (mode === 'mega') setStatusText("Connect 5");
-        else setStatusText("Your Turn");
-      }
-    }
-  }, [board, isThinking, isXNext, size, win, mode]);
-
-  // AI Turn
-  useEffect(() => {
-    if (!isXNext && !winner) {
-      setIsThinking(true);
-      const delay = mode === 'standard' ? 800 + Math.random() * 500 : 400; 
-      
-      const timer = setTimeout(() => {
-        // AI logic uses blind board (doesn't know where mines are)
-        const move = getBestMove(board, mode);
+        /* --- Avatar --- */
+        .avatar-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 50;
+        }
         
-        if (move !== undefined && move !== -1) {
-          handleMove(move, 'O');
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        setIsThinking(false);
-      }, delay);
-      return () => clearTimeout(timer);
-    }
-  }, [isXNext, winner, board, mode]);
 
-  const handleMove = (index, player) => {
-    setBoard(prev => {
-      const newBoard = [...prev];
-      
-      // SUPER MODE: Mine Trigger Logic
-      if (mode === 'super' && mines.includes(index)) {
-        newBoard[index] = 'DEAD'; // Explode!
-        // No one gets the square, turn passes
-      } else {
-        newBoard[index] = player;
-      }
-      return newBoard;
-    });
-    setIsXNext(prev => !prev);
-  };
+        .avatar-circle.thinking {
+            border-color: #38bdf8;
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.4);
+            transform: scale(1.05);
+        }
 
-  const handleCellClick = (index) => {
-    // Prevent clicking if occupied, game over, or not player's turn
-    // Note: DEAD zones are occupied strings, so this blocks clicking them again
-    if (board[index] || winner || !isXNext) return;
-    handleMove(index, 'X');
-  };
+        .speech-bubble {
+            position: absolute;
+            right: 110px;
+            top: 25px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 8px 16px;
+            border-radius: 16px 16px 0 16px;
+            color: #e2e8f0;
+            font-size: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(20px) scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
 
-  return (
-    <>
-      <GlobalStyles />
-      <Background />
-      <BackButton />
+        .speech-bubble.show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
 
-      <div style={{
-        minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: '20px',
-        position: 'relative', zIndex: 10
-      }}>
-
-        <div className="glass-panel" style={{
-          padding: '24px', borderRadius: '32px', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: '20px', width: '100%',
-          maxWidth: (mode === 'mega' || mode === 'super') ? '500px' : '400px',
-          transition: 'all 0.4s ease'
-        }}>
-          
-          {/* Header */}
-          <div className="text-center">
-            <h1 style={{
-              fontSize: '24px', fontWeight: 800, margin: '0 0 4px 0',
-              background: 'linear-gradient(to right, #fff, #94a3b8)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-            }}>Tic-Tac-Toe</h1>
-            <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>
-              DARK AERO EDITION
-            </div>
-          </div>
-
-          {/* Mode Switcher */}
-          <div className="mode-toggle" style={{ width: '100%' }}>
-            <button 
-              className={`toggle-btn ${mode === 'standard' ? 'active' : ''}`}
-              onClick={() => setMode('standard')}
-            >
-              <Icons.Grid3x3 size={16} /> Std
-            </button>
-            <button 
-              className={`toggle-btn ${mode === 'mega' ? 'active' : ''}`}
-              onClick={() => setMode('mega')}
-            >
-              <Icons.Grid size={16} /> Mega
-            </button>
-            <button 
-              className={`toggle-btn ${mode === 'super' ? 'active' : ''}`}
-              onClick={() => setMode('super')}
-              style={{ color: mode === 'super' ? '#f87171' : '' }}
-            >
-              <Icons.Bomb size={16} /> Super
-            </button>
-          </div>
-
-          {/* Status Bar */}
-          <div style={{
-            fontSize: '14px', fontWeight: 600,
-            color: winner === 'X' ? '#4ade80' : winner === 'O' ? '#38bdf8' : '#e2e8f0',
-            background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)',
-            padding: '8px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px'
-          }}>
-            {mode === 'super' && !winner && <Icons.Bomb size={14} className="animate-pulse text-red-400" />}
-            {statusText}
-          </div>
-
-          {/* Board */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${size}, 1fr)`,
-            gap: size === 6 ? '6px' : '10px',
-            width: '100%', aspectRatio: '1',
-          }}>
-            {board.map((cell, index) => (
-              <button
-                key={index}
-                onClick={() => handleCellClick(index)}
-                disabled={!!cell || !!winner || !isXNext}
-                className={cell === 'DEAD' ? 'dead-zone' : ''}
-                style={{
-                  background: cell === 'DEAD' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(15, 23, 42, 0.4)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius: size === 6 ? '8px' : '16px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: (!cell && !winner && isXNext) ? 'pointer' : 'default',
-                  transition: 'all 0.2s ease', position: 'relative'
-                }}
-                onMouseEnter={(e) => {
-                  if (!cell && !winner && isXNext) {
-                    e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (cell !== 'DEAD') {
-                    e.currentTarget.style.background = 'rgba(15, 23, 42, 0.4)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                  }
-                }}
-              >
-                {cell === 'X' && (
-                  <Icons.X size={size === 6 ? 24 : 42} className="animate-pop-in" color="#4ade80" strokeWidth={3} style={{ filter: 'drop-shadow(0 0 10px rgba(74, 222, 128, 0.6))' }} />
-                )}
-                {cell === 'O' && (
-                  <Icons.Circle size={size === 6 ? 22 : 38} className="animate-pop-in" color="#38bdf8" strokeWidth={3} style={{ filter: 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.6))' }} />
-                )}
-                {cell === 'DEAD' && (
-                  <Icons.Skull size={size === 6 ? 20 : 32} color="#f87171" strokeWidth={2} style={{ filter: 'drop-shadow(0 0 10px rgba(248, 113, 113, 0.6))' }} />
-                )}
-              </button>
-            ))}
-          </div>
-
-          <button onClick={() => initGame(mode)} className="glossy-btn" style={{
-            width: '100%', padding: '16px', borderRadius: '16px', color: '#fff',
-            fontSize: '15px', fontWeight: 700, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', gap: '8px',
-            textTransform: 'uppercase', letterSpacing: '0.5px'
-          }}>
-            <Icons.RefreshCw size={18} /> Reset System
-          </button>
-        </div>
-
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 50 }}>
-          <CloutyAvatar isThinking={isThinking} />
-        </div>
-      </div>
-
-      <style>{`
-        .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        /* Animations for Icons */
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
-      `}</style>
-    </>
-  );
-};
+        
+        .pulse-text { animation: pulseText 1.5s infinite; }
+        @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-export default App;
+        /* Icon SVGs */
+        svg { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-gradient-2"></div>
+    <div class="scanlines"></div>
+
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span style="display: none;" class="desktop-text">Index</span>
+        <script>if(window.innerWidth > 600) document.querySelector('.desktop-text').style.display = 'inline';</script>
+    </a>
+
+    <!-- Game Card -->
+    <div class="glass-panel" id="game-card">
+        <div>
+            <h1>Tic-Tac-Toe</h1>
+            <div class="subtitle">DARK AERO EDITION</div>
+        </div>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="toggle-btn active" onclick="setMode('standard')" id="btn-standard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+                Std
+            </button>
+            <button class="toggle-btn" onclick="setMode('mega')" id="btn-mega">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+                Mega
+            </button>
+            <button class="toggle-btn" onclick="setMode('super')" id="btn-super">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="9"/><path d="M14.35 4.65 16.3 2.7a2.41 2.41 0 0 1 3.4 0l1.6 1.6a2.4 2.4 0 0 1 0 3.4l-1.95 1.95"/><path d="m22 2-1.5 1.5"/></svg>
+                Super
+            </button>
+        </div>
+
+        <!-- Status -->
+        <div class="status-bar" id="status-bar">
+            Your Turn
+        </div>
+
+        <!-- Board -->
+        <div id="game-board"></div>
+
+        <!-- Reset -->
+        <button class="reset-btn" onclick="initGame()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+            Reset System
+        </button>
+    </div>
+
+    <!-- Avatar -->
+    <div class="avatar-container">
+        <div class="speech-bubble" id="speech-bubble">Calculating...</div>
+        <div class="avatar-circle" id="avatar-circle">
+            <!-- Tries to load real image, falls back to SVG on error -->
+            <img src="nerdy skies.jpg" alt="Clouty Skies" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; document.getElementById('fallback-svg').style.display='block';">
+            
+            <svg id="fallback-svg" style="display:none;" width="60" height="60" viewBox="0 0 100 100" fill="none">
+                <defs><linearGradient id="cGrad" x1="50" y1="20" x2="50" y2="80"><stop offset="0%" stopColor="#e2e8f0"/><stop offset="100%" stopColor="#94a3b8"/></linearGradient></defs>
+                <path d="M25 65C16.7 65 10 58.3 10 50C10 41.7 16.7 35 25 35C26.1 35 27.3 35.1 28.3 35.4C30.6 26.7 38.5 20 48 20C58.9 20 67.8 28.7 69.2 39.5C71.3 38.5 73.7 38 76.2 38C84.9 38 92 45.2 92 54C92 62.8 84.9 70 76.2 70H25V65Z" fill="url(#cGrad)"/>
+                <rect x="35" y="48" width="12" height="8" rx="2" stroke="#000" strokeWidth="3" fill="rgba(0,0,0,0.1)"/>
+                <rect x="53" y="48" width="12" height="8" rx="2" stroke="#000" strokeWidth="3" fill="rgba(0,0,0,0.1)"/>
+                <path d="M47 52H53" stroke="#000" strokeWidth="2"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script>
+        // --- State ---
+        let state = {
+            mode: 'standard', // standard, mega, super
+            board: [],
+            mines: [],
+            isXNext: true,
+            winner: null,
+            isThinking: false
+        };
+
+        const ICONS = {
+            X: `<svg class="pop-in" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.6)); transform: scale(0.6);"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+            O: `<svg class="pop-in" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6)); transform: scale(0.6);"><circle cx="12" cy="12" r="10"/></svg>`,
+            DEAD: `<svg class="pop-in" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(248, 113, 113, 0.6)); transform: scale(0.6);"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>`,
+            BOMB_ICON: `<svg class="pulse-text" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="9"/><path d="M14.35 4.65 16.3 2.7a2.41 2.41 0 0 1 3.4 0l1.6 1.6a2.4 2.4 0 0 1 0 3.4l-1.95 1.95"/><path d="m22 2-1.5 1.5"/></svg>`
+        };
+
+        // --- Configs ---
+        function getConfigs() {
+            switch (state.mode) {
+                case 'mega': return { size: 6, win: 5 };
+                case 'super': return { size: 6, win: 5 };
+                default: return { size: 3, win: 3 };
+            }
+        }
+
+        // --- Core Logic ---
+        function checkWinner(board, size, winCondition) {
+            const getIndex = (r, c) => r * size + c;
+            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const player = board[getIndex(r, c)];
+                    if (!player || player === 'DEAD') continue;
+
+                    for (let [dr, dc] of directions) {
+                        let count = 0;
+                        for (let k = 0; k < winCondition; k++) {
+                            const nr = r + k * dr;
+                            const nc = c + k * dc;
+                            
+                            if (nr >= 0 && nr < size && nc >= 0 && nc < size && board[getIndex(nr, nc)] === player) {
+                                count++;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (count === winCondition) return player;
+                    }
+                }
+            }
+            if (!board.includes('')) return 'draw';
+            return null;
+        }
+
+        function minmax(board, depth, isMaximizing) {
+            const result = checkWinner(board, 3, 3);
+            if (result === 'O') return 10 - depth;
+            if (result === 'X') return depth - 10;
+            if (result === 'draw') return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        bestScore = Math.max(minmax(board, depth + 1, false), bestScore);
+                        board[i] = '';
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        bestScore = Math.min(minmax(board, depth + 1, true), bestScore);
+                        board[i] = '';
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function getMegaMove(board, size, winLen) {
+            const emptyIndices = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
+            
+            // 1. Instant Win
+            for (let i of emptyIndices) {
+                board[i] = 'O';
+                if (checkWinner(board, size, winLen) === 'O') { board[i] = ''; return i; }
+                board[i] = '';
+            }
+            // 2. Critical Block
+            for (let i of emptyIndices) {
+                board[i] = 'X';
+                if (checkWinner(board, size, winLen) === 'X') { board[i] = ''; return i; }
+                board[i] = '';
+            }
+            // 3. Heuristic
+            let bestScore = -Infinity;
+            let bestMove = emptyIndices[0];
+
+            for (let i of emptyIndices) {
+                let score = 0;
+                const r = Math.floor(i / size);
+                const c = i % size;
+                const dist = Math.abs(r - size/2 + 0.5) + Math.abs(c - size/2 + 0.5);
+                score -= dist * 0.5; // Center pref
+
+                // Neighbor check
+                const directions = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
+                for(let [dr, dc] of directions) {
+                    const nr = r + dr, nc = c + dc;
+                    if(nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                        const n = board[nr*size+nc];
+                        if(n === 'O') score += 3;
+                        if(n === 'X') score += 2;
+                        if(n === 'DEAD') score -= 1;
+                    }
+                }
+                score += Math.random();
+                if(score > bestScore) { bestScore = score; bestMove = i; }
+            }
+            return bestMove;
+        }
+
+        function getBestMove() {
+            const { size, win } = getConfigs();
+            if (size === 6) return getMegaMove([...state.board], size, win);
+
+            // 3x3 Standard
+            const empty = state.board.filter(s => s === '').length;
+            if (empty === 9) return 4;
+            if (empty === 8 && state.board[4] === '') return 4;
+
+            const tempBoard = [...state.board];
+            let bestScore = -Infinity, moves = [];
+            for (let i = 0; i < tempBoard.length; i++) {
+                if (tempBoard[i] === '') {
+                    tempBoard[i] = 'O';
+                    let score = minmax(tempBoard, 0, false);
+                    tempBoard[i] = '';
+                    if (score > bestScore) { bestScore = score; moves = [i]; }
+                    else if (score === bestScore) moves.push(i);
+                }
+            }
+            return moves[Math.floor(Math.random() * moves.length)];
+        }
+
+        // --- UI Updates ---
+        function renderBoard() {
+            const { size } = getConfigs();
+            const boardEl = document.getElementById('game-board');
+            const cardEl = document.getElementById('game-card');
+            
+            // Layout styling
+            boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            boardEl.style.gap = size === 6 ? '6px' : '10px';
+            cardEl.style.maxWidth = size === 6 ? '500px' : '400px';
+
+            boardEl.innerHTML = '';
+            
+            state.board.forEach((cell, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'cell';
+                if (size === 6) btn.style.borderRadius = '8px';
+                
+                if (cell === 'DEAD') btn.classList.add('dead-zone');
+                
+                if (cell) {
+                    btn.innerHTML = ICONS[cell] || '';
+                    btn.setAttribute('disabled', 'true');
+                    btn.style.cursor = 'default';
+                } else {
+                    if (!state.winner && state.isXNext) {
+                        btn.onclick = () => handleMove(i, 'X');
+                    }
+                }
+                boardEl.appendChild(btn);
+            });
+            updateStatus();
+            updateAvatar();
+        }
+
+        function updateStatus() {
+            const bar = document.getElementById('status-bar');
+            let text = '';
+            let color = '#e2e8f0';
+
+            if (state.winner) {
+                if (state.winner === 'X') { text = 'Victory!'; color = '#4ade80'; }
+                else if (state.winner === 'O') { text = 'Clouty Skies Wins'; color = '#38bdf8'; }
+                else { text = 'Draw Game'; color = '#94a3b8'; }
+            } else {
+                if (state.isThinking) text = 'Thinking...';
+                else if (!state.isXNext) text = 'Wait...';
+                else if (state.mode === 'super') text = 'Watch for Mines!';
+                else if (state.mode === 'mega') text = 'Connect 5';
+                else text = 'Your Turn';
+            }
+
+            let iconHtml = (state.mode === 'super' && !state.winner) ? ICONS.BOMB_ICON + ' ' : '';
+            bar.innerHTML = iconHtml + text;
+            bar.style.color = color;
+        }
+
+        function updateAvatar() {
+            const bubble = document.getElementById('speech-bubble');
+            const circle = document.getElementById('avatar-circle');
+            
+            if (state.isThinking) {
+                bubble.classList.add('show');
+                circle.classList.add('thinking');
+            } else {
+                bubble.classList.remove('show');
+                circle.classList.remove('thinking');
+            }
+        }
+
+        function setMode(newMode) {
+            state.mode = newMode;
+            // Update toggle UI
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${newMode}`).classList.add('active');
+            
+            // Adjust Super mode button color specifically
+            const superBtn = document.getElementById('btn-super');
+            if(newMode === 'super') superBtn.style.color = '#f87171';
+            else superBtn.style.color = '';
+
+            initGame();
+        }
+
+        // --- Interaction ---
+        function handleMove(index, player) {
+            if (state.board[index] || state.winner) return;
+
+            // Logic update
+            const newBoard = [...state.board];
+            let exploded = false;
+
+            if (state.mode === 'super' && state.mines.includes(index)) {
+                newBoard[index] = 'DEAD';
+                exploded = true;
+            } else {
+                newBoard[index] = player;
+            }
+
+            state.board = newBoard;
+            state.isXNext = !state.isXNext; // Turn always passes
+
+            // Check Win
+            const { size, win } = getConfigs();
+            const w = checkWinner(newBoard, size, win);
+            if (w) state.winner = w;
+
+            renderBoard();
+
+            // Trigger AI if game active and O turn
+            if (!state.winner && !state.isXNext) {
+                state.isThinking = true;
+                updateAvatar();
+                const delay = state.mode === 'standard' ? 800 + Math.random() * 500 : 400;
+                
+                setTimeout(() => {
+                    const aiMove = getBestMove();
+                    if (aiMove !== undefined && aiMove !== -1) {
+                        handleMove(aiMove, 'O');
+                    }
+                    state.isThinking = false;
+                    renderBoard();
+                }, delay);
+            }
+        }
+
+        function initGame() {
+            const { size } = getConfigs();
+            state.board = Array(size * size).fill('');
+            state.isXNext = true;
+            state.winner = null;
+            state.isThinking = false;
+
+            // Generate mines
+            state.mines = [];
+            if (state.mode === 'super') {
+                const total = size * size;
+                const set = new Set();
+                while(set.size < 5) set.add(Math.floor(Math.random() * total));
+                state.mines = Array.from(set);
+            }
+            renderBoard();
+        }
+
+        // Start
+        initGame();
+
+    </script>
+</body>
+</html>
 
