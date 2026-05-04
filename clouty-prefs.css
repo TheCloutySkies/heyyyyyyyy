@@ -1,0 +1,223 @@
+/**
+ * Clouty OS — theme overrides on top of xp.css.
+ * Activated via html[data-theme="dark"] set by clouty-prefs.js
+ */
+
+html[data-theme="dark"] {
+  --xp-blue: #1e3a6e;
+  --chrome-face: #2d2d2d;
+  --chrome-body: #1e1e1e;
+  --chrome-border: #4a4a4a;
+  --text-primary: #e8e8e8;
+  --text-secondary: #b0b0b0;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--xp-blue);
+  background-image: none;
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] {
+  background-image: none;
+}
+
+html[data-theme="dark"] #wallpaper {
+  filter: brightness(0.35) saturate(0.85) contrast(1.05);
+}
+
+html[data-theme="dark"] .hero-wall .window-body,
+html[data-theme="dark"] #spotify-tray-popout .window-body {
+  background: var(--chrome-body) !important;
+  color: var(--text-primary);
+  border-color: var(--chrome-border);
+}
+
+html[data-theme="dark"] .window-body {
+  background: var(--chrome-body);
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .title-bar {
+  background: linear-gradient(180deg, #4a4a4a 0%, #2d2d2d 100%);
+}
+
+html[data-theme="dark"] fieldset {
+  border-color: var(--chrome-border);
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .icons figcaption {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .icons a:focus figure,
+html[data-theme="dark"] .icons a:hover figure {
+  background: rgba(100, 149, 237, 0.25);
+  border-color: rgba(100, 149, 237, 0.5);
+}
+
+html[data-theme="dark"] #settings-panel.window .window-body {
+  background: var(--chrome-body);
+}
+
+html[data-theme="dark"] .status-bar {
+  background: #2a2a2a;
+  border-top-color: var(--chrome-border);
+}
+
+html[data-theme="dark"] .status-bar-field {
+  color: var(--text-secondary);
+}
+
+html[data-theme="dark"] #boot {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="dark"] #boot .window-body {
+  background: var(--chrome-body);
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .term-embed iframe {
+  filter: grayscale(0.3) contrast(1.1) sepia(0.1) invert(0.05);
+}
+
+/* Subtle scanline overlay in dark mode (memorable flourish) */
+html[data-theme="dark"].clouty-scanlines #desktop::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.06),
+    rgba(0, 0, 0, 0.06) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  opacity: 0.35;
+}
+
+/* Cursor trail canvas sits between wallpaper and desktop; z-index set in JS */
+#clouty-cursor-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Desktop content above trail layer */
+#desktop {
+  z-index: 2;
+}
+
+/* Settings icon button (non-link tile) */
+.icons button.icon-tile {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  width: 100%;
+}
+
+.icons button.icon-tile figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.icons button.icon-tile:focus figure,
+.icons button.icon-tile:hover figure {
+  background: rgba(49, 106, 197, 0.2);
+  border-color: rgba(49, 106, 197, 0.4);
+  outline: none;
+}
+
+html[data-theme="dark"] .icons button.icon-tile:focus figure,
+html[data-theme="dark"] .icons button.icon-tile:hover figure {
+  background: rgba(100, 149, 237, 0.25);
+  border-color: rgba(100, 149, 237, 0.5);
+}
+
+/* Settings panel stacking */
+#settings-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 94vw);
+  max-height: min(90vh, 560px);
+  z-index: 9500;
+  display: none;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+#settings-panel.is-open {
+  display: block;
+}
+
+#settings-panel .window-body {
+  max-height: min(52vh, 420px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#settings-panel fieldset {
+  margin-bottom: 10px;
+}
+
+#settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  background: rgba(0, 0, 0, 0.25);
+  display: none;
+}
+
+#settings-backdrop.is-open {
+  display: block;
+}
+
+/* About page: no #wallpaper — theme still applies to window + body */
+
+html[data-theme="dark"] body.about-page .window-body {
+  background: var(--chrome-body);
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] body.about-page h1 {
+  color: #a8c4ff;
+}
+
+html[data-theme="dark"] body.about-page {
+  background: #1a2f52;
+}
+
+html[data-theme="dark"].clouty-scanlines body.about-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.08),
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  opacity: 0.35;
+}
+
+html[data-theme="dark"].clouty-scanlines body.about-page .window {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-theme="dark"] #pref-motion-note {
+  color: var(--text-secondary);
+}
