@@ -504,6 +504,35 @@
     syncTaskButtons();
   }
 
+  /** Same-origin games in iframes ask the shell to remove the PIP (avoid navigating the iframe to index). */
+  function initEmbeddedPipBridge() {
+    window.addEventListener(
+      "message",
+      function (event) {
+        if (event.origin !== window.location.origin) return;
+        var d = event.data;
+        if (!d || d.type !== "clouty-close-pip") return;
+        if (d.pipId) {
+          destroyShellWindow(d.pipId);
+          return;
+        }
+        var shells = document.querySelectorAll(".pip-shell");
+        for (var i = 0; i < shells.length; i++) {
+          var ifr = shells[i].querySelector("iframe");
+          if (!ifr) continue;
+          try {
+            if (ifr.contentWindow === event.source) {
+              var rawId = shells[i].id.replace(/^win-/, "");
+              if (rawId) destroyShellWindow(rawId);
+              return;
+            }
+          } catch (err) {}
+        }
+      },
+      false
+    );
+  }
+
   function attachShellWindowChrome(win) {
     if (!win || win.dataset.shellChromeBound === "1") return;
     win.dataset.shellChromeBound = "1";
@@ -718,6 +747,7 @@
     applyLayoutFromStorage();
     tickClock();
     setInterval(tickClock, 1000);
+    initEmbeddedPipBridge();
     initStartMenu();
     initWindowChrome();
     initDesktopIcons();

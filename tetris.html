@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Cloutris - System Ready</title>
+<script>
+(function () {
+  if (window.self !== window.top) {
+    document.documentElement.classList.add("embedded-in-shell");
+  }
+})();
+</script>
 <style>
     /* --- SYSTEM FONTS & RESET --- */
     @font-face {
@@ -60,8 +67,16 @@
         font-size: 10px; color: black; line-height: 10px;
         display: flex; align-items: center; justify-content: center;
         text-decoration: none; cursor: pointer;
+        padding: 0;
+        font-family: inherit;
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
     }
-    .btn-win:active { border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); transform: translate(1px, 1px); }
+    .btn-win:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
 
     /* --- GAME LAYOUT --- */
     .game-layout {
@@ -151,6 +166,10 @@
         border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
         font-weight: bold; font-size: 11px; text-decoration: none; color: black;
         box-shadow: 1px 1px 0px black;
+        cursor: pointer;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
     }
     .start-menu-btn:active { border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); box-shadow: none; transform: translate(1px, 1px); }
 
@@ -162,6 +181,51 @@
         .sidebar { gap: 5px; }
         .lcd { font-size: 14px; }
     }
+
+    /* On-screen controls when embedded in desktop PIP iframe (narrow frame / touch). */
+    html.embedded-in-shell .mobile-controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+
+    html.embedded-in-shell body {
+        justify-content: flex-start;
+        padding-top: env(safe-area-inset-top);
+    }
+
+    html.embedded-in-shell .window {
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    html.embedded-in-shell .game-layout {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    html.embedded-in-shell .viewport {
+        flex-shrink: 0;
+    }
+
+    html.embedded-in-shell .key,
+    html.embedded-in-shell .key-big {
+        min-width: 48px;
+        min-height: 48px;
+        touch-action: manipulation;
+    }
+
+    html.embedded-in-shell .dpad {
+        grid-template-columns: repeat(3, minmax(48px, 56px));
+        grid-template-rows: repeat(2, minmax(48px, 56px));
+    }
+
+    html.embedded-in-shell .key-big {
+        width: min(88px, 22vw);
+        height: min(88px, 22vw);
+    }
 </style>
 </head>
 <body>
@@ -170,9 +234,9 @@
     <div class="title-bar">
         <span>Cloutris.exe</span>
         <div class="win-controls">
-            <div class="btn-win">_</div>
-            <div class="btn-win">□</div>
-            <a href="index.html" class="btn-win">x</a>
+            <button type="button" class="btn-win" disabled tabindex="-1" aria-hidden="true">_</button>
+            <button type="button" class="btn-win" disabled tabindex="-1" aria-hidden="true">□</button>
+            <button type="button" class="btn-win" id="btn-close-cloutris" title="Exit to desktop" aria-label="Close game">x</button>
         </div>
     </div>
 
@@ -217,10 +281,10 @@
 </div>
 
 <div class="taskbar">
-    <a href="index.html" class="start-menu-btn">
+    <button type="button" class="start-menu-btn" id="btn-taskbar-start" title="Exit to desktop">
         <span style="display:inline-block; width:12px; height:12px; background:linear-gradient(135deg, #f00 33%, #0f0 33%, #0f0 66%, #00f 66%); border:1px solid #808080;"></span>
         Start
-    </a>
+    </button>
     <div style="border-left:2px solid gray; border-right:1px solid white; height:20px; margin:0 6px;"></div>
     <div style="background:#d4d4d4; padding:2px 5px; font-size:11px; font-weight:bold; box-shadow:inset 1px 1px black;">Cloutris</div>
 </div>
@@ -576,7 +640,7 @@ document.getElementById('btn-start').addEventListener('click', () => {
 
 // Keyboard
 document.addEventListener('keydown', (e) => {
-    if (gameOver || isPaused) return;
+    if (!canUseGameControls()) return;
     if (e.keyCode === 37) moveLeft();
     else if (e.keyCode === 39) moveRight();
     else if (e.keyCode === 40) moveDown();
@@ -586,19 +650,85 @@ document.addEventListener('keydown', (e) => {
     draw(); // Immediate visual feedback
 });
 
-// Mobile
+function canUseGameControls() {
+    return !gameOver && !isPaused && currentPiece != null;
+}
+
 function bindTouch(id, action) {
     const el = document.getElementById(id);
-    el.addEventListener('touchstart', (e) => { e.preventDefault(); if(!gameOver) { action(); draw(); } }, {passive: false});
-    el.addEventListener('mousedown', (e) => { e.preventDefault(); if(!gameOver) { action(); draw(); } });
+    if (!el) return;
+    const run = (e) => {
+        e.preventDefault();
+        if (!canUseGameControls()) return;
+        action();
+        draw();
+    };
+    el.addEventListener("pointerdown", run, { passive: false });
 }
+
+function requestCloseToParent() {
+    if (window.self === window.top) {
+        window.location.href = "index.html";
+        return;
+    }
+    try {
+        window.parent.postMessage({ type: "clouty-close-pip" }, window.location.origin);
+    } catch (e) {
+        try {
+            window.parent.postMessage({ type: "clouty-close-pip" }, "*");
+        } catch (e2) {}
+    }
+}
+
+document.getElementById("btn-close-cloutris").addEventListener("click", requestCloseToParent);
+var taskbarStart = document.getElementById("btn-taskbar-start");
+if (taskbarStart) taskbarStart.addEventListener("click", requestCloseToParent);
 
 bindTouch('k-left', moveLeft);
 bindTouch('k-right', moveRight);
-bindTouch('k-down', moveDown);
 bindTouch('k-rot', rotate);
 bindTouch('k-drop', hardDrop);
 
+/* Hold ↓ for repeated soft drop (mobile expectation). */
+(function () {
+    var downEl = document.getElementById("k-down");
+    if (!downEl) return;
+    var repeatTimer = null;
+    var repeatFast = null;
+    function clearRepeat() {
+        if (repeatTimer) {
+            clearTimeout(repeatTimer);
+            repeatTimer = null;
+        }
+        if (repeatFast) {
+            clearInterval(repeatFast);
+            repeatFast = null;
+        }
+    }
+    function tickSoftDrop() {
+        if (!canUseGameControls()) return;
+        moveDown();
+        draw();
+    }
+    downEl.addEventListener(
+        "pointerdown",
+        function (e) {
+            if (e.button > 0) return;
+            e.preventDefault();
+            if (!canUseGameControls()) return;
+            tickSoftDrop();
+            clearRepeat();
+            repeatTimer = setTimeout(function () {
+                repeatTimer = null;
+                repeatFast = setInterval(tickSoftDrop, 70);
+            }, 280);
+        },
+        { passive: false }
+    );
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
+        downEl.addEventListener(ev, clearRepeat);
+    });
+})();
 </script>
 </body>
 </html>
