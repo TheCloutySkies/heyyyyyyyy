@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Clouty Hops</title>
   <style>
     :root {
@@ -16,6 +16,7 @@
       margin: 0;
       padding: 0; /* Remove padding */
       min-height: 100vh;
+      min-height: 100dvh;
       background: url('https://images3.alphacoders.com/134/1349543.png') no-repeat center center fixed;
       background-size: cover;
       display: flex;
@@ -23,6 +24,12 @@
       align-items: center;
       font-family: "Segoe UI", sans-serif;
       overflow: hidden; /* Prevent scrolling */
+    }
+
+    @media (max-width: 768px) {
+      body {
+        background-attachment: scroll;
+      }
     }
 
     .window {
@@ -343,7 +350,77 @@
         rgba(69, 128, 196, 0.6)
       );
     }
-  </style>
+
+    /* Narrow viewports / iframe embed from desktop shell */
+    @media (max-width: 760px) {
+      body {
+        align-items: flex-start;
+        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+          max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      }
+
+      .back-home-button {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        font-size: 14px;
+        padding: 8px 14px;
+      }
+
+      .window {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .game-container {
+        padding: 10px;
+      }
+
+      #gameCanvas {
+        width: 100% !important;
+        max-width: 100%;
+        height: auto !important;
+        aspect-ratio: 650 / 500;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 12px;
+      }
+
+      .jump-button {
+        bottom: max(12px, env(safe-area-inset-bottom));
+        width: min(200px, calc(100vw - 24px));
+        height: 52px;
+        font-size: 20px;
+      }
+
+      .settings-panel {
+        left: max(10px, env(safe-area-inset-left));
+        right: max(10px, env(safe-area-inset-right));
+        top: max(60px, env(safe-area-inset-top));
+        width: auto;
+        max-height: min(70vh, calc(100dvh - 80px));
+        overflow-y: auto;
+      }
+
+      .settings-toggle {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+      }
+
+      #score-display {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        font-size: 18px;
+        padding: 6px 12px;
+      }
+    }
 </head>
 <body>
   <a href="index.html" class="back-home-button">Back to Home</a>
@@ -398,6 +475,36 @@
     const ctx = canvas.getContext('2d');
     const jumpButton = document.getElementById('jumpButton');
     const scoreDisplay = document.getElementById('score-display');
+
+    const GAME_BASE_W = 650;
+    const GAME_BASE_H = 500;
+
+    const bubbles = Array(20).fill().map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 30 + 10
+    }));
+
+    function layoutCanvasToContainer() {
+      var wrap = canvas.parentElement;
+      var avail = wrap ? wrap.clientWidth : GAME_BASE_W;
+      var w = Math.max(200, Math.min(GAME_BASE_W, Math.floor(avail)));
+      var h = Math.round((w * GAME_BASE_H) / GAME_BASE_W);
+      h = Math.max(200, Math.min(GAME_BASE_H, h));
+      w = Math.round((h * GAME_BASE_W) / GAME_BASE_H);
+      if (canvas.width === w && canvas.height === h) return;
+      canvas.width = w;
+      canvas.height = h;
+      bird.x = Math.min(Math.max(48, bird.x), canvas.width - bird.width - 8);
+      bird.y = Math.min(Math.max(bird.height / 2, bird.y), canvas.height - bird.height / 2);
+      pipes.forEach(function (p) {
+        if (p.x > canvas.width + 120) p.x = canvas.width + 40;
+      });
+      bubbles.forEach(function (b) {
+        b.x = Math.min(b.x, canvas.width - 1);
+        b.y = Math.min(b.y, canvas.height - 1);
+      });
+    }
 
     // Game state
     let isPlaying = false;
@@ -466,12 +573,19 @@
 
     // Game functions
     function createPipe() {
-      const minHeight = 100;
-      const maxHeight = canvas.height - PIPE_GAP - minHeight;
-      const height = Math.random() * (maxHeight - minHeight) + minHeight;
+      var minHeight = Math.min(80, Math.max(32, Math.floor(canvas.height * 0.15)));
+      var bottomReserve = 40;
+      var maxGap = canvas.height - minHeight - bottomReserve;
+      if (maxGap < 50) return;
+      var gap = Math.min(PIPE_GAP, maxGap);
+      gap = Math.max(44, gap);
+      var maxTopHeight = canvas.height - gap - minHeight;
+      if (maxTopHeight <= minHeight) return;
+      var height = Math.random() * (maxTopHeight - minHeight) + minHeight;
       pipes.push({
         x: canvas.width,
         topHeight: height,
+        gap: gap,
         scored: false,
         passed: false
       });
@@ -504,7 +618,8 @@
 
         // Draw pipes
         drawGlassPipe(pipe.x, 0, PIPE_WIDTH, pipe.topHeight, topGradient);
-        drawGlassPipe(pipe.x, pipe.topHeight + PIPE_GAP, PIPE_WIDTH, canvas.height - (pipe.topHeight + PIPE_GAP), bottomGradient);
+        var pg = pipe.gap != null ? pipe.gap : PIPE_GAP;
+        drawGlassPipe(pipe.x, pipe.topHeight + pg, PIPE_WIDTH, canvas.height - (pipe.topHeight + pg), bottomGradient);
       });
     }
 
@@ -536,13 +651,6 @@
       }
     }
 
-    // Initialize bubbles
-    const bubbles = Array(20).fill().map(() => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 30 + 10
-    }));
-
     function checkCollision(pipe) {
       // Calculate distance from bird center to pipe edges
       const birdCenterX = bird.x + bird.width/2;
@@ -555,8 +663,9 @@
         }
       }
       
+      var pipeGap = pipe.gap != null ? pipe.gap : PIPE_GAP;
       // Check bottom pipe
-      if (birdCenterY + bird.collisionRadius > pipe.topHeight + PIPE_GAP) {
+      if (birdCenterY + bird.collisionRadius > pipe.topHeight + pipeGap) {
         if (Math.abs(birdCenterX - (pipe.x + PIPE_WIDTH/2)) < (PIPE_WIDTH/2 + bird.collisionRadius)) {
           return true;
         }
@@ -569,7 +678,9 @@
       if (!lastTime) lastTime = timestamp;
       const deltaTime = (timestamp - lastTime) / 16; // Target 60 FPS
       lastTime = timestamp;
-      
+
+      layoutCanvasToContainer();
+
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -680,6 +791,22 @@
 
     // Initialize default settings
     document.addEventListener('DOMContentLoaded', () => {
+      layoutCanvasToContainer();
+      var gc = document.querySelector('.game-container');
+      if (gc && typeof ResizeObserver !== 'undefined') {
+        var ro = new ResizeObserver(function () {
+          layoutCanvasToContainer();
+        });
+        ro.observe(gc);
+      }
+      window.addEventListener(
+        'resize',
+        function () {
+          layoutCanvasToContainer();
+        },
+        { passive: true }
+      );
+
       // Set initial values
       document.getElementById('gravity').value = GRAVITY;
       document.getElementById('jumpForce').value = Math.abs(JUMP_FORCE);
