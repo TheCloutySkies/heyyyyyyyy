@@ -53,7 +53,15 @@
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
-      background-attachment: fixed;
+      /* `fixed` breaks badly on many mobile browsers (iOS): tiled or immovable bg */
+      background-attachment: scroll;
+    }
+
+    @media (min-width: 769px) {
+      html,
+      body {
+        background-attachment: fixed;
+      }
     }
 
     #wallpaper {
@@ -65,8 +73,14 @@
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
-      background-attachment: fixed;
+      background-attachment: scroll;
       transition: filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @media (min-width: 769px) {
+      #wallpaper {
+        background-attachment: fixed;
+      }
     }
 
     #desktop {
@@ -81,18 +95,22 @@
       position: fixed;
       left: 0;
       right: 0;
-      top: clamp(72px, 14vmin, 180px);
+      top: max(clamp(56px, 12vmin, 180px), env(safe-area-inset-top));
       z-index: 1;
       margin: 0;
-      padding: 0 14px;
+      padding: 0 max(14px, env(safe-area-inset-left), env(safe-area-inset-right));
       box-sizing: border-box;
       text-align: center;
       pointer-events: none;
       font-family: "VT323", "Courier New", Courier, monospace;
       font-weight: 400;
-      font-size: clamp(1.85rem, 4.2vmin, 2.85rem);
-      line-height: 1.05;
-      letter-spacing: 0.06em;
+      font-size: clamp(1.35rem, 4.8vw, 2.85rem);
+      line-height: 1.1;
+      letter-spacing: 0.04em;
+      max-width: 100vw;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      hyphens: manual;
       color: #e8fff0;
       text-transform: uppercase;
       text-shadow:
@@ -196,12 +214,11 @@
       <div class="window-body">
         <div style="text-align: center; margin-bottom: 12px; margin-top: 4px;">
           <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer_2k-4.png" alt="" width="48" style="image-rendering:pixelated; margin-bottom:8px;">
-          <p style="margin:0; font-size:14px;">Welcome to CloutyOS.</p>
+          <p style="margin:0; font-size:14px;">Welcome to CloutOS.</p>
         </div>
         <div class="field-row" style="margin-bottom: 14px; flex-direction: column; align-items: stretch; gap: 8px;">
-          <button type="button" class="button" id="btn-boot-continue" style="width:100%;">Continue</button>
+          <button type="button" class="button" id="btn-boot-continue" style="width:100%;">Login as Guest</button>
         </div>
-        <p style="margin:0; font-size:11px; color:#555;">Use the taskbar and desktop icons to open programs.</p>
       </div>
     </div>
   </div>

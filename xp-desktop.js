@@ -285,7 +285,8 @@
     win.style.top = "calc(10vh + " + off + "px)";
     win.style.right = "auto";
     win.style.width = "min(560px, 94vw)";
-    win.style.height = "min(440px, 58vh)";
+    /* Tall enough on desktop; phones get height from xp-desktop.css (short vh was clipping games). */
+    win.style.height = "min(520px, min(58vh, calc(100dvh - 52px)))";
 
     win.innerHTML =
       '<div class="title-bar">' +

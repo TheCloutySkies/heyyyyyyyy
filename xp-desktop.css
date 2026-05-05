@@ -159,6 +159,27 @@
   background: #ece9d8;
 }
 
+/* Phones / narrow viewports: games need almost full workspace height (inline sizes are too short). */
+@media (max-width: 768px) {
+  .shell-window.pip-shell {
+    left: max(8px, env(safe-area-inset-left)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: min(
+        calc(100dvh - var(--taskbar-h) - 12px - env(safe-area-inset-top)),
+        calc(100vh - var(--taskbar-h) - 12px - env(safe-area-inset-top))
+      )
+      !important;
+    min-height: min(360px, 70dvh) !important;
+  }
+
+  .shell-window.pip-shell iframe {
+    min-height: 0;
+  }
+}
+
 /* ----- Taskbar (Luna-inspired) ----- */
 
 #taskbar {
