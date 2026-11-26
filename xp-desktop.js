@@ -268,28 +268,34 @@
     closeStartMenu();
     var gid = pipIdFromHref(href);
     var title = pipTitleFromAnchor(a);
+    var shape = a.getAttribute("data-pip-shape") || "wide";
     var existing = document.getElementById("win-" + gid);
     if (existing) {
       openAppWindow(gid, title);
       return true;
     }
-    createPipGameShell(gid, title, href);
+    createPipGameShell(gid, title, href, shape);
     return true;
   }
 
-  function createPipGameShell(id, title, href) {
+  function createPipGameShell(id, title, href, shape) {
     var layer = document.getElementById("window-layer");
     if (!layer) return null;
+    var portrait = shape === "portrait";
     var off = (pipOffsetIndex() % 6) * 24;
     var win = document.createElement("section");
     win.className = "window shell-window hero-wall pip-shell";
+    if (portrait) win.classList.add("pip-shell--portrait");
     win.id = "win-" + id;
     win.style.left = "calc(9vw + " + off + "px)";
     win.style.top = "calc(10vh + " + off + "px)";
     win.style.right = "auto";
-    win.style.width = "min(560px, 94vw)";
+    /* Portrait games (Clouty Hops) are shaped like their 288x512 board. */
+    win.style.width = portrait ? "min(340px, 94vw)" : "min(560px, 94vw)";
     /* Tall enough on desktop; phones get height from xp-desktop.css (short vh was clipping games). */
-    win.style.height = "min(520px, min(58vh, calc(100dvh - 52px)))";
+    win.style.height = portrait
+      ? "min(700px, min(86vh, calc(100dvh - 52px)))"
+      : "min(520px, min(58vh, calc(100dvh - 52px)))";
 
     win.innerHTML =
       '<div class="title-bar">' +
@@ -308,7 +314,7 @@
     win.querySelector(".title-bar-text").textContent = title;
     /* embed=1 drops the game page's own window frame, so it is one window, not two */
     win.querySelector("iframe").src =
-      href + (href.indexOf("?") === -1 ? "?" : "&") + "embed=1&v=4";
+      href + (href.indexOf("?") === -1 ? "?" : "&") + "embed=1&v=5";
     layer.appendChild(win);
     attachShellWindowChrome(win);
     initPipWindowSize(win);

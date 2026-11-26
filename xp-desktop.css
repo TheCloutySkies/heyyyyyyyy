@@ -151,6 +151,12 @@
   max-height: none;
 }
 
+/* Clouty Hops plays on a 288x512 board, so its window is portrait too */
+.shell-window.pip-shell--portrait {
+  min-width: min(300px, 94vw);
+  min-height: min(400px, 72vh);
+}
+
 /* Show where to drag to make the game bigger */
 .shell-window.pip-shell::after {
   content: "";
