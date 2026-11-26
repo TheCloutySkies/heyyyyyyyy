@@ -1863,7 +1863,7 @@
         screamEl = new Audio();
         screamEl.preload = "auto";
         screamEl.volume = 1;
-        screamEl.src = "scream.mp3";
+        screamEl.src = "scream.mp3?v=2";
         screamEl.load();
       } catch (e) {
         screamEl = null;
@@ -1892,7 +1892,7 @@
         sceneEl.preload = "auto";
         sceneEl.loop = true;
         sceneEl.volume = 0.5;
-        sceneEl.src = "easter egg music.mp3";
+        sceneEl.src = "easter egg music.mp3?v=1";
         sceneEl.load();
       } catch (e) {
         sceneEl = null;
