@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tic-Tac-Toe | Clouty Skies</title>
   <meta name="theme-color" content="#245EDC" />
+  <script>
+    /* Inside a shell window the game drops its own window frame */
+    if (/[?&]embed=1/.test(location.search)) {
+      document.documentElement.setAttribute("data-embedded", "");
+    }
+  </script>
   <link rel="stylesheet" href="vendor/xp.css?v=2" />
-  <link rel="stylesheet" href="luna.css?v=2" />
+  <link rel="stylesheet" href="luna.css?v=3" />
   <style>
     :root {
       --xp-blue: #245edc;

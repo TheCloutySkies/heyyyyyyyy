@@ -572,12 +572,305 @@ menu[role="tablist"] button[aria-selected="true"] {
   background: linear-gradient(180deg, #f08a58 0%, #de5c2f 45%, #b23c17 100%);
 }
 
-/* ---------- Turn off computer ---------- */
+/* ---------- Welcome screen: XP's log-on screen, first visit ---------- */
+
+#welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  font-family: var(--luna-font-ui);
+  color: #fff;
+  background: linear-gradient(168deg, #628feb 0%, #4d7ce0 45%, #3d68d2 100%);
+  transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+#welcome[hidden],
+#welcome.is-gone {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#welcome[hidden] {
+  display: none;
+}
+
+.wl-top {
+  height: clamp(34px, 7vh, 62px);
+  background: linear-gradient(180deg, #03359c 0%, #002a86 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.wl-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  background: radial-gradient(58% 52% at 16% 2%, rgba(255, 255, 255, 0.26), transparent 72%);
+}
+
+.wl-left {
+  flex: 1 1 55%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(12px, 3vh, 34px) clamp(16px, 3vw, 42px);
+}
+
+.wl-right {
+  flex: 1 1 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vh, 34px) clamp(16px, 3vw, 42px);
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.wl-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: clamp(0px, 3vh, 30px) auto 0;
+}
+
+/* The four-pane flag, standing in for the wordmark's flag */
+.wl-flag {
+  display: grid;
+  grid-template-columns: repeat(2, clamp(13px, 1.6vw, 20px));
+  gap: 3px;
+  transform: skewY(-9deg);
+  margin-bottom: 8px;
+}
+
+.wl-flag i {
+  display: block;
+  width: clamp(13px, 1.6vw, 20px);
+  height: clamp(11px, 1.3vw, 16px);
+}
+
+.wl-flag i:nth-child(1) { background: #f25022; }
+.wl-flag i:nth-child(2) { background: #7fba00; }
+.wl-flag i:nth-child(3) { background: #00a4ef; }
+.wl-flag i:nth-child(4) { background: #ffb900; }
+
+.wl-microsoft {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+.wl-wordmark {
+  margin: 0;
+  font-family: var(--luna-font-display);
+  font-weight: 600;
+  font-size: clamp(22px, 4.2vw, 34px);
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 24, 60, 0.4);
+}
+
+.wl-wordmark span {
+  color: #ff8c00;
+  font-size: 0.72em;
+}
+
+.wl-hint {
+  margin: 0 0 clamp(0px, 2vh, 16px);
+  font-size: clamp(13px, 1.6vw, 17px);
+  text-shadow: 0 1px 2px rgba(0, 24, 60, 0.4);
+}
+
+.wl-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.wl-tile {
+  width: clamp(44px, 5.5vw, 54px);
+  height: clamp(44px, 5.5vw, 54px);
+  border: 2px solid #fff;
+  background: url("wallpaper.jpg") center / cover no-repeat;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.wl-name {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--luna-font-ui);
+  font-size: clamp(14px, 1.8vw, 18px);
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.wl-sub {
+  margin: 2px 0 6px;
+  font-size: 11px;
+}
+
+.wl-password {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wl-password input {
+  width: clamp(140px, 20vw, 200px);
+}
+
+.wl-go {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid #2f6b1f;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #8fe791 0%, #31a431 58%, #008d00 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+.wl-go::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid #fff;
+  border-right: 2px solid #fff;
+  transform: rotate(45deg);
+}
+
+.wl-go:hover {
+  filter: brightness(1.08);
+}
+
+.wl-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px clamp(14px, 2.5vw, 26px);
+  background: linear-gradient(180deg, #0b2f80 0%, #001c5b 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.wl-off {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border: 0;
+  background: none;
+  font: 13px var(--luna-font-ui);
+  color: #fff;
+  cursor: pointer;
+}
+
+.wl-off:hover {
+  text-decoration: underline;
+}
+
+.wl-power {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f08a58 0%, #de5c2f 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+.wl-power::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+
+.wl-help {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .wl-body {
+    flex-direction: column;
+  }
+
+  .wl-left {
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .wl-right {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.24);
+  }
+
+  .wl-hint {
+    margin-top: 10px;
+  }
+
+  .wl-help {
+    font-size: 10px;
+  }
+}
+
+/* ---------- Games embedded in a shell window (no window inside a window) ---------- */
+
+html[data-embedded] body,
+html[data-embedded] body.luna-page,
+html[data-embedded] body.tic-body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  display: block;
+  background: var(--luna-face);
+  background-image: none;
+}
+
+html[data-embedded] .luna-app,
+html[data-embedded] .tic-shell.window {
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-embedded] .title-bar,
+html[data-embedded] .status-bar,
+html[data-embedded] .tic-back {
+  display: none !important;
+}
+
+html[data-embedded] .game-container,
+html[data-embedded] .game-layout {
+  box-sizing: border-box;
+}
 
 .turnoff-overlay {
   position: fixed;
   inset: 0;
-  z-index: 99998;
+  z-index: 100000;
   display: grid;
   place-items: center;
   padding: 16px;
@@ -656,7 +949,7 @@ menu[role="tablist"] button[aria-selected="true"] {
 .powered-off {
   position: fixed;
   inset: 0;
-  z-index: 99999;
+  z-index: 100001;
   display: flex;
   flex-direction: column;
   align-items: center;

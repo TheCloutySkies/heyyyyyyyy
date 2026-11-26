@@ -97,24 +97,8 @@
       transition: filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    #boot {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0, 0, 0, 0.25);
-      z-index: 99999;
-      transition: opacity 0.8s ease, visibility 0.8s;
-    }
-
     .blur-target {
       filter: blur(15px) brightness(0.9);
-    }
-
-    #boot.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
     }
 
     .spotify-iframe-wrapper {
@@ -135,31 +119,45 @@
     }
   </style>
   <link rel="stylesheet" href="clouty-prefs.css?v=2" />
-  <link rel="stylesheet" href="xp-desktop.css?v=2" />
+  <link rel="stylesheet" href="xp-desktop.css?v=3" />
   <link rel="stylesheet" href="xp-datetime.css?v=3" />
-  <link rel="stylesheet" href="luna.css?v=2" />
+  <link rel="stylesheet" href="luna.css?v=3" />
 </head>
 <body>
   <div id="wallpaper" class="blur-target"></div>
   <h1 class="retro-welcome">Welcome to Cloutyskies<span id="maze-dot">.</span>org</h1>
 
-  <div id="boot" role="dialog" aria-modal="true" aria-labelledby="boot-title">
-    <div class="window" style="max-width: 380px; width: 92%; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-      <div class="title-bar">
-        <div class="title-bar-text" id="boot-title">CloutOS Boot Manager</div>
-        <div class="title-bar-controls">
-          <button type="button" aria-label="Close" id="boot-close" onclick="this.closest('#boot').style.display='none';document.querySelectorAll('.blur-target').forEach(function(el){el.classList.remove('blur-target');});"></button>
+  <div id="welcome" role="dialog" aria-modal="true" aria-labelledby="wl-wordmark">
+    <div class="wl-top"></div>
+    <div class="wl-body">
+      <div class="wl-left">
+        <div class="wl-brand">
+          <div class="wl-flag" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <p class="wl-microsoft">Microsoft</p>
+          <p class="wl-wordmark" id="wl-wordmark">Windows<span>xp</span></p>
+        </div>
+        <p class="wl-hint">To begin, click your user name</p>
+      </div>
+      <div class="wl-right">
+        <div class="wl-user">
+          <span class="wl-tile" aria-hidden="true"></span>
+          <div class="wl-usertext">
+            <button type="button" class="wl-name" id="wl-name">Administrator</button>
+            <p class="wl-sub">Type your password</p>
+            <div class="wl-password">
+              <input id="wl-password" type="password" autocomplete="off" aria-label="Password" />
+              <button type="button" class="wl-go" id="wl-go" aria-label="Log on"></button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="window-body">
-        <div style="text-align: center; margin-bottom: 12px; margin-top: 4px;">
-          <img src="icons/computer_explorer_2k-4.png" alt="" width="48" style="image-rendering:pixelated; margin-bottom:8px;">
-          <p style="margin:0; font-size:14px;">Welcome to CloutOS.</p>
-        </div>
-        <div class="field-row" style="margin-bottom: 14px; flex-direction: column; align-items: stretch; gap: 8px;">
-          <button type="button" class="button" id="btn-boot-continue" style="width:100%;" onclick="this.closest('#boot').style.display='none';document.querySelectorAll('.blur-target').forEach(function(el){el.classList.remove('blur-target');});">Login as Guest</button>
-        </div>
-      </div>
+    </div>
+    <div class="wl-bottom">
+      <button type="button" class="wl-off" data-welcome-off>
+        <span class="wl-power" aria-hidden="true"></span>
+        <span>Turn off computer</span>
+      </button>
+      <p class="wl-help">After you log on, you can add or change accounts.<br />Just go to Control Panel and click User Accounts.</p>
     </div>
   </div>
 
@@ -383,6 +381,12 @@
             <span>Games</span>
           </button>
         </div>
+        <div class="start-item has-children" data-flyout="projects">
+          <button type="button" class="start-btn" aria-expanded="false" aria-haspopup="true" aria-controls="start-flyout-projects">
+            <img src="icons/world-0.png" alt="" />
+            <span>Random Projects</span>
+          </button>
+        </div>
         <div class="start-item">
           <a class="start-btn" href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank" rel="noopener noreferrer" role="menuitem" style="text-decoration:none;">
             <img src="icons/network_internet_pcs_installer-2.png" alt="" />
@@ -405,9 +409,11 @@
         <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/cd_audio_cd_a-3.png" alt="" />Spotify</a>
       </div>
       <div id="start-flyout-games" class="start-flyout start-flyout--detached" role="menu" hidden>
-        <a href="tetris.html" role="menuitem"><img src="icons/defragment-0.png" alt="" />Cloutris</a>
         <a href="clouty-hops.html" role="menuitem"><img src="icons/game_mine_1-0.png" alt="" />Hops</a>
         <a href="tic.html" role="menuitem"><img src="icons/joystick-5.png" alt="" />TicTac</a>
+      </div>
+      <div id="start-flyout-projects" class="start-flyout start-flyout--detached" role="menu" hidden>
+        <a href="https://goodpalantir.cloutyskies.org/" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/world-0.png" alt="" />Good Palantir</a>
       </div>
 
       <div class="start-menu-footer">
@@ -518,7 +524,7 @@
 
   <script src="desktop-config.js?v=2"></script>
   <script src="clouty-prefs.js?v=2"></script>
-  <script src="xp-desktop.js?v=2"></script>
+  <script src="xp-desktop.js?v=3"></script>
   <script src="xp-datetime.js?v=3"></script>
   <script>
     (function () {
@@ -545,47 +551,73 @@
     })();
 
     (function () {
-      var bootScreen = document.getElementById("boot");
-      var blurTargets = document.querySelectorAll(".blur-target");
-      var hasBooted = null;
+      var welcome = document.getElementById("welcome");
+      if (!welcome) return;
+      var password = document.getElementById("wl-password");
+      var go = document.getElementById("wl-go");
+      var nameButton = document.getElementById("wl-name");
+      var loggedOn = null;
       try {
-        hasBooted = sessionStorage.getItem("cloutySessionBoot");
+        loggedOn = sessionStorage.getItem("cloutySessionBoot");
       } catch (e) {
-        /* Storage blocked (strict privacy mode): show the boot screen, never trap on it. */
+        /* Storage blocked (strict privacy mode): show the welcome screen, never trap on it. */
       }
 
-      window.finishBoot = function () {
-        bootScreen.classList.add("fade-out");
-        blurTargets.forEach(function (el) {
+      function showDesktop() {
+        welcome.classList.add("is-gone");
+        document.querySelectorAll(".blur-target").forEach(function (el) {
           el.classList.remove("blur-target");
         });
+        setTimeout(function () {
+          welcome.hidden = true;
+        }, 600);
+      }
+
+      function logOn() {
         try {
           sessionStorage.setItem("cloutySessionBoot", "true");
         } catch (e) {}
-        setTimeout(function () {
-          bootScreen.style.display = "none";
-        }, 800);
-      };
-
-      function bindBoot() {
         if (window.CloutyDesktop && window.CloutyDesktop.setLayoutMode) {
           window.CloutyDesktop.setLayoutMode("desktop");
         }
-        finishBoot();
+        showDesktop();
       }
 
-      var bContinue = document.getElementById("btn-boot-continue");
-      var bClose = document.getElementById("boot-close");
-      if (bContinue) bContinue.addEventListener("click", bindBoot);
-      if (bClose) bClose.addEventListener("click", finishBoot);
+      window.finishBoot = logOn;
 
-      if (hasBooted === "true") {
-        bootScreen.style.display = "none";
-        blurTargets.forEach(function (el) {
-          el.classList.remove("blur-target");
+      if (go) go.addEventListener("click", logOn);
+      if (password) {
+        password.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          logOn();
+        });
+      }
+      if (nameButton) {
+        nameButton.addEventListener("click", function () {
+          if (password) password.focus();
         });
       }
 
+      var welcomeOff = document.querySelector("[data-welcome-off]");
+      if (welcomeOff) {
+        welcomeOff.addEventListener("click", function () {
+          var dialog = document.getElementById("turnoff-dialog");
+          if (dialog) dialog.hidden = false;
+        });
+      }
+
+      if (loggedOn === "true") {
+        welcome.classList.add("is-gone");
+        welcome.hidden = true;
+        document.querySelectorAll(".blur-target").forEach(function (el) {
+          el.classList.remove("blur-target");
+        });
+      } else if (password) {
+        setTimeout(function () {
+          password.focus();
+        }, 250);
+      }
     })();
 
     (function () {
@@ -709,6 +741,17 @@
       if (poweredOn) {
         poweredOn.addEventListener("click", function () {
           if (offScreen) offScreen.hidden = true;
+          /* Back to the welcome screen, as if the machine had just started */
+          try {
+            sessionStorage.removeItem("cloutySessionBoot");
+          } catch (e) {}
+          var welcome = document.getElementById("welcome");
+          if (welcome) {
+            welcome.hidden = false;
+            welcome.classList.remove("is-gone");
+            var password = document.getElementById("wl-password");
+            if (password) password.focus();
+          }
         });
       }
 
