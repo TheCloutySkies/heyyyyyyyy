@@ -192,7 +192,7 @@
         rect.setAttribute("rx", "0.6");
         svg.appendChild(rect);
       }
-      svg.setAttribute("data-on", SEG_ON["0"]);
+      svg.setAttribute("data-on", SEG_ON["0"].split("").join(" "));
       zoneWatch.appendChild(svg);
       digits.push(svg);
     }
@@ -206,7 +206,11 @@
     var i;
     for (i = 0; i < digits.length; i++) {
       var digit = clock.charAt(i);
-      digits[i].setAttribute("data-on", SEG_ON[digit] || "");
+      /* Space-separated segments: the CSS matches them with [data-on~="a"] */
+      digits[i].setAttribute(
+        "data-on",
+        (SEG_ON[digit] || "").split("").join(" ")
+      );
     }
     var entry = null;
     for (i = 0; i < ZONES.length; i++) {
