@@ -327,6 +327,19 @@
   color: #7fa885;
 }
 
+/* Reads the drawn digits out to screen readers */
+.dt-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Seven-segment read-out, like an old digital watch */
 .dt-lcd {
   display: flex;
