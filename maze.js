@@ -18,7 +18,6 @@
   var T = 40;
   var ROWS = 13;
   var LEVEL_H = ROWS * T;
-  var OFFSET_Y = (VH - LEVEL_H) / 2;
 
   /* ----- Physics: the maps were simulated with exactly these values ---- */
 
@@ -47,6 +46,103 @@
   var CUT_READY = 1.45;
   var FLY_TIME = 0.42;
   var FLY_SCALE = 0.14;
+
+  /* Framing: the level always fits, and phones show about 13 tiles across. */
+  var VIEW_H = 540;
+  var VIEW_MIN_W = 520;
+  var WIPE_TIME = 0.85;
+  var PALETTE_TIME = 0.7;
+  var ABYSS_TIME = 5;
+  var ABYSS_SCARE_MS = 1600;
+
+  /* Level moods: bright morning, warm dusk, violet dusk. Every colour the
+     running game draws comes from the active palette. */
+  var PALETTES = [
+    {
+      skyTop: "#aee7ff",
+      skyBottom: "#e8fbff",
+      cloud: "#ffffff",
+      sun: "#ffe9a8",
+      sunLine: "#e8c069",
+      grass: "#8fd97a",
+      grassLip: "#b4f09a",
+      dirt: "#d9b38c",
+      dirtSpeck: "#cba079",
+      soilTop: "#b28a67",
+      soilDeep: "#8d6a4d",
+      flower: "#ffffff",
+      flowerCore: "#ffd66e",
+      spike: "#ff9db0",
+      spikeInk: "#5b4252",
+      pole: "#d7deea",
+      pennant: "#ffd66e",
+      pennantOn: "#7ee0a3",
+      flag: "#ff8fab",
+      flagHeart: "#ffffff",
+      gift: "#ffb3c7",
+      giftRibbon: "#ff6f91",
+      ink: "#4a4a68",
+      head: "#ffffff",
+      blush: "#ffc9d4",
+      dust: "#ffffff"
+    },
+    {
+      skyTop: "#8fbfdc",
+      skyBottom: "#ffe0b8",
+      cloud: "#fff3e6",
+      sun: "#ffcf8f",
+      sunLine: "#d99a58",
+      grass: "#7cc06c",
+      grassLip: "#a2dd88",
+      dirt: "#cba276",
+      dirtSpeck: "#b78c62",
+      soilTop: "#a37a56",
+      soilDeep: "#7d5b40",
+      flower: "#fff0dc",
+      flowerCore: "#ffbe6b",
+      spike: "#ff9a94",
+      spikeInk: "#57403f",
+      pole: "#ccbfc2",
+      pennant: "#ffc47c",
+      pennantOn: "#77d396",
+      flag: "#ff8d97",
+      flagHeart: "#fff4ef",
+      gift: "#ffb0a8",
+      giftRibbon: "#ff7374",
+      ink: "#43394a",
+      head: "#fff6ec",
+      blush: "#ffc0b4",
+      dust: "#ffe7cf"
+    },
+    {
+      skyTop: "#7d84b8",
+      skyBottom: "#e3c8e0",
+      cloud: "#efe0f2",
+      sun: "#f0bcd6",
+      sunLine: "#b58fb2",
+      grass: "#6b9f8a",
+      grassLip: "#8fc7a6",
+      dirt: "#ab8f9a",
+      dirtSpeck: "#927988",
+      soilTop: "#7c6373",
+      soilDeep: "#54404f",
+      flower: "#f2e2f4",
+      flowerCore: "#f4b3c6",
+      spike: "#f29bbb",
+      spikeInk: "#443246",
+      pole: "#b7b0c6",
+      pennant: "#f0c47c",
+      pennantOn: "#75caa2",
+      flag: "#ef8bad",
+      flagHeart: "#fdeef4",
+      gift: "#f3a8c4",
+      giftRibbon: "#e96a90",
+      ink: "#382f43",
+      head: "#fbf1f5",
+      blush: "#f2adc2",
+      dust: "#ece0ee"
+    }
+  ];
 
   /* ----- Levels -------------------------------------------------------- */
 
@@ -140,9 +236,6 @@
   var cameraX = 0;
   var state = "play";
   var deadT = 0;
-  var clearT = 0;
-  var fadeT = 0;
-  var fade = 0;
 
   var particles = [];
   var keys = { left: false, right: false, jumpHeld: false };
@@ -171,6 +264,26 @@
   var musicFadeT = -1;
   var MUSIC_LEVEL = 0.5;
   var MUSIC_FADE = 0.6;
+
+  /* View, palette and the two extra states (the panel wipe and the abyss). */
+  var viewScale = 1;
+  var viewW = VW;
+  var viewH = VH;
+  var viewY = 0;
+
+  var pal = PALETTES[0];
+  var palFrom = PALETTES[0];
+  var palTo = PALETTES[0];
+  var palMix = 1;
+
+  var wipeT = 0;
+  var wipeSwapped = false;
+  var abyssT = 0;
+  var abyssScareT = 0;
+  var abyssShaken = false;
+
+  var faceImg = null;
+  var faceReady = false;
 
   var player = {
     x: 0,
@@ -317,6 +430,56 @@
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
+  }
+
+  function hexToRgb(hex) {
+    var h = String(hex).replace("#", "");
+    if (h.length === 3) {
+      h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+    }
+    var n = parseInt(h, 16);
+    if (!isFinite(n)) return [0, 0, 0];
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function mixHex(a, b, k) {
+    var ca = hexToRgb(a);
+    var cb = hexToRgb(b);
+    return (
+      "rgb(" +
+      Math.round(ca[0] + (cb[0] - ca[0]) * k) +
+      "," +
+      Math.round(ca[1] + (cb[1] - ca[1]) * k) +
+      "," +
+      Math.round(ca[2] + (cb[2] - ca[2]) * k) +
+      ")"
+    );
+  }
+
+  function buildPalette(a, b, k) {
+    if (k >= 1 || a === b) return b;
+    var out = {};
+    for (var key in b) {
+      if (!Object.prototype.hasOwnProperty.call(b, key)) continue;
+      out[key] = a && typeof a[key] === "string" ? mixHex(a[key], b[key], k) : b[key];
+    }
+    return out;
+  }
+
+  /* Each level arrives with its own mood; the colours morph over the wipe. */
+  function applyLevelPalette(index) {
+    var next = PALETTES[Math.max(0, Math.min(PALETTES.length - 1, index))];
+    if (pal === next) return;
+    palFrom = pal;
+    palTo = next;
+    palMix = 0;
+    pal = buildPalette(palFrom, palTo, 0);
+  }
+
+  function updatePaletteMix(dt) {
+    if (palMix >= 1) return;
+    palMix = Math.min(1, palMix + dt / PALETTE_TIME);
+    pal = buildPalette(palFrom, palTo, palMix);
   }
 
   /* ----- Overlay ------------------------------------------------------- */
@@ -496,9 +659,9 @@
     checkpoint = null;
     particles.length = 0;
     deadT = 0;
-    clearT = 0;
-    fadeT = 0;
-    fade = 0;
+    abyssT = 0;
+    abyssScareT = 0;
+    abyssShaken = false;
     jumpBuf = 0;
     coyote = 0;
     jumpCut = false;
@@ -507,8 +670,9 @@
     keys.jumpHeld = false;
     resetButtons();
 
+    applyLevelPalette(index);
+    updateView(false);
     resetPlayer(false);
-    cameraX = clampCamera(player.x - VW * 0.42);
     state = "play";
 
     if (SHOW_LEVEL_TOASTS) showToast("Level " + (index + 1));
@@ -531,11 +695,11 @@
     jumpBuf = 0;
     coyote = 0;
     jumpCut = false;
-    cameraX = clampCamera(x - VW * 0.42);
+    cameraX = clampCamera(x - viewW * 0.42);
   }
 
   function clampCamera(x) {
-    var maxX = Math.max(0, worldW - VW);
+    var maxX = Math.max(0, worldW - viewW);
     return clampNum(x, 0, maxX);
   }
 
@@ -680,7 +844,7 @@
   }
 
   function updateCamera() {
-    var target = clampCamera(player.x - VW * 0.42);
+    var target = clampCamera(player.x - viewW * 0.42);
     cameraX += (target - cameraX) * 0.12;
     cameraX = clampCamera(cameraX);
   }
@@ -733,12 +897,17 @@
     sfxDeath();
   }
 
+  function startWipe() {
+    state = "wipe";
+    wipeT = 0;
+    wipeSwapped = false;
+    sfxClear();
+  }
+
   function reachGoal() {
     if (state !== "play") return;
     if (level < LEVELS.length - 1) {
-      state = "clear";
-      clearT = 0;
-      sfxClear();
+      startWipe();
       return;
     }
     beginCutscene();
@@ -760,7 +929,7 @@
   }
 
   function poof(x, y) {
-    var colors = ["#ffffff", "#ffe9a8", "#ffd0e0"];
+    var colors = [pal.dust, pal.flowerCore, pal.blush];
     for (var i = 0; i < 14; i++) {
       var a = Math.random() * Math.PI * 2;
       var sp = 60 + Math.random() * 150;
@@ -785,7 +954,7 @@
         -20 - Math.random() * 30,
         0.28 + Math.random() * 0.22,
         1.6 + Math.random() * 2,
-        "#ffffff"
+        pal.dust
       );
     }
   }
@@ -808,37 +977,31 @@
 
   function step(dt) {
     time += dt;
+    updateView(true);
     updateParticles(dt);
     updateMusicFade(dt);
+    updatePaletteMix(dt);
 
     if (state === "dead") {
       deadT += dt;
       if (deadT >= 0.5) {
         state = "play";
         deadT = 0;
-        fade = 0;
         resetPlayer(true);
       }
       return;
     }
 
-    if (state === "clear") {
-      clearT += dt;
-      fade = Math.min(1, clearT / 0.4);
-      if (clearT >= 0.4) {
+    if (state === "wipe") {
+      wipeT += dt;
+      var wipeK = wipeT / WIPE_TIME;
+      if (!wipeSwapped && wipeK >= 0.5) {
+        wipeSwapped = true;
         loadLevel(level + 1);
-        state = "fadein";
-        fadeT = 0;
-        fade = 1;
+        state = "wipe";
       }
-      return;
-    }
-
-    if (state === "fadein") {
-      fadeT += dt;
-      fade = Math.max(0, 1 - fadeT / 0.35);
-      if (fadeT >= 0.35) {
-        fade = 0;
+      if (wipeK >= 1) {
+        wipeT = 0;
         state = "play";
       }
       return;
@@ -862,6 +1025,27 @@
       return;
     }
 
+    if (state === "abyss") {
+      abyssT += dt;
+      player.vy = Math.min(player.vy + 2100 * dt, 1700);
+      player.y += player.vy * dt;
+      player.animT += dt;
+      if (abyssT >= ABYSS_TIME) abyssScare();
+      return;
+    }
+
+    if (state === "abyssScare") {
+      abyssScareT += dt;
+      var abyssK = Math.min(1, abyssScareT / 0.35);
+      if (scareImg) scareImg.style.transform = flyTransform(abyssK);
+      if (abyssK >= 1 && !abyssShaken) {
+        abyssShaken = true;
+        if (scareImg) scareImg.classList.add("maze-shake");
+      }
+      if (abyssScareT * 1000 >= ABYSS_SCARE_MS) endAbyssScare();
+      return;
+    }
+
     if (state !== "play") return;
 
     updatePlayer(dt);
@@ -873,6 +1057,11 @@
     player.animT += dt;
     player.blink -= dt;
     if (player.blink < -0.12) player.blink = 2.4 + Math.random() * 1.2;
+
+    if (level === 0 && keys.left && player.onGround && player.x - PW / 2 <= 1.5) {
+      beginAbyss();
+      return;
+    }
 
     if (player.y > LEVEL_H + 60) die();
   }
@@ -911,69 +1100,172 @@
       canvas.height = ch;
     }
 
-    var s = Math.min(vw / VW, vh / VH);
-    if (!isFinite(s) || s <= 0) s = 1;
-    var ox = (vw - VW * s) / 2;
-    var oy = (vh - VH * s) / 2;
+    updateView(false);
+
+    if (state === "wipe") {
+      drawWipe(dpr, vw, vh);
+      return;
+    }
 
     var inCut = state === "cutscene" || state === "launch";
     var fadingIn = state === "cutscene" && cutT < CUT_FADE;
 
-    if (!inCut || fadingIn) {
-      drawScene(dpr, s, ox, oy, vw, vh);
-    }
+    if (!inCut || fadingIn) drawScene(dpr, viewScale, vw, vh, 0);
 
-    if (inCut) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (fadingIn) {
-        ctx.globalAlpha = Math.min(1, cutT / CUT_FADE);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, vw, vh);
-        ctx.globalAlpha = 1;
-      } else {
-        drawComicPage(dpr, vw, vh);
-      }
-      return;
-    }
+    if (!inCut) return;
 
-    if (fade > 0) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.globalAlpha = Math.min(1, fade);
-      ctx.fillStyle = "#fff6fa";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (fadingIn) {
+      ctx.globalAlpha = Math.min(1, cutT / CUT_FADE);
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, vw, vh);
       ctx.globalAlpha = 1;
+    } else {
+      drawComicPage(dpr, vw, vh);
     }
   }
 
-  function drawScene(dpr, s, ox, oy, vw, vh) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  /* The world fills the screen: the whole level always fits, and a phone never
+     shows fewer than about 13 tiles across. */
+  function updateView(follow) {
+    var vw = window.innerWidth || VW;
+    var vh = window.innerHeight || VH;
+    var scale = Math.min(vh / VIEW_H, vw / VIEW_MIN_W);
+    if (!isFinite(scale) || scale <= 0) scale = 1;
+    viewScale = scale;
+    viewW = vw / scale;
+    viewH = vh / scale;
+
+    if (state === "abyss" || state === "abyssScare") {
+      if (follow) viewY += (player.y - viewH * 0.5 - viewY) * 0.15;
+    } else {
+      viewY = (LEVEL_H - viewH) / 2;
+    }
+  }
+
+  function drawScene(dpr, s, vw, vh, shiftX) {
+    ctx.setTransform(dpr, 0, 0, dpr, dpr * shiftX, 0);
     var sky = ctx.createLinearGradient(0, 0, 0, vh);
-    sky.addColorStop(0, "#aee7ff");
-    sky.addColorStop(1, "#e8fbff");
+    sky.addColorStop(0, pal.skyTop);
+    sky.addColorStop(1, pal.skyBottom);
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, vw, vh);
 
-    ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
+    ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * shiftX, 0);
     drawSun();
     drawClouds();
 
     ctx.save();
-    ctx.translate(-Math.round(cameraX), OFFSET_Y);
+    ctx.translate(-Math.round(cameraX), -viewY);
+    drawSoilDepth();
     drawTiles();
     drawParticles();
     drawPlayer();
     ctx.restore();
+
+    if (state === "abyss" || state === "abyssScare") {
+      ctx.setTransform(dpr, 0, 0, dpr, dpr * shiftX, 0);
+      drawFallStreaks(vw, vh);
+    }
+  }
+
+  /* The panel wipe between levels: the finished level slides away, the next
+     one slides in on a comic page, ink gutter leading. */
+  function drawWipe(dpr, vw, vh) {
+    var k = clamp01(wipeT / WIPE_TIME);
+    var shift;
+    if (k < 0.5) {
+      var a = k / 0.5;
+      shift = -(a * a * (3 - 2 * a)) * vw;
+    } else {
+      var b = (k - 0.5) / 0.5;
+      shift = (1 - b * b * (3 - 2 * b)) * vw;
+    }
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#fff4e8";
+    ctx.fillRect(0, 0, vw, vh);
+
+    var dots = halftonePattern();
+    if (dots) {
+      ctx.fillStyle = dots;
+      ctx.fillRect(0, 0, vw, vh);
+    }
+
+    drawScene(dpr, viewScale, vw, vh, shift);
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var edge = k < 0.5 ? vw + shift : shift;
+    var inkW = Math.max(8, vw * 0.014);
+    var shadow = ctx.createLinearGradient(edge - inkW - 70, 0, edge - inkW, 0);
+    shadow.addColorStop(0, "rgba(47, 42, 58, 0)");
+    shadow.addColorStop(1, "rgba(47, 42, 58, 0.25)");
+    ctx.fillStyle = shadow;
+    ctx.fillRect(edge - inkW - 70, 0, 70, vh);
+
+    ctx.fillStyle = "#fff4e8";
+    ctx.fillRect(edge - inkW, 0, inkW, vh);
+    ctx.fillStyle = "#2f2a3a";
+    ctx.fillRect(edge - inkW, 0, Math.max(2, inkW * 0.3), vh);
+  }
+
+  /* Below the ground the world keeps going, so a tall screen never shows bars. */
+  function drawSoilDepth() {
+    var top = LEVEL_H;
+    var bottom = viewY + viewH;
+    if (bottom <= top + 1) return;
+
+    var depth = bottom - top;
+    var g = ctx.createLinearGradient(0, top, 0, top + Math.max(260, depth));
+    g.addColorStop(0, pal.soilTop);
+    g.addColorStop(1, pal.soilDeep);
+    ctx.fillStyle = g;
+    ctx.fillRect(cameraX - 60, top, viewW + 120, depth + 260);
+
+    var step = 96;
+    var c0 = Math.floor((cameraX - 60) / step);
+    var c1 = Math.ceil((cameraX + viewW + 60) / step);
+    ctx.fillStyle = pal.dirt;
+    for (var i = c0; i <= c1; i++) {
+      var h = hash2(i, 7);
+      for (var j = 0; j < 3; j++) {
+        var px = i * step + ((h >>> (j * 5)) % 80);
+        var py = top + 30 + (((h >>> (j * 7 + 3)) % 1000) / 1000) * Math.max(60, depth + 200);
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath();
+        ctx.arc(px, py, 3 + ((h >>> (j * 3)) % 4), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFallStreaks(vw, vh) {
+    var speed = Math.min(1, (player.vy || 0) / 1700);
+    ctx.strokeStyle = pal.cloud;
+    ctx.lineCap = "round";
+    for (var i = 0; i < 20; i++) {
+      var h = hash2(i, 11);
+      var x = ((h % 997) / 997) * vw;
+      var len = 50 + ((h >>> 8) % 110);
+      var span = vh + len;
+      var y = ((((h >>> 3) % 997) / 997) * span + time * (700 + speed * 1400)) % span;
+      ctx.globalAlpha = 0.12 + 0.28 * speed;
+      ctx.lineWidth = 2 + (h % 3);
+      line(x, y, x, y + len);
+    }
+    ctx.globalAlpha = 1;
   }
 
   function drawSun() {
-    var cx = VW - 92;
+    var cx = viewW - 92;
     var cy = 78;
-    ctx.fillStyle = "#ffe9a8";
+    ctx.fillStyle = pal.sun;
     ctx.beginPath();
     ctx.arc(cx, cy, 34, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = "#e8c069";
+    ctx.strokeStyle = pal.sunLine;
     ctx.lineWidth = 2.4;
     ctx.lineCap = "round";
     ctx.beginPath();
@@ -991,26 +1283,28 @@
     for (var i = 0; i < clouds.length; i++) {
       var c = clouds[i];
       var par = c.layer === 0 ? 0.15 : 0.3;
-      var span = VW + 400;
+      var span = viewW + 400;
       var x = ((c.x - cameraX * par + time * c.speed) % span + span) % span - 200;
       drawCloud(x, c.y, c.s);
     }
   }
 
   function drawCloud(x, y, s) {
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillStyle = pal.cloud;
+    ctx.globalAlpha = 0.9;
     ctx.beginPath();
     ctx.arc(x, y, 22 * s, 0, Math.PI * 2);
     ctx.arc(x + 26 * s, y + 6 * s, 17 * s, 0, Math.PI * 2);
     ctx.arc(x - 26 * s, y + 7 * s, 15 * s, 0, Math.PI * 2);
     ctx.arc(x + 6 * s, y - 12 * s, 15 * s, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
   function drawTiles() {
     if (!tiles.length) return;
     var c0 = Math.max(0, Math.floor(cameraX / T) - 1);
-    var c1 = Math.min(cols - 1, Math.ceil((cameraX + VW) / T) + 1);
+    var c1 = Math.min(cols - 1, Math.ceil((cameraX + viewW) / T) + 1);
     for (var r = 0; r < ROWS; r++) {
       var row = tiles[r];
       for (var c = c0; c <= c1; c++) {
@@ -1043,37 +1337,37 @@
     var exposed = !solidAt(c, r - 1);
     var h = hash2(c, r);
 
-    ctx.fillStyle = "#d9b38c";
+    ctx.fillStyle = pal.dirt;
     ctx.fillRect(x, y, T, T);
 
-    ctx.fillStyle = "#cba079";
+    ctx.fillStyle = pal.dirtSpeck;
     ctx.fillRect(x + 5 + (h % 9), y + 22 + (h % 8), 4, 4);
     ctx.fillRect(x + 20 + ((h >>> 6) % 10), y + 30 + ((h >>> 3) % 6), 3, 3);
 
     if (exposed) {
-      ctx.fillStyle = "#8fd97a";
+      ctx.fillStyle = pal.grass;
       roundedTop(x, y, T, 14, 6);
       ctx.fill();
-      ctx.fillStyle = "#b4f09a";
+      ctx.fillStyle = pal.grassLip;
       roundedTop(x, y, T, 7, 5);
       ctx.fill();
       if (h % 6 === 0) drawFlower(x + 9 + (h % 20), y);
     } else {
-      ctx.fillStyle = "#8fd97a";
+      ctx.fillStyle = pal.grass;
       ctx.fillRect(x, y, T, 10);
-      ctx.fillStyle = "#b4f09a";
+      ctx.fillStyle = pal.grassLip;
       ctx.fillRect(x, y, T, 5);
     }
   }
 
   function drawFlower(x, y) {
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = pal.flower;
     ctx.beginPath();
     ctx.arc(x, y - 6, 2.6, 0, Math.PI * 2);
     ctx.arc(x - 4, y - 3, 2.3, 0, Math.PI * 2);
     ctx.arc(x + 4, y - 3, 2.3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#ffd66e";
+    ctx.fillStyle = pal.flowerCore;
     ctx.beginPath();
     ctx.arc(x, y - 4, 2.1, 0, Math.PI * 2);
     ctx.fill();
@@ -1087,7 +1381,7 @@
     var half = 15;
     var height = 26;
 
-    ctx.fillStyle = "#ff9db0";
+    ctx.fillStyle = pal.spike;
     ctx.beginPath();
     ctx.moveTo(cx - half, base);
     ctx.quadraticCurveTo(cx - half + 2, base - height * 0.6, cx - 3, base - height + 3);
@@ -1096,13 +1390,13 @@
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = "#5b4252";
+    ctx.fillStyle = pal.spikeInk;
     ctx.beginPath();
     ctx.arc(cx - 4.5, base - 11, 1.6, 0, Math.PI * 2);
     ctx.arc(cx + 4.5, base - 11, 1.6, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = "#5b4252";
+    ctx.strokeStyle = pal.spikeInk;
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.arc(cx, base - 9, 3, Math.PI * 0.18, Math.PI * 0.82);
@@ -1122,11 +1416,11 @@
     ctx.translate(cx, base);
     ctx.scale(1 + pop, 1 + pop);
 
-    ctx.fillStyle = "#d7deea";
+    ctx.fillStyle = pal.pole;
     ctx.fillRect(-1.5, -30, 3, 30);
 
     var wave = Math.sin(time * 4) * 2;
-    ctx.fillStyle = active ? "#7ee0a3" : "#ffd66e";
+    ctx.fillStyle = active ? pal.pennantOn : pal.pennant;
     ctx.beginPath();
     ctx.moveTo(1.5, -30);
     ctx.quadraticCurveTo(9 + wave, -26, 16, -23);
@@ -1151,11 +1445,11 @@
     var cx = c * T + T / 2;
     var base = (r + 1) * T;
 
-    ctx.fillStyle = "#d7deea";
+    ctx.fillStyle = pal.pole;
     ctx.fillRect(cx - 1.5, base - 46, 3, 46);
 
     var wave = Math.sin(time * 3) * 2;
-    ctx.fillStyle = "#ff8fab";
+    ctx.fillStyle = pal.flag;
     ctx.beginPath();
     ctx.moveTo(cx + 1.5, base - 46);
     ctx.quadraticCurveTo(cx + 20, base - 45 + wave, cx + 34, base - 40);
@@ -1163,7 +1457,7 @@
     ctx.closePath();
     ctx.fill();
 
-    drawHeart(cx + 17, base - 37, 6, "#ffffff");
+    drawHeart(cx + 17, base - 37, 6, pal.flagHeart);
   }
 
   function drawGift(c, r) {
@@ -1173,10 +1467,10 @@
     var top = base - 26 + bob;
     var left = cx - 15;
 
-    ctx.fillStyle = "#ffb3c7";
+    ctx.fillStyle = pal.gift;
     ctx.fillRect(left, top, 30, 26);
 
-    ctx.fillStyle = "#ff6f91";
+    ctx.fillStyle = pal.giftRibbon;
     ctx.fillRect(cx - 3, top, 6, 26);
     ctx.fillRect(left, top + 9, 30, 4);
 
@@ -1189,7 +1483,7 @@
     if (twinkle > 0.55) {
       var a = (twinkle - 0.55) / 0.45;
       ctx.globalAlpha = a;
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = pal.flagHeart;
       ctx.beginPath();
       ctx.moveTo(left + 26, top - 10);
       ctx.lineTo(left + 29, top - 6);
@@ -1212,7 +1506,7 @@
     ctx.translate(player.x, player.y + bob);
     ctx.scale(player.face * sx, sy);
 
-    ctx.strokeStyle = "#4a4a68";
+    ctx.strokeStyle = pal.ink;
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -1245,39 +1539,47 @@
       line(0, -13, 7, -8 - arm);
     }
 
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#4a4a68";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, -25, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    var blinking = player.blink < 0;
-    ctx.strokeStyle = "#4a4a68";
-    if (blinking) {
-      ctx.lineWidth = 1.6;
-      line(-6, -26, -2.5, -26);
-      line(2.5, -26, 6, -26);
+    if (faceReady && faceImg) {
+      /* the cut-out head: the face fills the head circle, the hat rides above */
+      var fh = player.blink < 0 ? 25 : 30;
+      var fw = fh * (faceImg.width / faceImg.height);
+      ctx.drawImage(faceImg, -fw / 2, -16 - fh, fw, fh);
     } else {
-      ctx.fillStyle = "#4a4a68";
+      ctx.fillStyle = pal.head;
+      ctx.strokeStyle = pal.ink;
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(-4, -26, 1.4, 0, Math.PI * 2);
-      ctx.arc(4, -26, 1.4, 0, Math.PI * 2);
+      ctx.arc(0, -25, 9, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = pal.ink;
+      if (player.blink < 0) {
+        ctx.lineWidth = 1.6;
+        line(-6, -26, -2.5, -26);
+        line(2.5, -26, 6, -26);
+      } else {
+        ctx.fillStyle = pal.ink;
+        ctx.beginPath();
+        ctx.arc(-4, -26, 1.4, 0, Math.PI * 2);
+        ctx.arc(4, -26, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = pal.ink;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(0, -23.5, 3, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+
+      ctx.fillStyle = pal.blush;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(-6, -22, 2.2, 0, Math.PI * 2);
+      ctx.arc(6, -22, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
-
-    ctx.strokeStyle = "#4a4a68";
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.arc(0, -23.5, 3, Math.PI * 0.2, Math.PI * 0.8);
-    ctx.stroke();
-
-    ctx.fillStyle = "rgba(255, 201, 212, 0.9)";
-    ctx.beginPath();
-    ctx.arc(-6, -22, 2.2, 0, Math.PI * 2);
-    ctx.arc(6, -22, 2.2, 0, Math.PI * 2);
-    ctx.fill();
 
     ctx.restore();
   }
@@ -1350,6 +1652,7 @@
 
     requestFullscreen(overlay);
     preloadScare();
+    loadFace();
     armAudio();
 
     loadLevel(0);
@@ -1395,7 +1698,11 @@
     level = 0;
     checkpoint = null;
     particles = [];
-    fade = 0;
+    wipeT = 0;
+    wipeSwapped = false;
+    abyssT = 0;
+    abyssScareT = 0;
+    abyssShaken = false;
     cutT = 0;
     cutReady = false;
     launchT = 0;
@@ -1856,6 +2163,18 @@
 
   /* ----- The scare ----------------------------------------------------- */
 
+  function loadFace() {
+    if (faceImg) return;
+    faceImg = new Image();
+    faceImg.onload = function () {
+      faceReady = true;
+    };
+    faceImg.onerror = function () {
+      faceReady = false;
+    };
+    faceImg.src = "face.png?v=1";
+  }
+
   function preloadScare() {
     if (!scareImg) return;
     if (scareImg.getAttribute("src") !== "scare.png") {
@@ -2155,6 +2474,59 @@
     noise.start(t0);
     noise.stop(endT);
     screamNodes.push(noise, band, noiseGain);
+  }
+
+  /* Running the wrong way at the start of level 1 drops you out of the world. */
+  function beginAbyss() {
+    if (state !== "play") return;
+    state = "abyss";
+    abyssT = 0;
+    abyssScareT = 0;
+    abyssShaken = false;
+    player.vx = 0;
+    player.vy = 40;
+    keys.left = false;
+    keys.right = false;
+    keys.jumpHeld = false;
+    resetButtons();
+    if (touchEl) touchEl.classList.remove("maze-touch-on");
+  }
+
+  function abyssScare() {
+    if (state === "abyssScare") return;
+    state = "abyssScare";
+    abyssScareT = 0;
+    abyssShaken = false;
+
+    flyFromX = (window.innerWidth || VW) / 2;
+    flyFromY = (window.innerHeight || VH) / 2;
+
+    if (overlay) overlay.classList.add("maze-scare-on");
+    if (scareImg) {
+      scareImg.classList.add("maze-visible");
+      scareImg.classList.remove("maze-shake");
+      scareImg.style.transform = flyTransform(0);
+    }
+
+    playScream();
+  }
+
+  function endAbyssScare() {
+    stopScream();
+    if (scareImg) {
+      scareImg.style.transform = "";
+      scareImg.classList.remove("maze-shake");
+      scareImg.classList.remove("maze-visible");
+    }
+    if (overlay) overlay.classList.remove("maze-scare-on");
+
+    abyssT = 0;
+    abyssScareT = 0;
+    abyssShaken = false;
+    resetPlayer(false);
+    cameraX = clampCamera(player.x - viewW * 0.42);
+    viewY = (LEVEL_H - viewH) / 2;
+    state = "play";
   }
 
   /* ----- The cut scene: white fade, comic page, then the flying face ---- */
@@ -2516,6 +2888,13 @@
     } else {
       line(x, shoulderY + h * 0.03, x - h * 0.18 * face, hipY - h * 0.02);
       line(x, shoulderY + h * 0.03, x + h * 0.18 * face, hipY - h * 0.02);
+    }
+
+    if (faceReady && faceImg) {
+      var ih = (headR * 2) / 0.6;
+      var iw = ih * (faceImg.width / faceImg.height);
+      ctx.drawImage(faceImg, x - iw / 2, headY + headR - ih, iw, ih);
+      return;
     }
 
     ctx.fillStyle = "#ffffff";
