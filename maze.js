@@ -41,6 +41,13 @@
   var SCARE_MS = 2600;
   var SHOW_LEVEL_TOASTS = true;
 
+  /* Cut scene: fade to white, a comic page, then the face flies at the viewer. */
+  var CUT_FADE = 0.45;
+  var CUT_PANEL2 = 1.15;
+  var CUT_READY = 1.45;
+  var FLY_TIME = 0.42;
+  var FLY_SCALE = 0.14;
+
   /* ----- Levels -------------------------------------------------------- */
 
   var LEVELS = [
@@ -146,6 +153,16 @@
   var toastTimer = 0;
   var scareTimer = 0;
 
+  var cutT = 0;
+  var cutReady = false;
+  var launchT = 0;
+  var flyFromX = 0;
+  var flyFromY = 0;
+  var halftone = null;
+
+  var sceneEl = null;
+  var sceneFailed = false;
+
   var player = {
     x: 0,
     y: 0,
@@ -200,6 +217,7 @@
     "  overscroll-behavior: none; user-select: none; -webkit-user-select: none;",
     "  -webkit-tap-highlight-color: transparent; cursor: none !important; }",
     "#maze-overlay.maze-scare-on { background: #000; }",
+    "#maze-overlay.maze-cut-on, #maze-overlay.maze-cut-on * { cursor: pointer !important; }",
     "#maze-overlay * { cursor: none !important; }",
     "#maze-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }",
     "#maze-scare { position: absolute; inset: 0; width: 100%; height: 100%;",
@@ -354,8 +372,14 @@
     });
 
     canvas.addEventListener("pointerdown", function (e) {
-      if (!isOpen || state !== "play") return;
+      if (!isOpen) return;
       if (e.pointerType === "mouse" && e.button > 0) return;
+      if (state === "cutscene") {
+        e.preventDefault();
+        if (cutReady) launchScare();
+        return;
+      }
+      if (state !== "play") return;
       e.preventDefault();
       keys.jumpHeld = true;
       jumpBuf = JUMP_BUFFER;
@@ -706,7 +730,7 @@
       sfxClear();
       return;
     }
-    startScare();
+    beginCutscene();
   }
 
   /* ----- Particles ----------------------------------------------------- */
@@ -808,6 +832,24 @@
       return;
     }
 
+    if (state === "cutscene") {
+      cutT += dt;
+      if (!cutReady && cutT >= CUT_FADE + CUT_READY) {
+        cutReady = true;
+        if (overlay) overlay.classList.add("maze-cut-on");
+      }
+      return;
+    }
+
+    if (state === "launch") {
+      cutT += dt;
+      launchT += dt;
+      var flyK = Math.min(1, launchT / FLY_TIME);
+      if (scareImg) scareImg.style.transform = flyTransform(flyK);
+      if (flyK >= 1) arriveScare();
+      return;
+    }
+
     if (state !== "play") return;
 
     updatePlayer(dt);
@@ -862,6 +904,36 @@
     var ox = (vw - VW * s) / 2;
     var oy = (vh - VH * s) / 2;
 
+    var inCut = state === "cutscene" || state === "launch";
+    var fadingIn = state === "cutscene" && cutT < CUT_FADE;
+
+    if (!inCut || fadingIn) {
+      drawScene(dpr, s, ox, oy, vw, vh);
+    }
+
+    if (inCut) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (fadingIn) {
+        ctx.globalAlpha = Math.min(1, cutT / CUT_FADE);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, vw, vh);
+        ctx.globalAlpha = 1;
+      } else {
+        drawComicPage(dpr, vw, vh);
+      }
+      return;
+    }
+
+    if (fade > 0) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.globalAlpha = Math.min(1, fade);
+      ctx.fillStyle = "#fff6fa";
+      ctx.fillRect(0, 0, vw, vh);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawScene(dpr, s, ox, oy, vw, vh) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var sky = ctx.createLinearGradient(0, 0, 0, vh);
     sky.addColorStop(0, "#aee7ff");
@@ -879,14 +951,6 @@
     drawParticles();
     drawPlayer();
     ctx.restore();
-
-    if (fade > 0) {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.globalAlpha = Math.min(1, fade);
-      ctx.fillStyle = "#fff6fa";
-      ctx.fillRect(0, 0, vw, vh);
-      ctx.globalAlpha = 1;
-    }
   }
 
   function drawSun() {
@@ -1300,17 +1364,20 @@
 
     stopMusic();
     stopScream();
+    stopSceneMusic();
 
     document.documentElement.classList.remove("maze-active");
 
     if (canvas) canvas.style.display = "block";
     if (touchEl) touchEl.classList.remove("maze-touch-on");
     if (scareImg) {
+      scareImg.style.transform = "";
       scareImg.classList.remove("maze-visible");
       scareImg.classList.remove("maze-shake");
     }
     if (overlay) {
       overlay.classList.remove("maze-scare-on");
+      overlay.classList.remove("maze-cut-on");
       overlay.style.display = "none";
     }
 
@@ -1318,6 +1385,9 @@
     checkpoint = null;
     particles = [];
     fade = 0;
+    cutT = 0;
+    cutReady = false;
+    launchT = 0;
     keys.left = false;
     keys.right = false;
     keys.jumpHeld = false;
@@ -1365,7 +1435,7 @@
       document.msFullscreenElement ||
       null;
     if (fs) return;
-    if (state === "scare") return;
+    if (state === "scare" || state === "launch") return;
     closeGame();
   }
 
@@ -1380,6 +1450,11 @@
     paused = true;
     lastTime = 0;
     stopMusic();
+    if (sceneEl) {
+      try {
+        sceneEl.pause();
+      } catch (e) {}
+    }
     if (audioCtx && audioCtx.state === "running") {
       try {
         var p = audioCtx.suspend();
@@ -1400,7 +1475,8 @@
         if (p && typeof p.catch === "function") p.catch(function () {});
       } catch (e) {}
     }
-    startMusic();
+    if (state === "cutscene") playSceneMusic();
+    else startMusic();
   }
 
   /* ----- Keyboard and touch -------------------------------------------- */
@@ -1449,6 +1525,48 @@
       if (state !== "scare") {
         closeGame();
         exitFullscreen();
+      }
+      return;
+    }
+
+    if (state === "cutscene") {
+      var panelKey =
+        isJumpKey(code, key) ||
+        isLeftKey(code, key) ||
+        isRightKey(code, key) ||
+        code === "Enter" ||
+        code === "NumpadEnter" ||
+        key === "Enter" ||
+        code === "KeyR" ||
+        key === "r" ||
+        key === "R";
+      if (panelKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (
+          cutReady &&
+          (code === "Space" ||
+            code === "Enter" ||
+            code === "NumpadEnter" ||
+            key === " " ||
+            key === "Enter")
+        ) {
+          launchScare();
+        }
+        return;
+      }
+    }
+
+    if (state === "launch") {
+      if (
+        isJumpKey(code, key) ||
+        isLeftKey(code, key) ||
+        isRightKey(code, key) ||
+        code === "Enter" ||
+        key === "Enter"
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
       }
       return;
     }
@@ -1767,11 +1885,53 @@
         if (screamEl) screamEl.muted = false;
       }
     }
+
+    if (!sceneEl) {
+      try {
+        sceneEl = new Audio();
+        sceneEl.preload = "auto";
+        sceneEl.loop = true;
+        sceneEl.volume = 0.7;
+        sceneEl.src = "eastereggmusic.mp3";
+        sceneEl.load();
+      } catch (e) {
+        sceneEl = null;
+        sceneFailed = true;
+      }
+    }
+
+    if (sceneEl) {
+      try {
+        sceneEl.muted = true;
+        var q = sceneEl.play();
+        if (q && typeof q.then === "function") {
+          q.then(finishSceneUnlock).catch(function () {
+            if (sceneEl) sceneEl.muted = false;
+            sceneFailed = true;
+          });
+        } else {
+          finishSceneUnlock();
+        }
+      } catch (e) {
+        if (sceneEl) sceneEl.muted = false;
+        sceneFailed = true;
+      }
+    }
+  }
+
+  function finishSceneUnlock() {
+    if (!sceneEl) return;
+    if (state === "cutscene" || state === "launch" || state === "scare") return;
+    try {
+      sceneEl.pause();
+      sceneEl.currentTime = 0;
+      sceneEl.muted = false;
+    } catch (e) {}
   }
 
   function finishUnlock() {
     if (!screamEl) return;
-    if (state === "scare") return;
+    if (state === "scare" || state === "launch") return;
     try {
       screamEl.pause();
       screamEl.currentTime = 0;
@@ -1911,9 +2071,33 @@
     screamNodes.push(noise, band, noiseGain);
   }
 
-  function startScare() {
-    if (state === "scare") return;
-    state = "scare";
+  /* ----- The cut scene: white fade, comic page, then the flying face ---- */
+
+  function clamp01(v) {
+    if (v < 0) return 0;
+    if (v > 1) return 1;
+    return v;
+  }
+
+  function beginCutscene() {
+    if (state !== "play") return;
+    state = "cutscene";
+    cutT = 0;
+    cutReady = false;
+    launchT = 0;
+
+    resetButtons();
+    keys.left = false;
+    keys.right = false;
+    keys.jumpHeld = false;
+    if (touchEl) touchEl.classList.remove("maze-touch-on");
+    if (toastEl) toastEl.classList.remove("maze-toast-on");
+    if (overlay) overlay.classList.remove("maze-cut-on");
+    if (scareImg) {
+      scareImg.classList.remove("maze-visible");
+      scareImg.classList.remove("maze-shake");
+      scareImg.style.transform = "";
+    }
 
     stopMusic();
     if (musicMaster && audioCtx) {
@@ -1923,24 +2107,487 @@
       } catch (e) {}
     }
 
-    resetButtons();
-    keys.left = false;
-    keys.right = false;
-    keys.jumpHeld = false;
+    playSceneMusic();
+  }
 
-    if (canvas) canvas.style.display = "none";
-    if (touchEl) touchEl.classList.remove("maze-touch-on");
-    if (toastEl) toastEl.classList.remove("maze-toast-on");
-    if (overlay) overlay.classList.add("maze-scare-on");
+  /* The custom scene track; if it never arrived, the music box plays quietly
+     under the panel instead. */
+  function playSceneMusic() {
+    if (sceneEl && !sceneFailed) {
+      try {
+        sceneEl.muted = false;
+        sceneEl.volume = 0.7;
+        sceneEl.currentTime = 0;
+        var p = sceneEl.play();
+        if (p && typeof p.then === "function") {
+          p.catch(function () {
+            sceneFailed = true;
+            startMusic();
+            if (musicMaster && audioCtx) {
+              try {
+                musicMaster.gain.setValueAtTime(0.28, audioCtx.currentTime);
+              } catch (e) {}
+            }
+          });
+        }
+        return;
+      } catch (e) {
+        sceneFailed = true;
+      }
+    }
+    startMusic();
+    if (musicMaster && audioCtx) {
+      try {
+        musicMaster.gain.setValueAtTime(0.28, audioCtx.currentTime);
+      } catch (e) {}
+    }
+  }
+
+  function stopSceneMusic() {
+    if (!sceneEl) return;
+    try {
+      sceneEl.pause();
+      sceneEl.currentTime = 0;
+    } catch (e) {}
+  }
+
+  /* The face leaves the box small and rushes the viewer: scale and centre
+     accelerate together, so the last frames are the flinch. */
+  function flyTransform(k) {
+    var vw = window.innerWidth || VW;
+    var vh = window.innerHeight || VH;
+    var e = k * k * k;
+    var scale = FLY_SCALE + (1.34 - FLY_SCALE) * e;
+    var cx = flyFromX + (vw / 2 - flyFromX) * e;
+    var cy = flyFromY + (vh / 2 - flyFromY) * e;
+    return (
+      "translate(" +
+      (cx - vw / 2).toFixed(1) +
+      "px, " +
+      (cy - vh / 2).toFixed(1) +
+      "px) scale(" +
+      scale.toFixed(3) +
+      ")"
+    );
+  }
+
+  function launchScare() {
+    if (state !== "cutscene" || !cutReady || launchT > 0) return;
+    state = "launch";
+    launchT = 0;
+
+    stopSceneMusic();
+    if (overlay) {
+      overlay.classList.remove("maze-cut-on");
+      overlay.classList.add("maze-scare-on");
+    }
+
+    var box = comicBoxPoint();
+    flyFromX = box.x;
+    flyFromY = box.y;
+
     if (scareImg) {
       scareImg.classList.add("maze-visible");
-      scareImg.classList.add("maze-shake");
+      scareImg.classList.remove("maze-shake");
+      scareImg.style.transform = flyTransform(0);
     }
 
     playScream();
+  }
+
+  function arriveScare() {
+    if (state === "scare") return;
+    state = "scare";
+
+    if (scareImg) {
+      scareImg.style.transform = "";
+      scareImg.classList.add("maze-visible");
+      scareImg.classList.add("maze-shake");
+    }
+    if (overlay) overlay.classList.add("maze-scare-on");
+    if (canvas) canvas.style.display = "none";
+    if (touchEl) touchEl.classList.remove("maze-touch-on");
+    if (toastEl) toastEl.classList.remove("maze-toast-on");
 
     if (scareTimer) window.clearTimeout(scareTimer);
     scareTimer = window.setTimeout(endScare, SCARE_MS);
+  }
+
+  /* ----- The comic page ------------------------------------------------ */
+
+  function halftonePattern() {
+    if (halftone) return halftone;
+    var c = document.createElement("canvas");
+    c.width = 12;
+    c.height = 12;
+    var g = c.getContext("2d");
+    g.fillStyle = "rgba(47, 42, 58, 0.09)";
+    g.beginPath();
+    g.arc(3, 3, 1.6, 0, Math.PI * 2);
+    g.arc(9, 9, 1.6, 0, Math.PI * 2);
+    g.fill();
+    try {
+      halftone = ctx.createPattern(c, "repeat");
+    } catch (e) {
+      halftone = null;
+    }
+    return halftone;
+  }
+
+  function roundRectPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function comicLayout() {
+    var vw = window.innerWidth || VW;
+    var vh = window.innerHeight || VH;
+    var m = Math.max(10, Math.min(vw, vh) * 0.05);
+    var page = { x: m, y: m, w: vw - m * 2, h: vh - m * 2 };
+    var gap = Math.max(8, Math.min(vw, vh) * 0.028);
+    var p1;
+    var p2;
+    if (page.w >= page.h) {
+      var halfW = (page.w - gap * 3) / 2;
+      p1 = { x: page.x + gap, y: page.y + gap, w: halfW, h: page.h - gap * 2 };
+      p2 = {
+        x: page.x + gap * 2 + halfW,
+        y: page.y + gap,
+        w: halfW,
+        h: page.h - gap * 2
+      };
+    } else {
+      var halfH = (page.h - gap * 3) / 2;
+      p1 = { x: page.x + gap, y: page.y + gap, w: page.w - gap * 2, h: halfH };
+      p2 = {
+        x: page.x + gap,
+        y: page.y + gap * 2 + halfH,
+        w: page.w - gap * 2,
+        h: halfH
+      };
+    }
+    return { page: page, p1: p1, p2: p2, gap: gap };
+  }
+
+  /* Where the box sits inside the second panel: the face leaves from here. */
+  function comicBoxPoint() {
+    var L = comicLayout();
+    return {
+      x: L.p2.x + L.p2.w * 0.6,
+      y: L.p2.y + L.p2.h * 0.68
+    };
+  }
+
+  function panelClip(r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(r.x, r.y, r.w, r.h);
+    ctx.clip();
+  }
+
+  function panelFrame(r) {
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = Math.max(3, Math.min(r.w, r.h) * 0.022);
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+  }
+
+  function drawComicPage(dpr, vw, vh) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var L = comicLayout();
+    var page = L.page;
+    var t = cutT - CUT_FADE;
+
+    ctx.fillStyle = "#fff4e8";
+    ctx.fillRect(0, 0, vw, vh);
+
+    var dots = halftonePattern();
+    if (dots) {
+      ctx.fillStyle = dots;
+      ctx.fillRect(page.x, page.y, page.w, page.h);
+    }
+
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = Math.max(2, Math.min(vw, vh) * 0.008);
+    ctx.strokeRect(page.x, page.y, page.w, page.h);
+
+    drawComicPanel1(L.p1, Math.max(0, t));
+    if (t >= CUT_PANEL2) drawComicPanel2(L.p2, t - CUT_PANEL2);
+    else drawComicPanelBlank(L.p2);
+    if (t >= CUT_READY) drawComicBubble(L, t - CUT_READY);
+  }
+
+  function drawComicPanelBlank(r) {
+    panelClip(r);
+    ctx.fillStyle = "#fdf1e5";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.restore();
+    panelFrame(r);
+  }
+
+  function drawComicCloud(x, y, r) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(x + r * 1.1, y + r * 0.25, r * 0.8, 0, Math.PI * 2);
+    ctx.arc(x - r * 1.1, y + r * 0.3, r * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawComicSparkle(x, y, s, phase) {
+    var k = 0.5 + 0.5 * Math.sin(phase);
+    ctx.save();
+    ctx.globalAlpha = 0.35 + 0.65 * k;
+    ctx.fillStyle = "#fff3b0";
+    ctx.beginPath();
+    ctx.moveTo(x, y - s);
+    ctx.lineTo(x + s * 0.35, y - s * 0.35);
+    ctx.lineTo(x + s, y);
+    ctx.lineTo(x + s * 0.35, y + s * 0.35);
+    ctx.lineTo(x, y + s);
+    ctx.lineTo(x - s * 0.35, y + s * 0.35);
+    ctx.lineTo(x - s, y);
+    ctx.lineTo(x - s * 0.35, y - s * 0.35);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawComicGuy(x, bottom, h, face, phase, armsOut) {
+    var headR = h * 0.2;
+    var headY = bottom - h + headR;
+    var hipY = bottom - h * 0.32;
+    var shoulderY = bottom - h + headR * 2 + h * 0.04;
+    var swing = Math.sin(phase) * h * 0.16;
+
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = Math.max(2, h * 0.075);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    line(x, hipY, x + swing, bottom);
+    line(x, hipY, x - swing, bottom);
+    line(x, hipY, x, shoulderY);
+
+    if (armsOut) {
+      line(x, shoulderY + h * 0.03, x + h * 0.24 * face, shoulderY - h * 0.02);
+      line(x, shoulderY + h * 0.1, x + h * 0.18 * face, shoulderY + h * 0.22);
+    } else {
+      line(x, shoulderY + h * 0.03, x - h * 0.18 * face, hipY - h * 0.02);
+      line(x, shoulderY + h * 0.03, x + h * 0.18 * face, hipY - h * 0.02);
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = Math.max(2, h * 0.045);
+    ctx.beginPath();
+    ctx.arc(x, headY, headR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#2f2a3a";
+    ctx.beginPath();
+    ctx.arc(x - headR * 0.35, headY - headR * 0.08, headR * 0.13, 0, Math.PI * 2);
+    ctx.arc(x + headR * 0.35, headY - headR * 0.08, headR * 0.13, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = Math.max(1.2, headR * 0.14);
+    ctx.beginPath();
+    ctx.arc(x, headY + headR * 0.06, headR * 0.38, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255, 201, 212, 0.9)";
+    ctx.beginPath();
+    ctx.arc(x - headR * 0.62, headY + headR * 0.2, headR * 0.18, 0, Math.PI * 2);
+    ctx.arc(x + headR * 0.62, headY + headR * 0.2, headR * 0.18, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawComicBox(x, bottom, h, open, t) {
+    var w = h * 1.15;
+    var left = x - w / 2;
+    var top = bottom - h;
+    var ink = Math.max(2, h * 0.06);
+
+    ctx.fillStyle = "#ffb3c7";
+    ctx.fillRect(left, top, w, h);
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = ink;
+    ctx.strokeRect(left, top, w, h);
+
+    ctx.fillStyle = "#ff6f91";
+    ctx.fillRect(x - w * 0.09, top, w * 0.18, h);
+    ctx.fillRect(left, top + h * 0.4, w, h * 0.12);
+
+    if (open > 0.01) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.9, open);
+      ctx.fillStyle = "#fff3b0";
+      ctx.beginPath();
+      ctx.moveTo(left + w * 0.15, top);
+      ctx.lineTo(x, top - h * (0.7 + open * 1.6));
+      ctx.lineTo(left + w * 0.85, top);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.translate(left, top);
+    ctx.rotate(-open * 0.9);
+    ctx.fillStyle = "#ffc6d6";
+    ctx.fillRect(0, -h * 0.2, w, h * 0.2);
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = ink;
+    ctx.strokeRect(0, -h * 0.2, w, h * 0.2);
+    ctx.fillStyle = "#ff6f91";
+    ctx.fillRect(w * 0.41, -h * 0.2, w * 0.18, h * 0.2);
+    ctx.beginPath();
+    ctx.arc(w * 0.34, -h * 0.3, h * 0.12, 0, Math.PI * 2);
+    ctx.arc(w * 0.66, -h * 0.3, h * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawComicPanel1(r, t) {
+    panelClip(r);
+
+    ctx.fillStyle = "#d9f1ff";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    drawComicCloud(r.x + r.w * 0.22, r.y + r.h * 0.18, r.h * 0.07);
+    drawComicCloud(r.x + r.w * 0.64, r.y + r.h * 0.12, r.h * 0.05);
+
+    var groundY = r.y + r.h * 0.84;
+    ctx.fillStyle = "#8fd97a";
+    ctx.fillRect(r.x, groundY, r.w, r.h - (groundY - r.y));
+    ctx.fillStyle = "#b4f09a";
+    ctx.fillRect(r.x, groundY, r.w, r.h * 0.022);
+
+    var boxH = r.h * 0.24;
+    var boxX = r.x + r.w * 0.74;
+    drawComicBox(boxX, groundY, boxH, 0, t);
+
+    var walk = clamp01(t / CUT_PANEL2);
+    var eased = walk * walk * (3 - 2 * walk);
+    var guyH = r.h * 0.34;
+    var guyX = r.x + r.w * (0.2 + 0.36 * eased);
+
+    if (walk < 1) {
+      ctx.strokeStyle = "rgba(47, 42, 58, 0.4)";
+      ctx.lineWidth = Math.max(1.5, r.h * 0.008);
+      for (var i = 0; i < 3; i++) {
+        var ly = groundY - guyH * (0.25 + i * 0.2);
+        line(guyX - guyH * 0.55 - i * 4, ly, guyX - guyH * 0.25 - i * 4, ly);
+      }
+    }
+
+    drawComicGuy(guyX, groundY, guyH, 1, t * 12, false);
+    drawComicSparkle(boxX + boxH * 0.7, groundY - boxH * 1.5, boxH * 0.16, t * 4);
+
+    ctx.restore();
+    panelFrame(r);
+  }
+
+  function drawComicPanel2(r, t) {
+    panelClip(r);
+
+    ctx.fillStyle = "#ffe8f1";
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    ctx.save();
+    ctx.translate(r.x + r.w * 0.6, r.y + r.h * 0.5);
+    ctx.fillStyle = "#fff3b0";
+    for (var i = 0; i < 12; i++) {
+      var a = (i / 12) * Math.PI * 2 + t * 0.25;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * r.w * 0.55, Math.sin(a) * r.w * 0.55);
+      ctx.lineTo(Math.cos(a + 0.16) * r.w * 0.55, Math.sin(a + 0.16) * r.w * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    var groundY = r.y + r.h * 0.84;
+    ctx.fillStyle = "#8fd97a";
+    ctx.fillRect(r.x, groundY, r.w, r.h - (groundY - r.y));
+    ctx.fillStyle = "#b4f09a";
+    ctx.fillRect(r.x, groundY, r.w, r.h * 0.022);
+
+    var open = 0.22 + Math.sin(t * 3) * 0.05;
+    if (state === "launch") {
+      open = 0.22 + 0.78 * clamp01(launchT / (FLY_TIME * 0.7));
+    }
+
+    var boxH = r.h * 0.34;
+    var boxX = r.x + r.w * 0.6;
+    drawComicBox(boxX, groundY, boxH, open, t);
+
+    drawComicGuy(r.x + r.w * 0.28, groundY, r.h * 0.38, 1, 0, true);
+    drawComicSparkle(r.x + r.w * 0.84, r.y + r.h * 0.3, boxH * 0.1, t * 5);
+
+    ctx.restore();
+    panelFrame(r);
+  }
+
+  function drawComicBubble(L, t) {
+    var pop = clamp01(t / 0.22);
+    var pulse = 1 + Math.sin(time * 3) * 0.03;
+    var scale = (0.7 + 0.3 * pop) * pulse;
+
+    var fontPx = Math.max(13, Math.min(L.page.w, L.page.h) * 0.042);
+    ctx.font =
+      "700 " +
+      fontPx.toFixed(1) +
+      "px \"Comic Sans MS\", \"Chalkboard SE\", \"Baloo 2\", cursive";
+    var label = "Click to open prize";
+    var textW = ctx.measureText(label).width;
+    var padX = fontPx * 0.9;
+    var padY = fontPx * 0.62;
+    var bw = Math.min(L.page.w * 0.82, textW + padX * 2);
+    var bh = fontPx + padY * 2;
+
+    var cx = L.p2.x + L.p2.w * 0.55;
+    var cy = L.p2.y + L.p2.h * 0.26;
+    var ink = Math.max(2, fontPx * 0.13);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#2f2a3a";
+    ctx.lineWidth = ink;
+    ctx.beginPath();
+    ctx.moveTo(-bw * 0.06, bh * 0.34);
+    ctx.lineTo(-bw * 0.26, bh * 0.95);
+    ctx.lineTo(bw * 0.14, bh * 0.34);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    roundRectPath(-bw / 2, -bh / 2, bw, bh, bh * 0.45);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#2f2a3a";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, 0, fontPx * 0.04);
+
+    ctx.restore();
   }
 
   function endScare() {
