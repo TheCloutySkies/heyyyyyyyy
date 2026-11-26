@@ -258,8 +258,8 @@
                   <div class="dt-time-field">
                     <input id="dt-time" type="text" readonly aria-label="Time" />
                     <span class="dt-time-spin">
-                      <button type="button" aria-label="Later" title="Your browser cannot change the system clock" disabled></button>
-                      <button type="button" aria-label="Earlier" title="Your browser cannot change the system clock" disabled></button>
+                      <button type="button" aria-label="Later" disabled></button>
+                      <button type="button" aria-label="Earlier" disabled></button>
                     </span>
                   </div>
                 </fieldset>
@@ -268,12 +268,20 @@
             </div>
           </section>
           <section role="tabpanel" id="dt-panel-zone" aria-labelledby="dt-tab-zone" hidden>
-            <div class="dt-page">
-              <fieldset class="dt-group dt-group--wide">
-                <legend>Time zone</legend>
-                <p class="dt-readonly" id="dt-zone-readonly"></p>
-                <p class="dt-note">A web page cannot change your computer&rsquo;s clock or time zone, so this is read-only.</p>
-              </fieldset>
+            <div class="dt-page dt-page--zone">
+              <div class="dt-zone-pick">
+                <div class="dt-zone-map" id="dt-zone-map">
+                  <img src="world-map.svg" alt="World map with time zones" width="720" height="360" />
+                  <div class="dt-zone-dots" id="dt-zone-dots"></div>
+                </div>
+                <label class="dt-zone-select-label" for="dt-zone-select">Time zone:</label>
+                <select id="dt-zone-select" class="dt-zone-select"></select>
+              </div>
+              <div class="dt-watch" aria-live="off">
+                <div class="dt-watch-name" id="dt-watch-name">Your time zone</div>
+                <div class="dt-lcd" id="dt-zone-watch" role="timer" aria-label="Time in the selected zone"></div>
+                <div class="dt-watch-offset" id="dt-watch-offset"></div>
+              </div>
             </div>
           </section>
           <section role="tabpanel" id="dt-panel-internet" aria-labelledby="dt-tab-internet" hidden>
@@ -290,7 +298,6 @@
                   </select>
                   <button type="button" class="button" disabled>Update Now</button>
                 </div>
-                <p class="dt-note">Synchronizing is handled by your operating system.</p>
               </fieldset>
             </div>
           </section>
@@ -515,8 +522,6 @@
   <script>
     (function () {
       var cfg = window.CloutyDesktopConfig || {};
-      var pf = document.getElementById("link-portfolio");
-      if (pf && cfg.portfolioUrl) pf.href = cfg.portfolioUrl;
 
       /* Spotify is injected on request only: nothing third-party loads before that click. */
       var slot = document.getElementById("spotify-slot");
