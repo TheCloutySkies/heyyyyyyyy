@@ -4,18 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About</title>
-  <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+  <link rel="stylesheet" href="vendor/xp.css" />
+  <link rel="stylesheet" href="luna.css" />
   <style>
     body {
-      background: #245EDC;
       min-height: 100vh;
       margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: Tahoma, "Segoe UI", Arial, sans-serif;
       padding: 20px;
+      box-sizing: border-box;
+      background-color: var(--luna-desktop);
+      background-image: url("wallpaper.jpg");
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: scroll;
     }
+
+    @media (min-width: 769px) {
+      body {
+        background-attachment: fixed;
+      }
+    }
+
     .window {
       width: 480px;
       max-width: 90vw;
@@ -29,9 +42,10 @@
       margin: 0 0 20px 0;
       text-align: center;
       color: #003399;
-      font-size: 24px;
-      font-weight: normal;
-      text-shadow: 1px 1px #fff;
+      font-family: var(--luna-font-display);
+      font-weight: 600;
+      font-size: 22px;
+      text-shadow: none;
     }
     p {
       margin: 12px 0;
@@ -89,7 +103,7 @@
       </div>
     </div>
     <div class="window-body">
-      <img src="https://win98icons.alexmeub.com/icons/png/system_restore-4.png" alt="" style="width:14px;height:14px;" />
+      <img src="icons/system_restore-4.png" alt="" style="width:14px;height:14px;" />
       Home</div>
   </a>
 
@@ -104,10 +118,10 @@
       </div>
     </div>
     <div class="window-body">
-      <img src="https://i.scdn.co/image/ab67616d00001e025b772aec90e8dc0cd1c0acd1" alt="Clouty Skies" class="avatar" />
-      <h1><img src="https://win98icons.alexmeub.com/icons/png/help_book_cool-3.png" style="width:24px;height:24px;vertical-align:bottom;margin-right:8px;" />Heyyyyy</h1>
+      <img src="avatar.jpg" alt="Clouty Skies" class="avatar" />
+      <h1><img src="icons/help_book_cool-3.png" style="width:24px;height:24px;vertical-align:bottom;margin-right:8px;" />Heyyyyy</h1>
       <fieldset>
-        <legend><img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />About Me</legend>
+        <legend><img src="icons/notepad-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />About Me</legend>
         <div style="padding: 10px;">
           <p>Hello. My name is Lonnie, I'm pretty much just addicted to creating things and movement. Whether it's the movement of the body, the camera, or traveling 8,370 miles around the US by bike.</p>
           <p>I'm pretty much always brewing ideas and want to put them out there as sort of a public archive for all to see. I hope to bring new perspectives and processes into everything I throw myself into. I want to do my best in everything I attempt, differently.</p>
@@ -115,9 +129,9 @@
         </div>
       </fieldset>
       <fieldset style="margin-top: 16px;">
-        <legend><img src="https://win98icons.alexmeub.com/icons/png/date_time-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />Website Creation Info</legend>
+        <legend><img src="icons/system_restore-4.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />Website Creation Info</legend>
         <div style="padding: 10px;">
-          <p style="margin:0;">Created: October 18, 2024 <img src="https://win98icons.alexmeub.com/icons/png/calendar_date-0.png" style="width:16px;height:16px;vertical-align:bottom;margin-left:4px;" /></p>
+          <p style="margin:0;">Created: October 18, 2024</p>
         </div>
       </fieldset>
     </div>

@@ -4,465 +4,152 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Clouty Hops</title>
+  <link rel="stylesheet" href="vendor/xp.css" />
+  <link rel="stylesheet" href="luna.css" />
   <style>
-    :root {
-      --window-background: rgba(69, 128, 196, 0.85);
-      --window-border: 1px solid rgba(0, 0, 0, 0.3);
-      --window-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-      --title-text: #ffffff;
-    }
+    * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      padding: 0; /* Remove padding */
-      min-height: 100vh;
-      min-height: 100dvh;
-      background: url('https://images3.alphacoders.com/134/1349543.png') no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Segoe UI", sans-serif;
-      overflow: hidden; /* Prevent scrolling */
-    }
+    .hops-app { width: min(96vw, 700px); max-width: none; }
 
-    @media (max-width: 768px) {
-      body {
-        background-attachment: scroll;
-      }
-    }
-
-    .window {
-      background: var(--window-background);
-      border: var(--window-border);
-      border-radius: 6px;
-      box-shadow: var(--window-shadow);
-      backdrop-filter: blur(10px);
-      overflow: hidden;
-      position: relative;
-      width: 700px; /* Smaller fixed width */
-      margin: 0 auto;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .title-bar {
-      padding: 8px 12px;
-      background: linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .title-bar h1 {
-      margin: 0;
-      color: var(--title-text);
-      font-size: 14px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-
-    .game-container {
-      padding: 20px;
-      background: rgba(255,255,255,0.1);
-    }
+    .game-container { padding: 10px; background: var(--luna-face); }
 
     #gameCanvas {
-      width: 650px; /* Smaller canvas */
-      height: 500px;
       display: block;
+      width: 100%;
+      height: auto;
       margin: 0 auto;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 4px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      background: #8ec5f0;
+      border-radius: 1px;
     }
 
-    .controls {
-      color: white;
-      text-align: center;
-      margin-top: 10px;
-      font-size: 12px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    #score-display {
+      margin: 8px 0 0;
+      padding: 3px 6px;
+      font: 700 11px var(--luna-font-ui);
+      color: #003399;
+      background: #fff;
+      border: 1px solid var(--luna-border);
+      border-radius: 2px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    canvas {
-      border-radius: 15px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
-      backdrop-filter: blur(10px);
-      box-shadow: 
-        0 8px 32px rgba(31, 38, 135, 0.15),
-        inset 0 0 80px rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      margin: 20px 0;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 40px;
-      color: #335c81;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-
-    .controls {
+    .hops-actions {
       display: flex;
-      gap: 10px;
-      margin-top: 20px;
+      gap: 8px;
       justify-content: center;
-    }
-
-    button {
-      padding: 12px 24px;
-      background: linear-gradient(to bottom, #85c1e9, #3498db);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-family: inherit;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-      background: linear-gradient(to bottom, #3498db, #85c1e9);
+      padding: 0 10px 10px;
+      background: var(--luna-face);
     }
 
     .jump-button {
       position: fixed;
-      bottom: 20px;
+      bottom: max(16px, env(safe-area-inset-bottom));
       left: 50%;
       transform: translateX(-50%);
       width: 200px;
-      height: 60px; /* Slightly smaller height */
+      height: 54px;
       z-index: 1000;
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.3),
-        rgba(69, 128, 196, 0.5)
-      );
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(5px);
-      box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      color: white;
-      border-radius: 15px;
-      font-size: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      font: 700 18px var(--luna-font-title);
     }
 
-    .jump-button:hover {
-      transform: translateX(-50%) scale(1.05);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.4),
-        rgba(69, 128, 196, 0.6)
-      );
-    }
+    .jump-button:active { transform: translateX(-50%); }
 
-    .back-home-button {
+    .settings-toggle {
       position: fixed;
-      top: 20px;
-      left: 20px;
-      font-size: 18px;
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.3),
-        rgba(69, 128, 196, 0.5)
-      );
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(5px);
-      box-shadow: 
-        0 2px 5px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    .back-home-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.4),
-        rgba(69, 128, 196, 0.6)
-      );
-    }
-
-    #score-display {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      color: #335c81;
-      background: rgba(255, 255, 255, 0.3);
-      padding: 10px 20px;
-      border-radius: 10px;
-      backdrop-filter: blur(5px);
+      top: max(12px, env(safe-area-inset-top));
+      right: max(12px, env(safe-area-inset-right));
+      min-width: 84px;
+      z-index: 1000;
     }
 
     .settings-panel {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(69, 128, 196, 0.85);
-      border: 1px solid rgba(0, 0, 0, 0.3);
-      border-radius: 6px;
-      box-shadow: 
-        0 0 30px rgba(0, 0, 0, 0.3),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      color: white;
-      width: 300px;
-      z-index: 1000;
+      top: max(56px, calc(env(safe-area-inset-top) + 44px));
+      right: max(12px, env(safe-area-inset-right));
+      width: min(300px, calc(100vw - 24px));
+      z-index: 1100;
       display: none;
     }
 
-    .settings-panel.visible {
-      display: block;
+    .settings-panel.visible { display: block; }
+
+    .settings-panel .window-body { background: var(--luna-face); }
+
+    .settings-group { margin: 0 0 10px; }
+
+    .settings-group label { display: block; margin-bottom: 4px; }
+
+    .value-display { font-weight: 700; color: #003399; }
+
+    .settings-panel input[type="range"] { width: 100%; }
+
+    @media (max-width: 700px) {
+      .game-container { padding: 6px; }
+      #gameCanvas { width: 100%; height: auto; aspect-ratio: 650 / 500; }
+      .jump-button { width: min(200px, calc(100vw - 24px)); height: 50px; font-size: 16px; }
     }
-
-    .settings-group {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      padding: 15px;
-      margin-bottom: 15px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .settings-group label {
-      color: white;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      font-size: 14px;
-    }
-
-    .settings-group input[type="range"] {
-      width: 100%;
-      margin: 5px 0;
-    }
-
-    .value-display {
-      font-size: 12px;
-      color: #335c81;
-    }
-
-    .settings-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.3),
-        rgba(255, 255, 255, 0.1)
-      );
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-      box-shadow: 
-        0 2px 5px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    }
-
-    .settings-toggle:hover {
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.4),
-        rgba(255, 255, 255, 0.2)
-      );
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-      outline: none;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      background: linear-gradient(to bottom,
-        #ffffff,
-        #e6e6e6
-      );
-      border: 1px solid rgba(0, 0, 0, 0.3);
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    }
-
-    .reset-button {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 20px 40px;
-      font-size: 24px;
-      display: none;
-      z-index: 1000;
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.3),
-        rgba(69, 128, 196, 0.5)
-      );
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(5px);
-      box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      color: white;
-    }
-
-    .reset-button:hover {
-      background: linear-gradient(to bottom,
-        rgba(255, 255, 255, 0.4),
-        rgba(69, 128, 196, 0.6)
-      );
-    }
-
-    /* Narrow viewports / iframe embed from desktop shell */
-    @media (max-width: 760px) {
-      body {
-        align-items: flex-start;
-        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-          max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-      }
-
-      .back-home-button {
-        position: fixed;
-        top: max(10px, env(safe-area-inset-top));
-        left: max(10px, env(safe-area-inset-left));
-        font-size: 14px;
-        padding: 8px 14px;
-      }
-
-      .window {
-        position: relative;
-        left: auto;
-        top: auto;
-        transform: none;
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-      }
-
-      .game-container {
-        padding: 10px;
-      }
-
-      #gameCanvas {
-        width: 100% !important;
-        max-width: 100%;
-        height: auto !important;
-        aspect-ratio: 650 / 500;
-      }
-
-      h1 {
-        font-size: 28px;
-        margin-bottom: 12px;
-      }
-
-      .jump-button {
-        bottom: max(12px, env(safe-area-inset-bottom));
-        width: min(200px, calc(100vw - 24px));
-        height: 52px;
-        font-size: 20px;
-      }
-
-      .settings-panel {
-        left: max(10px, env(safe-area-inset-left));
-        right: max(10px, env(safe-area-inset-right));
-        top: max(60px, env(safe-area-inset-top));
-        width: auto;
-        max-height: min(70vh, calc(100dvh - 80px));
-        overflow-y: auto;
-      }
-
-      .settings-toggle {
-        top: max(10px, env(safe-area-inset-top));
-        right: max(10px, env(safe-area-inset-right));
-      }
-
-      #score-display {
-        top: max(10px, env(safe-area-inset-top));
-        right: max(10px, env(safe-area-inset-right));
-        font-size: 18px;
-        padding: 6px 12px;
-      }
-    }
+  </style>
 </head>
-<body>
-  <a href="index.html" class="back-home-button">Back to Home</a>
+<body class="luna-page">
 
-  <div class="window">
-    <div class="title-bar">
-      <h1 style="margin: 0 auto;">Clouty Hops</h1>
+<main class="window luna-app hops-app" role="application" aria-label="Clouty Hops window">
+  <div class="title-bar">
+    <div class="title-bar-text">
+      <img src="icons/game_mine_1-0.png" alt="" width="16" height="16" style="vertical-align: text-bottom; margin-right: 6px; image-rendering: pixelated;" />
+      Clouty Hops
     </div>
-    <div class="game-container">
-      <canvas id="gameCanvas" width="650" height="500"></canvas>
-      <div id="score-display">Score: 0</div>
-    </div>
-  </div>
-
-  <button class="settings-toggle" onclick="toggleSettings()">⚙️</button>
-
-  <div class="settings-panel" id="settingsPanel">
-    <div class="settings-group">
-      <h3 style="margin-bottom: 15px; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Game Settings</h3>
-      <div class="settings-group">
-        <label for="gravity">Gravity: <span id="gravityValue">0.25</span></label>
-        <input type="range" id="gravity" min="0.1" max="0.5" step="0.05" value="0.25">
-      </div>
-      <div class="settings-group">
-        <label for="jumpForce">Jump Force: <span id="jumpForceValue">-6</span></label>
-        <input type="range" id="jumpForce" min="4" max="8" step="0.5" value="6">
-      </div>
-      <div class="settings-group">
-        <label for="gameSpeed">Game Speed: <span id="gameSpeedValue">2</span></label>
-        <input type="range" id="gameSpeed" min="1" max="5" step="0.5" value="2">
-      </div>
-      <div class="settings-group">
-        <label for="pipeGap">Pipe Gap: <span id="pipeGapValue">150</span></label>
-        <input type="range" id="pipeGap" min="100" max="200" step="10" value="150">
-      </div>
+    <div class="title-bar-controls">
+      <button type="button" aria-label="Close" title="Close and return to desktop" onclick="location.href='index.html'"></button>
     </div>
   </div>
+  <div class="game-container">
+    <canvas id="gameCanvas" width="650" height="500"></canvas>
+    <div id="score-display">Score: 0</div>
+  </div>
+  <div class="hops-actions">
+    <button type="button" class="button" id="resetButton" onclick="location.reload()">Play Again</button>
+  </div>
+  <div class="status-bar">
+    <p class="status-bar-field">Clouty Games</p>
+    <p class="status-bar-field">Hops</p>
+  </div>
+</main>
 
-  <button class="reset-button" id="resetButton" onclick="location.reload()">Play Again</button>
-  <div class="jump-button" id="jumpButton">JUMP!</div>
+<button type="button" class="button settings-toggle" onclick="toggleSettings()">Settings</button>
 
-  <script>
+<div class="window settings-panel" id="settingsPanel" role="dialog" aria-labelledby="hops-settings-title">
+  <div class="title-bar">
+    <div class="title-bar-text" id="hops-settings-title">Game Settings</div>
+    <div class="title-bar-controls">
+      <button type="button" aria-label="Close" onclick="toggleSettings()"></button>
+    </div>
+  </div>
+  <div class="window-body">
+    <fieldset class="settings-group">
+      <legend>Gravity</legend>
+      <label for="gravity">Gravity: <span class="value-display" id="gravityValue">0.25</span></label>
+      <input type="range" id="gravity" min="0.1" max="0.5" step="0.05" value="0.25">
+    </fieldset>
+    <fieldset class="settings-group">
+      <legend>Jump</legend>
+      <label for="jumpForce">Jump Force: <span class="value-display" id="jumpForceValue">-6</span></label>
+      <input type="range" id="jumpForce" min="4" max="8" step="0.5" value="6">
+    </fieldset>
+    <fieldset class="settings-group">
+      <legend>Speed</legend>
+      <label for="gameSpeed">Game Speed: <span class="value-display" id="gameSpeedValue">2</span></label>
+      <input type="range" id="gameSpeed" min="1" max="5" step="0.5" value="2">
+    </fieldset>
+    <fieldset class="settings-group">
+      <legend>Pipes</legend>
+      <label for="pipeGap">Pipe Gap: <span class="value-display" id="pipeGapValue">150</span></label>
+      <input type="range" id="pipeGap" min="100" max="200" step="10" value="150">
+    </fieldset>
+  </div>
+</div>
+
+<button type="button" class="luna-key jump-button" id="jumpButton">Jump</button>
+
+<script>
     // Game constants
     let GRAVITY = 0.15;
     let JUMP_FORCE = -4;
@@ -511,6 +198,10 @@
     let score = 0;
     let highScore = localStorage.getItem('highScore') || 0;
 
+    // Bird sprite: loaded once and reused every frame
+    const birdSprite = new Image();
+    birdSprite.src = 'horrid.png';
+
     // Bird object
     const bird = {
       x: 120, // Adjust for new canvas size
@@ -529,9 +220,9 @@
         ctx.rotate(this.rotation);
         
         // Draw bird image
-        const img = new Image();
-        img.src = 'horrid.png';
-        ctx.drawImage(img, -this.width/2, -this.height/2, this.width, this.height);
+        if (birdSprite.complete) {
+          ctx.drawImage(birdSprite, -this.width/2, -this.height/2, this.width, this.height);
+        }
         
         // Debug collision circle (comment out in production)
         // ctx.beginPath();

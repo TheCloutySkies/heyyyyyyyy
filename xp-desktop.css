@@ -509,3 +509,70 @@
     transition: none !important;
   }
 }
+
+
+/* xp.css asks for pixel fonts it does not ship; XP's own controls use Tahoma. */
+input,
+textarea,
+select,
+option,
+label {
+  font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+}
+
+/* ----- Tray clock (now a button: it opens Date and Time) ----- */
+
+#clock-tray {
+  font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+  cursor: pointer;
+  box-shadow: none;
+  outline: none;
+}
+
+#clock-tray:hover {
+  filter: brightness(1.08);
+}
+
+#clock-tray:active,
+#clock-tray[aria-expanded="true"] {
+  box-shadow: none;
+  filter: brightness(0.96);
+}
+
+#clock-tray:focus-visible {
+  outline: 1px dotted #fff;
+  outline-offset: -4px;
+}
+
+/* ----- Media facade: Spotify loads only when asked ----- */
+
+.spotify-iframe-wrapper {
+  height: auto;
+  min-height: 80px;
+  overflow: hidden;
+}
+
+.media-facade {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 80px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+}
+
+.media-facade-note {
+  margin: 0;
+  font-size: 11px;
+  color: #333;
+}
+
+@media (max-width: 380px) {
+  .media-facade {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    text-align: center;
+  }
+}

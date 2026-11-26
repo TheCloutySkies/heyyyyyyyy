@@ -8,13 +8,21 @@
   var STORAGE_KEY = "cloutyPrefs.v1";
 
   var DEFAULT_PREFS = {
-    theme: "light",
+    /* Luna's three official colour schemes: Default (Blue), Olive Green, Silver */
+    colorScheme: "blue",
     scheme: "standard",
     trailEnabled: false,
     trailLength: 48,
     trailSize: 5,
     trailGlow: 0.45,
     trailBlur: 0.25
+  };
+
+  /* theme-color for each scheme, so the browser chrome matches the desktop */
+  var SCHEME_COLOR = {
+    blue: "#4480f0",
+    olive: "#6f7c36",
+    silver: "#dcdce6"
   };
 
   function prefersReducedMotion() {
@@ -45,7 +53,13 @@
   }
 
   function loadPrefs() {
-    var stored = safeParse(localStorage.getItem(STORAGE_KEY));
+    var raw = null;
+    try {
+      raw = localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      /* Storage blocked (strict privacy mode): run on defaults. */
+    }
+    var stored = safeParse(raw);
     var merged = Object.assign({}, DEFAULT_PREFS, stored || {});
     if (prefersReducedMotion()) {
       merged.trailEnabled = false;
@@ -61,21 +75,11 @@
     }
   }
 
-  function updateThemeColor(dark) {
+  function applyColorScheme(prefs) {
+    var name = SCHEME_COLOR[prefs.colorScheme] ? prefs.colorScheme : "blue";
+    document.documentElement.setAttribute("data-scheme", name);
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) return;
-    meta.setAttribute("content", dark ? "#1a2740" : "#3d7d55");
-  }
-
-  function applyTheme(prefs) {
-    var dark = prefs.theme === "dark";
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    if (dark) {
-      document.documentElement.classList.add("clouty-scanlines");
-    } else {
-      document.documentElement.classList.remove("clouty-scanlines");
-    }
-    updateThemeColor(dark);
+    if (meta) meta.setAttribute("content", SCHEME_COLOR[name]);
   }
 
   function applyCursorScheme(prefs) {
@@ -218,7 +222,7 @@
   }
 
   function applyAll(prefs) {
-    applyTheme(prefs);
+    applyColorScheme(prefs);
     applyCursorScheme(prefs);
     applyTrail(prefs);
   }
@@ -233,8 +237,8 @@
   function syncFormFromPrefs(prefs) {
     var el;
 
-    el = document.getElementById("pref-use-dark");
-    if (el) el.checked = prefs.theme === "dark";
+    el = document.getElementById("pref-color-scheme");
+    if (el) el.value = SCHEME_COLOR[prefs.colorScheme] ? prefs.colorScheme : "blue";
 
     el = document.getElementById("pref-scheme");
     if (el) el.value = prefs.scheme in SCHEME_CSS ? prefs.scheme : "standard";
@@ -285,8 +289,8 @@
     var p = Object.assign({}, prev);
     var el;
 
-    el = document.getElementById("pref-use-dark");
-    if (el) p.theme = el.checked ? "dark" : "light";
+    el = document.getElementById("pref-color-scheme");
+    if (el && SCHEME_COLOR[el.value]) p.colorScheme = el.value;
 
     el = document.getElementById("pref-scheme");
     if (el && SCHEME_CSS[el.value]) p.scheme = el.value;
@@ -352,7 +356,7 @@
     }
 
     var ids = [
-      "pref-use-dark",
+      "pref-color-scheme",
       "pref-scheme",
       "pref-trail-on",
       "pref-trail-length",
