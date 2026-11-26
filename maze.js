@@ -281,6 +281,7 @@
   var abyssT = 0;
   var abyssScareT = 0;
   var abyssShaken = false;
+  var abyssLock = false;
 
   var faceImg = null;
   var faceReady = false;
@@ -1058,7 +1059,9 @@
     player.blink -= dt;
     if (player.blink < -0.12) player.blink = 2.4 + Math.random() * 1.2;
 
-    if (level === 0 && keys.left && player.onGround && player.x - PW / 2 <= 1.5) {
+    if (abyssLock && !keys.left) abyssLock = false;
+
+    if (level === 0 && !abyssLock && keys.left && player.onGround && player.x - PW / 2 <= 1.5) {
       beginAbyss();
       return;
     }
@@ -1703,6 +1706,7 @@
     abyssT = 0;
     abyssScareT = 0;
     abyssShaken = false;
+    abyssLock = false;
     cutT = 0;
     cutReady = false;
     launchT = 0;
@@ -2483,6 +2487,7 @@
     abyssT = 0;
     abyssScareT = 0;
     abyssShaken = false;
+    abyssLock = true;
     player.vx = 0;
     player.vy = 40;
     keys.left = false;
