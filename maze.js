@@ -163,6 +163,15 @@
   var sceneEl = null;
   var sceneFailed = false;
 
+  /* The uploaded track plays the whole game; the scream is decoded into the
+     unlocked AudioContext so it can never be silenced by autoplay rules. */
+  var screamBuffer = null;
+  var screamFetching = false;
+  var musicMode = "";
+  var musicFadeT = -1;
+  var MUSIC_LEVEL = 0.5;
+  var MUSIC_FADE = 0.6;
+
   var player = {
     x: 0,
     y: 0,
@@ -373,6 +382,7 @@
 
     canvas.addEventListener("pointerdown", function (e) {
       if (!isOpen) return;
+      resumeAudioIfNeeded();
       if (e.pointerType === "mouse" && e.button > 0) return;
       if (state === "cutscene") {
         e.preventDefault();
@@ -408,6 +418,7 @@
     el.addEventListener("pointerdown", function (e) {
       e.preventDefault();
       e.stopPropagation();
+      resumeAudioIfNeeded();
       pid = e.pointerId;
       el.classList.add("maze-down");
       try {
@@ -798,6 +809,7 @@
   function step(dt) {
     time += dt;
     updateParticles(dt);
+    updateMusicFade(dt);
 
     if (state === "dead") {
       deadT += dt;
@@ -1341,7 +1353,7 @@
     armAudio();
 
     loadLevel(0);
-    startMusic();
+    startPlayMusic();
 
     if (rafId) window.cancelAnimationFrame(rafId);
     rafId = window.requestAnimationFrame(frame);
@@ -1362,9 +1374,8 @@
     }
     if (toastEl) toastEl.classList.remove("maze-toast-on");
 
-    stopMusic();
+    stopAllMusic();
     stopScream();
-    stopSceneMusic();
 
     document.documentElement.classList.remove("maze-active");
 
@@ -1475,8 +1486,7 @@
         if (p && typeof p.catch === "function") p.catch(function () {});
       } catch (e) {}
     }
-    if (state === "cutscene") playSceneMusic();
-    else startMusic();
+    if (state !== "cutscene") resumePlayMusic();
   }
 
   /* ----- Keyboard and touch -------------------------------------------- */
@@ -1516,6 +1526,7 @@
 
   function onKeyDown(e) {
     if (!isOpen) return;
+    resumeAudioIfNeeded();
     var code = e.code || "";
     var key = e.key || "";
 
@@ -1642,6 +1653,16 @@
       audioCtx = null;
     }
     return audioCtx;
+  }
+
+  function resumeAudioIfNeeded() {
+    var ac = audioCtx;
+    if (!ac) return;
+    if (ac.state === "running") return;
+    try {
+      var p = ac.resume();
+      if (p && typeof p.catch === "function") p.catch(function () {});
+    } catch (e) {}
   }
 
   function noiseBuffer(ac) {
@@ -1917,10 +1938,46 @@
         sceneFailed = true;
       }
     }
+
+    /* Decode the scream into the context unlocked by this same click. */
+    if (ac && !screamBuffer && !screamFetching) {
+      screamFetching = true;
+      try {
+        window
+          .fetch("scream.mp3?v=2")
+          .then(function (res) {
+            return res.arrayBuffer();
+          })
+          .then(function (data) {
+            ac.decodeAudioData(
+              data,
+              function (decoded) {
+                screamBuffer = decoded;
+              },
+              function () {
+                screamFetching = false;
+              }
+            );
+          })
+          .catch(function () {
+            screamFetching = false;
+          });
+      } catch (e) {
+        screamFetching = false;
+      }
+    }
   }
 
   function finishSceneUnlock() {
     if (!sceneEl) return;
+    /* The game music has already taken over this element: keep it playing. */
+    if (musicMode === "track") {
+      try {
+        sceneEl.muted = false;
+        sceneEl.volume = MUSIC_LEVEL;
+      } catch (e) {}
+      return;
+    }
     if (state === "cutscene" || state === "launch" || state === "scare") return;
     try {
       sceneEl.pause();
@@ -1940,6 +1997,25 @@
   }
 
   function playScream() {
+    var ac = audioCtx;
+    if (ac && screamBuffer) {
+      try {
+        if (ac.state === "suspended") {
+          var r = ac.resume();
+          if (r && typeof r.catch === "function") r.catch(function () {});
+        }
+        var src = ac.createBufferSource();
+        src.buffer = screamBuffer;
+        var gain = ac.createGain();
+        gain.gain.value = 1;
+        src.connect(gain);
+        gain.connect(ac.destination);
+        src.start(0);
+        screamNodes.push(src, gain);
+        return;
+      } catch (e) {}
+    }
+
     var started = false;
     if (screamEl) {
       try {
@@ -1957,7 +2033,17 @@
         started = false;
       }
     }
-    if (!started) startSynthShriek();
+    if (!started) {
+      startSynthShriek();
+      return;
+    }
+    /* If the file never actually sounds, shriek anyway. */
+    window.setTimeout(function () {
+      if (!screamEl) return;
+      if (screamEl.paused || screamEl.muted || screamEl.currentTime < 0.05) {
+        startSynthShriek();
+      }
+    }, 400);
   }
 
   function stopScream() {
@@ -2099,46 +2185,91 @@
       scareImg.style.transform = "";
     }
 
-    stopMusic();
-    if (musicMaster && audioCtx) {
-      try {
-        musicMaster.gain.cancelScheduledValues(audioCtx.currentTime);
-        musicMaster.gain.setValueAtTime(0, audioCtx.currentTime);
-      } catch (e) {}
-    }
-
-    playSceneMusic();
+    /* Reaching the prize takes the music away: silence under the panel, so the
+       scream is the only thing left to hear. */
+    fadeOutMusic();
   }
 
-  /* The custom scene track; if it never arrived, the music box plays quietly
-     under the panel instead. */
-  function playSceneMusic() {
+  /* Music runs from the moment the game opens, through every level. Reaching
+     the prize fades it to silence, so the scream is the only thing left. */
+  function startPlayMusic() {
+    musicFadeT = -1;
     if (sceneEl && !sceneFailed) {
       try {
         sceneEl.muted = false;
-        sceneEl.volume = 0.5;
+        sceneEl.volume = MUSIC_LEVEL;
         sceneEl.currentTime = 0;
         var p = sceneEl.play();
         if (p && typeof p.then === "function") {
           p.catch(function () {
             sceneFailed = true;
-            startMusic();
-            if (musicMaster && audioCtx) {
-              try {
-                musicMaster.gain.setValueAtTime(0.28, audioCtx.currentTime);
-              } catch (e) {}
-            }
+            startBoxMusic();
           });
         }
+        musicMode = "track";
         return;
       } catch (e) {
         sceneFailed = true;
       }
     }
+    startBoxMusic();
+  }
+
+  function startBoxMusic() {
+    musicMode = "box";
     startMusic();
     if (musicMaster && audioCtx) {
       try {
-        musicMaster.gain.setValueAtTime(0.28, audioCtx.currentTime);
+        musicMaster.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      } catch (e) {}
+    }
+  }
+
+  function resumePlayMusic() {
+    musicFadeT = -1;
+    if (musicMode === "track" && sceneEl && !sceneFailed) {
+      try {
+        sceneEl.muted = false;
+        sceneEl.volume = MUSIC_LEVEL;
+        var p = sceneEl.play();
+        if (p && typeof p.then === "function") {
+          p.catch(function () {});
+        }
+        return;
+      } catch (e) {}
+    }
+    if (musicMode === "box") startBoxMusic();
+  }
+
+  function fadeOutMusic() {
+    if (musicFadeT >= 0) return;
+    musicFadeT = 0;
+  }
+
+  function updateMusicFade(dt) {
+    if (musicFadeT < 0) return;
+    musicFadeT += dt;
+    var k = clamp01(musicFadeT / MUSIC_FADE);
+    if (musicMode === "track" && sceneEl) {
+      try {
+        sceneEl.volume = MUSIC_LEVEL * (1 - k);
+      } catch (e) {}
+    } else if (musicMode === "box" && musicMaster && audioCtx) {
+      try {
+        musicMaster.gain.setValueAtTime(0.3 * (1 - k), audioCtx.currentTime);
+      } catch (e) {}
+    }
+    if (k >= 1) stopAllMusic();
+  }
+
+  function stopAllMusic() {
+    musicFadeT = -1;
+    stopMusic();
+    stopSceneMusic();
+    if (musicMaster && audioCtx) {
+      try {
+        musicMaster.gain.cancelScheduledValues(audioCtx.currentTime);
+        musicMaster.gain.setValueAtTime(0, audioCtx.currentTime);
       } catch (e) {}
     }
   }
@@ -2176,7 +2307,7 @@
     state = "launch";
     launchT = 0;
 
-    stopSceneMusic();
+    stopAllMusic();
     if (overlay) {
       overlay.classList.remove("maze-cut-on");
       overlay.classList.add("maze-scare-on");
