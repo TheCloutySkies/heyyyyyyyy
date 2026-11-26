@@ -119,9 +119,9 @@
     }
   </style>
   <link rel="stylesheet" href="clouty-prefs.css?v=2" />
-  <link rel="stylesheet" href="xp-desktop.css?v=3" />
+  <link rel="stylesheet" href="xp-desktop.css?v=4" />
   <link rel="stylesheet" href="xp-datetime.css?v=3" />
-  <link rel="stylesheet" href="luna.css?v=3" />
+  <link rel="stylesheet" href="luna.css?v=4" />
 </head>
 <body>
   <div id="wallpaper" class="blur-target"></div>
@@ -145,7 +145,7 @@
             <button type="button" class="wl-name" id="wl-name">Administrator</button>
             <p class="wl-sub">Type your password</p>
             <div class="wl-password">
-              <input id="wl-password" type="password" autocomplete="off" aria-label="Password" />
+              <input id="wl-password" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" aria-label="Password" />
               <button type="button" class="wl-go" id="wl-go" aria-label="Log on"></button>
             </div>
           </div>
@@ -524,7 +524,7 @@
 
   <script src="desktop-config.js?v=2"></script>
   <script src="clouty-prefs.js?v=2"></script>
-  <script src="xp-desktop.js?v=3"></script>
+  <script src="xp-desktop.js?v=4"></script>
   <script src="xp-datetime.js?v=3"></script>
   <script>
     (function () {
@@ -580,13 +580,22 @@
         if (window.CloutyDesktop && window.CloutyDesktop.setLayoutMode) {
           window.CloutyDesktop.setLayoutMode("desktop");
         }
+        if (password) password.value = "";
         showDesktop();
       }
 
       window.finishBoot = logOn;
 
       if (go) go.addEventListener("click", logOn);
+      var passwordTyped = false;
       if (password) {
+        /* A password manager may prefill the box; clear that on first focus */
+        password.addEventListener("input", function () {
+          passwordTyped = true;
+        });
+        password.addEventListener("focus", function () {
+          if (!passwordTyped && password.value) password.value = "";
+        });
         password.addEventListener("keydown", function (e) {
           if (e.key !== "Enter") return;
           e.preventDefault();

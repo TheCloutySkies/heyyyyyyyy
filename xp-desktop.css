@@ -151,6 +151,23 @@
   max-height: none;
 }
 
+/* Show where to drag to make the game bigger */
+.shell-window.pip-shell::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  background-image: linear-gradient(135deg, transparent 44%, #7d8a9c 44%, #7d8a9c 56%, transparent 56%),
+    linear-gradient(135deg, transparent 72%, #7d8a9c 72%, #7d8a9c 82%, transparent 82%);
+}
+
+.shell-window.pip-shell.is-maximized::after {
+  content: none;
+}
+
 .shell-window.pip-shell .pip-frame-body {
   padding: 0 !important;
   flex: 1;

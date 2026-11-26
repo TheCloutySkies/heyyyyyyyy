@@ -308,7 +308,7 @@
     win.querySelector(".title-bar-text").textContent = title;
     /* embed=1 drops the game page's own window frame, so it is one window, not two */
     win.querySelector("iframe").src =
-      href + (href.indexOf("?") === -1 ? "?" : "&") + "embed=1&v=3";
+      href + (href.indexOf("?") === -1 ? "?" : "&") + "embed=1&v=4";
     layer.appendChild(win);
     attachShellWindowChrome(win);
     initPipWindowSize(win);
