@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Watch - Clouty Skies</title>
-  <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+  <link rel="stylesheet" href="vendor/xp.css" />
+  <link rel="stylesheet" href="luna.css" />
   <style>
     body {
-      background: #245EDC url('https://thumbs.dreamstime.com/b/youtube-computer-version-social-media-video-channel-online-interface-screen-template-vector-illustration-145752766.jpg') center/cover fixed;
+      background: #245EDC url('wallpaper.jpg') center/cover fixed;
       min-height: 100vh;
       margin: 0;
       display: flex;
@@ -93,6 +94,26 @@
       width: 16px;
       height: 16px;
     }
+    .yt-facade {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      aspect-ratio: 16/9;
+      border: 1px solid #919b9c;
+      background: #1f1f1f;
+      color: #fff;
+      text-align: center;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .yt-facade .yt-note {
+      margin: 0;
+      font-size: 11px;
+      color: #cfcfcf;
+      max-width: 34ch;
+    }
   </style>
 </head>
 <body>
@@ -104,7 +125,7 @@
       </div>
     </div>
     <div class="window-body">
-      <img src="https://win98icons.alexmeub.com/icons/png/system_restore-4.png" alt="" />
+      <img src="icons/system_restore-4.png" alt="" />
       Back to Home
     </div>
   </a>
@@ -120,25 +141,31 @@
     <div class="window-body">
       <div class="channel-buttons">
         <button onclick="window.open('https://www.youtube.com/@CloutySkies', '_blank')">
-          <img src="https://win98icons.alexmeub.com/icons/png/camera3_vid-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
+          <img src="icons/camera3_vid-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
           Main Channel
         </button>
         <button onclick="window.open('https://www.youtube.com/@CloutySkies2', '_blank')">
-          <img src="https://win98icons.alexmeub.com/icons/png/camera3_network-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
+          <img src="icons/camera3_network-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
           Second Channel
         </button>
       </div>
       <div class="channel-embed">
-        <iframe style="width:100%;aspect-ratio:16/9;border:1px solid #919b9c;" src="https://www.youtube.com/embed/videoseries?list=UUlGZ1mVWqeLSfKySDC-DS0Q" title="Main Channel" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <div class="yt-facade" data-yt-src="https://www.youtube.com/embed/videoseries?list=UUlGZ1mVWqeLSfKySDC-DS0Q" data-yt-title="Main Channel">
+          <button type="button" class="button" data-yt-load>Load the channel</button>
+          <span class="yt-note">YouTube loads only when you click — nothing third-party before that.</span>
+        </div>
         <div class="channel-label">
-          <img src="https://win98icons.alexmeub.com/icons/png/video_-1.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
+          <img src="icons/video_-1.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
           Main Channel - More "Cinematic" Content
         </div>
       </div>
       <div class="channel-embed">
-        <iframe style="width:100%;aspect-ratio:16/9;border:1px solid #919b9c;" src="https://www.youtube.com/embed/videoseries?list=UUQZChf2yw5yPupP8W2y_Yyg" title="Second Channel" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <div class="yt-facade" data-yt-src="https://www.youtube.com/embed/videoseries?list=UUQZChf2yw5yPupP8W2y_Yyg" data-yt-title="Second Channel">
+          <button type="button" class="button" data-yt-load>Load the channel</button>
+          <span class="yt-note">YouTube loads only when you click — nothing third-party before that.</span>
+        </div>
         <div class="channel-label">
-          <img src="https://win98icons.alexmeub.com/icons/png/video_-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
+          <img src="icons/video_-2.png" style="width:16px;height:16px;vertical-align:bottom;margin-right:4px;" />
           Second Channel - The Goofier Side
         </div>
       </div>
@@ -148,6 +175,30 @@
       <p class="status-bar-field">© Clouty Skies</p>
     </div>
   </div>
+  <script>
+    (function () {
+      document.querySelectorAll(".yt-facade[data-yt-src]").forEach(function (facade) {
+        var button = facade.querySelector("[data-yt-load]");
+        if (!button) return;
+        button.addEventListener("click", function () {
+          var frame = document.createElement("iframe");
+          frame.src = facade.getAttribute("data-yt-src");
+          frame.title = facade.getAttribute("data-yt-title") || "YouTube";
+          frame.setAttribute("allowfullscreen", "");
+          frame.setAttribute(
+            "allow",
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          );
+          frame.style.cssText = "width:100%;aspect-ratio:16/9;border:1px solid #919b9c;";
+          facade.innerHTML = "";
+          facade.style.padding = "0";
+          facade.style.background = "transparent";
+          facade.style.border = "0";
+          facade.appendChild(frame);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
 

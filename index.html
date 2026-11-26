@@ -5,22 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Clouty Skies</title>
 
-  <meta name="description" content="Clouty Skies — Windows XP–style personal site, games, blog, and portfolio." />
+  <meta name="description" content="The Official Website of Artist and Content Creator, Clouty Skies!" />
+  <meta name="referrer" content="no-referrer" />
   <meta property="og:title" content="Clouty Skies" />
+  <meta property="og:description" content="The Official Website of Artist and Content Creator, Clouty Skies!" />
   <meta property="og:image" content="/Net003_result.png" />
   <meta property="og:type" content="website" />
 
   <link rel="icon" type="image/png" sizes="32x32" href="/Net003.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="Img29_(Windows_Vista).jpg" />
-  <meta name="theme-color" content="#3d7d55" />
+  <meta name="theme-color" content="#4480f0" />
 
-  <link rel="preload" as="image" href="https://upload.wikimedia.org/wikipedia/en/7/7d/Bliss.png" crossorigin="anonymous" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet" />
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preload" as="image" href="wallpaper.jpg" />
 
   <script>
     (function () {
@@ -29,17 +25,28 @@
       } catch (e) {}
       document.documentElement.classList.remove("layout-portal");
       document.documentElement.classList.add("layout-desktop");
+      /* Luna colour scheme, set before first paint so olive/silver never flash blue */
+      try {
+        var stored = JSON.parse(localStorage.getItem("cloutyPrefs.v1") || "null");
+        var scheme = stored && stored.colorScheme;
+        document.documentElement.setAttribute(
+          "data-scheme",
+          scheme === "olive" || scheme === "silver" ? scheme : "blue"
+        );
+      } catch (e) {
+        document.documentElement.setAttribute("data-scheme", "blue");
+      }
     })();
   </script>
 
-  <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+  <link rel="stylesheet" href="vendor/xp.css" />
 
   <style>
     :root {
       --xp-blue: #245EDC;
-      --bliss-image: url("https://upload.wikimedia.org/wikipedia/en/7/7d/Bliss.png");
-      /* Hills / sky sampled from Bliss — avoids a flat blue flash before the photo loads */
-      --desktop-bg-fallback: #5a9270;
+      --bliss-image: url("wallpaper.jpg");
+      /* Sky sampled from the wallpaper — avoids a flat flash before it loads */
+      --desktop-bg-fallback: #4480f0;
     }
 
     html,
@@ -90,55 +97,6 @@
       transition: filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    /* Early-web / CRT vibe over Bliss — sits behind shell UI (z-order) */
-    .retro-welcome {
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: max(clamp(56px, 12vmin, 180px), env(safe-area-inset-top));
-      z-index: 1;
-      margin: 0;
-      padding: 0 max(14px, env(safe-area-inset-left), env(safe-area-inset-right));
-      box-sizing: border-box;
-      text-align: center;
-      pointer-events: none;
-      font-family: "VT323", "Courier New", Courier, monospace;
-      font-weight: 400;
-      font-size: clamp(1.35rem, 4.8vw, 2.85rem);
-      line-height: 1.1;
-      letter-spacing: 0.04em;
-      max-width: 100vw;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      hyphens: manual;
-      color: #e8fff0;
-      text-transform: uppercase;
-      text-shadow:
-        0 0 2px #000,
-        0 0 24px rgba(0, 60, 30, 0.55),
-        2px 2px 0 #0a2918,
-        -1px -1px 0 #000,
-        3px 3px 0 rgba(0, 0, 0, 0.35);
-    }
-
-    html[data-theme="dark"] .retro-welcome {
-      color: #c9ffe8;
-      text-shadow:
-        0 0 2px #000,
-        0 0 18px rgba(80, 200, 150, 0.35),
-        2px 2px 0 #041208,
-        -1px -1px 0 #000;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .retro-welcome {
-        text-shadow:
-          0 0 1px #000,
-          2px 2px 0 #0a2918,
-          -1px -1px 0 #000;
-      }
-    }
-
     #boot {
       position: fixed;
       inset: 0;
@@ -157,26 +115,6 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-    }
-
-    .term-embed {
-      background: #000;
-      border: 1px solid #7f9db9;
-      height: min(55vh, 420px);
-      position: relative;
-    }
-
-    .term-embed iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      filter: grayscale(1) contrast(1.2) sepia(0.2) invert(0);
-    }
-
-    #notes-canvas {
-      position: relative;
-      min-height: 140px;
-      overflow: hidden;
     }
 
     .spotify-iframe-wrapper {
@@ -198,6 +136,8 @@
   </style>
   <link rel="stylesheet" href="clouty-prefs.css" />
   <link rel="stylesheet" href="xp-desktop.css" />
+  <link rel="stylesheet" href="xp-datetime.css" />
+  <link rel="stylesheet" href="luna.css" />
 </head>
 <body>
   <div id="wallpaper" class="blur-target"></div>
@@ -208,16 +148,16 @@
       <div class="title-bar">
         <div class="title-bar-text" id="boot-title">CloutOS Boot Manager</div>
         <div class="title-bar-controls">
-          <button type="button" aria-label="Close" id="boot-close"></button>
+          <button type="button" aria-label="Close" id="boot-close" onclick="this.closest('#boot').style.display='none';document.querySelectorAll('.blur-target').forEach(function(el){el.classList.remove('blur-target');});"></button>
         </div>
       </div>
       <div class="window-body">
         <div style="text-align: center; margin-bottom: 12px; margin-top: 4px;">
-          <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer_2k-4.png" alt="" width="48" style="image-rendering:pixelated; margin-bottom:8px;">
+          <img src="icons/computer_explorer_2k-4.png" alt="" width="48" style="image-rendering:pixelated; margin-bottom:8px;">
           <p style="margin:0; font-size:14px;">Welcome to CloutOS.</p>
         </div>
         <div class="field-row" style="margin-bottom: 14px; flex-direction: column; align-items: stretch; gap: 8px;">
-          <button type="button" class="button" id="btn-boot-continue" style="width:100%;">Login as Guest</button>
+          <button type="button" class="button" id="btn-boot-continue" style="width:100%;" onclick="this.closest('#boot').style.display='none';document.querySelectorAll('.blur-target').forEach(function(el){el.classList.remove('blur-target');});">Login as Guest</button>
         </div>
       </div>
     </div>
@@ -228,31 +168,31 @@
       <div id="desktop-icon-layer" aria-label="Desktop shortcuts">
         <div class="desktop-icon" data-icon-id="about" tabindex="0" role="group" aria-label="About shortcut">
           <a href="about.html">
-            <img src="https://win98icons.alexmeub.com/icons/png/certificate_2-0.png" alt="" width="40" height="40" />
+            <img src="icons/certificate_2-0.png" alt="" width="40" height="40" />
             <span class="caption">About</span>
           </a>
         </div>
         <div class="desktop-icon" data-icon-id="blog" tabindex="0" role="group" aria-label="Blog shortcut">
-          <a href="https://blog.cloutyskies.org" target="_blank" rel="noopener">
-            <img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png" alt="" width="40" height="40" />
+          <a href="https://blog.cloutyskies.org/" target="_blank" rel="noopener noreferrer">
+            <img src="icons/notepad_file-0.png" alt="" width="40" height="40" />
             <span class="caption">Blog</span>
           </a>
         </div>
         <div class="desktop-icon" data-icon-id="research" tabindex="0" role="group" aria-label="Research shortcut">
-          <a href="https://thecloutyskies.github.io/Clouty-Skies-Research-Institute/" target="_blank" rel="noopener">
-            <img src="https://win98icons.alexmeub.com/icons/png/world-0.png" alt="" width="40" height="40" />
+          <a href="https://thecloutyskies.github.io/Clouty-Skies-Research-Institute/" target="_blank" rel="noopener noreferrer">
+            <img src="icons/world-0.png" alt="" width="40" height="40" />
             <span class="caption">Research</span>
           </a>
         </div>
         <div class="desktop-icon" data-icon-id="portfolio" tabindex="0" role="group" aria-label="Portfolio shortcut">
-          <a id="link-portfolio" href="https://portfolio.cloutyskies.org" target="_blank" rel="noopener">
-            <img src="https://win98icons.alexmeub.com/icons/png/camera-0.png" alt="" width="40" height="40" />
+          <a id="link-portfolio" href="https://cloutyskiesproductions.cowsite.net/" target="_blank" rel="noopener noreferrer">
+            <img src="icons/camera-0.png" alt="" width="40" height="40" />
             <span class="caption">Portfolio</span>
           </a>
         </div>
         <div class="desktop-icon" data-icon-id="watch" tabindex="0" role="group" aria-label="Watch shortcut">
           <a href="watch.html">
-            <img src="https://win98icons.alexmeub.com/icons/png/wm-2.png" alt="" width="40" height="40" />
+            <img src="icons/wm-2.png" alt="" width="40" height="40" />
             <span class="caption">Watch</span>
           </a>
         </div>
@@ -262,54 +202,102 @@
 
       <div id="window-layer">
         <section
-          class="window shell-window hero-wall"
-          id="win-notes"
+          class="window shell-window"
+          id="win-datetime"
           data-minimized="true"
-          style="left: 8%; top: 72px; width: min(380px, 94vw);"
+          aria-labelledby="dt-title"
         >
           <div class="title-bar">
-            <div class="title-bar-text">Sticky Notes</div>
+            <div class="title-bar-text" id="dt-title">Date and Time Properties</div>
             <div class="title-bar-controls">
-              <button type="button" aria-label="Minimize" data-minimize="notes"></button>
-              <button type="button" aria-label="Close" data-notes-close></button>
+              <button type="button" aria-label="Minimize" data-minimize="datetime"></button>
+              <button type="button" aria-label="Close" data-minimize="datetime"></button>
             </div>
           </div>
-          <div class="window-body">
-            <form id="note-form" class="field-row" style="gap:6px; margin-bottom:8px;">
-              <input id="note-input" type="text" style="flex:1" placeholder="Type a note…" maxlength="100" />
-              <select id="note-color">
-                <option value="#fff8b0">Yellow</option>
-                <option value="#c9f5ff">Blue</option>
-                <option value="#d5ffd3">Green</option>
-              </select>
-              <button type="submit">Pin</button>
-            </form>
-            <div id="notes-canvas"></div>
-          </div>
-        </section>
-
-        <section
-          class="window shell-window hero-wall"
-          id="win-cloutai"
-          data-minimized="true"
-          style="right: 5%; top: 120px; left: auto; width: min(520px, 96vw);"
-        >
-          <div class="title-bar">
-            <div class="title-bar-text">CloutAI Interface</div>
-            <div class="title-bar-controls">
-              <button type="button" aria-label="Minimize" data-minimize="cloutai"></button>
-              <button type="button" aria-label="Close" data-cloutai-close></button>
+          <menu role="tablist" aria-label="Date and time">
+            <button type="button" role="tab" id="dt-tab-datetime" aria-selected="true" aria-controls="dt-panel-datetime">Date &amp; Time</button>
+            <button type="button" role="tab" id="dt-tab-zone" aria-selected="false" aria-controls="dt-panel-zone" tabindex="-1">Time Zone</button>
+            <button type="button" role="tab" id="dt-tab-internet" aria-selected="false" aria-controls="dt-panel-internet" tabindex="-1">Internet Time</button>
+          </menu>
+          <section role="tabpanel" id="dt-panel-datetime" aria-labelledby="dt-tab-datetime">
+            <div class="dt-page">
+              <div class="dt-columns">
+                <fieldset class="dt-group">
+                  <legend>Date</legend>
+                  <div class="dt-date-head">
+                    <select id="dt-month" aria-label="Month"></select>
+                    <span class="dt-year">
+                      <input id="dt-year" type="text" inputmode="numeric" aria-label="Year" />
+                      <span class="dt-year-spin">
+                        <button type="button" data-dt-year="1" aria-label="Next year"></button>
+                        <button type="button" data-dt-year="-1" aria-label="Previous year"></button>
+                      </span>
+                    </span>
+                  </div>
+                  <div class="dt-calendar">
+                    <div class="dt-weekdays" aria-hidden="true">
+                      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+                    <div class="dt-grid" id="dt-grid" role="grid" aria-label="Calendar days"></div>
+                  </div>
+                </fieldset>
+                <fieldset class="dt-group dt-group--time">
+                  <legend>Time</legend>
+                  <svg class="dt-clock" viewBox="0 0 120 120" width="115" height="115" role="img" aria-label="Analog clock">
+                    <circle cx="60" cy="60" r="57" fill="#fff" stroke="#c8c8c8" stroke-width="1" />
+                    <circle cx="60" cy="60" r="56" fill="none" stroke="#909090" stroke-width="1" stroke-dasharray="1 3" />
+                    <g id="dt-marks" aria-hidden="true"></g>
+                    <g aria-hidden="true">
+                      <line class="dt-hand dt-hand--shadow dt-hand--hour" x1="60" y1="60" x2="60" y2="60" />
+                      <line class="dt-hand dt-hand--shadow dt-hand--minute" x1="60" y1="60" x2="60" y2="60" />
+                      <line class="dt-hand dt-hand--hour" x1="60" y1="60" x2="60" y2="60" />
+                      <line class="dt-hand dt-hand--minute" x1="60" y1="60" x2="60" y2="60" />
+                      <circle class="dt-pivot" cx="60" cy="60" r="2.5" />
+                    </g>
+                  </svg>
+                  <div class="dt-time-field">
+                    <input id="dt-time" type="text" readonly aria-label="Time" />
+                    <span class="dt-time-spin">
+                      <button type="button" aria-label="Later" title="Your browser cannot change the system clock" disabled></button>
+                      <button type="button" aria-label="Earlier" title="Your browser cannot change the system clock" disabled></button>
+                    </span>
+                  </div>
+                </fieldset>
+              </div>
+              <p class="dt-zone-line">Current time zone: <span id="dt-zone-name"></span></p>
             </div>
-          </div>
-          <div class="window-body" style="padding:0; overflow:hidden;">
-            <div style="background:#000; color:#0f0; padding:6px; font-family:Consolas, monospace; border-bottom:1px solid #333; line-height:1.4;">
-              <div>CloutySkiesOS [Version 8.68]</div>
-              <div>(C) Copyright 2023-2026 Clouty Skies Research Institute.</div>
-              <br />
+          </section>
+          <section role="tabpanel" id="dt-panel-zone" aria-labelledby="dt-tab-zone" hidden>
+            <div class="dt-page">
+              <fieldset class="dt-group dt-group--wide">
+                <legend>Time zone</legend>
+                <p class="dt-readonly" id="dt-zone-readonly"></p>
+                <p class="dt-note">A web page cannot change your computer&rsquo;s clock or time zone, so this is read-only.</p>
+              </fieldset>
             </div>
-            <div class="term-embed">
-              <iframe id="iframe-cloutai" title="CloutAI" loading="lazy"></iframe>
+          </section>
+          <section role="tabpanel" id="dt-panel-internet" aria-labelledby="dt-tab-internet" hidden>
+            <div class="dt-page">
+              <fieldset class="dt-group dt-group--wide">
+                <legend>Internet time</legend>
+                <div class="field-row" style="align-items:center; gap:6px;">
+                  <input type="checkbox" id="dt-internet-sync" checked disabled />
+                  <label for="dt-internet-sync">Automatically synchronize with an Internet time server</label>
+                </div>
+                <div class="field-row" style="margin-top:8px;">
+                  <select id="dt-internet-server" aria-label="Server" disabled>
+                    <option>time.windows.com</option>
+                  </select>
+                  <button type="button" class="button" disabled>Update Now</button>
+                </div>
+                <p class="dt-note">Synchronizing is handled by your operating system.</p>
+              </fieldset>
             </div>
+          </section>
+          <div class="window-body dt-footer">
+            <button type="button" class="button" id="dt-ok" data-dt-close>OK</button>
+            <button type="button" class="button" id="dt-cancel" data-dt-close>Cancel</button>
+            <button type="button" class="button" id="dt-apply" disabled>Apply</button>
           </div>
         </section>
       </div>
@@ -328,9 +316,17 @@
           aria-controls="spotify-tray-popout"
           title="Music Player"
         >
-          <img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" width="20" height="20" style="image-rendering: pixelated; display: block;" />
+          <img src="icons/cd_audio_cd_a-3.png" alt="" width="20" height="20" style="image-rendering: pixelated; display: block;" />
         </button>
-        <div id="clock-tray" role="timer" aria-live="polite" aria-atomic="true"></div>
+        <button
+          type="button"
+          id="clock-tray"
+          class="taskbar-tray-clock"
+          aria-haspopup="dialog"
+          aria-controls="win-datetime"
+          title="Date and time"
+          aria-label="Date and time properties"
+        ></button>
       </div>
     </nav>
 
@@ -345,7 +341,7 @@
     >
       <div class="title-bar">
         <div class="title-bar-text" id="spotify-tray-title">
-          <img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" style="width:16px; height:16px; vertical-align:middle; margin-right:4px; image-rendering:pixelated;" />
+          <img src="icons/cd_audio_cd_a-3.png" alt="" style="width:16px; height:16px; vertical-align:middle; margin-right:4px; image-rendering:pixelated;" />
           Music Player
         </div>
         <div class="title-bar-controls">
@@ -353,65 +349,68 @@
         </div>
       </div>
       <div class="window-body" style="padding: 0;">
-        <div class="spotify-iframe-wrapper">
-          <iframe id="iframe-spotify" title="Spotify" style="border-radius:0; border:0;" width="100%" height="80" loading="lazy"></iframe>
+        <div class="spotify-iframe-wrapper" id="spotify-slot">
+          <div class="media-facade" id="spotify-facade">
+            <button type="button" class="button" id="btn-load-spotify">Load the player</button>
+            <span class="media-facade-note">Spotify loads only when you ask — nothing third-party before that.</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="start-menu" hidden role="menu" aria-label="Start menu">
       <div class="start-menu-header">
-        <img src="https://win98icons.alexmeub.com/icons/png/user-0.png" alt="" />
         <span>Guest</span>
       </div>
       <div class="start-menu-body">
         <div class="start-item has-children" data-flyout="media">
           <button type="button" class="start-btn" aria-expanded="false" aria-haspopup="true" aria-controls="start-flyout-media">
-            <img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" />
+            <img src="icons/cd_audio_cd_a-3.png" alt="" />
             <span>Media</span>
           </button>
         </div>
         <div class="start-item has-children" data-flyout="games">
           <button type="button" class="start-btn" aria-expanded="false" aria-haspopup="true" aria-controls="start-flyout-games">
-            <img src="https://win98icons.alexmeub.com/icons/png/joystick-5.png" alt="" />
+            <img src="icons/joystick-5.png" alt="" />
             <span>Games</span>
           </button>
         </div>
         <div class="start-item">
-          <button type="button" class="start-btn" data-open-app="notes">
-            <img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png" alt="" />
-            <span>Sticky Notes</span>
-          </button>
-        </div>
-        <div class="start-item">
-          <a class="start-btn" href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank" rel="noopener" role="menuitem" style="text-decoration:none;">
-            <img src="https://win98icons.alexmeub.com/icons/png/network_internet_pcs_installer-2.png" alt="" />
+          <a class="start-btn" href="https://www.redbubble.com/people/cloutyskies/shop" target="_blank" rel="noopener noreferrer" role="menuitem" style="text-decoration:none;">
+            <img src="icons/network_internet_pcs_installer-2.png" alt="" />
             <span>Merch</span>
           </a>
         </div>
         <div class="start-item">
-          <button type="button" class="start-btn" data-action="help-cloutai">
-            <img src="https://win98icons.alexmeub.com/icons/png/help_book_cool-3.png" alt="" />
-            <span>Help</span>
+          <button type="button" class="start-btn" data-open-settings aria-label="Display and Mouse settings">
+            <img src="icons/system_restore-4.png" alt="" />
+            <span>Control Panel</span>
           </button>
         </div>
       </div>
 
       <div id="start-flyout-media" class="start-flyout start-flyout--detached" role="menu" hidden>
-        <a href="https://www.youtube.com/@CloutySkies" target="_blank" rel="noopener" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/camera3_vid-2.png" alt="" />YouTube</a>
-        <a href="https://www.youtube.com/@CloutySkiesTV" target="_blank" rel="noopener" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/camera3_vid-2.png" alt="" />YouTube · CloutySkies TV</a>
-        <a href="https://www.instagram.com/thecloutyskies" target="_blank" rel="noopener" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/network_cool_two_pcs-0.png" alt="" />Instagram</a>
-        <a href="https://www.instagram.com/clouty_skies_photography/" target="_blank" rel="noopener" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/camera-0.png" alt="" />Instagram · Photography</a>
-        <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank" rel="noopener" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-3.png" alt="" />Spotify</a>
+        <a href="https://www.youtube.com/@CloutySkies" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/camera3_vid-2.png" alt="" />YouTube</a>
+        <a href="https://www.youtube.com/@CloutySkiesTV" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/camera3_vid-2.png" alt="" />YouTube · CloutySkies TV</a>
+        <a href="https://www.instagram.com/thecloutyskies" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/network_cool_two_pcs-0.png" alt="" />Instagram</a>
+        <a href="https://www.instagram.com/clouty_skies_photography/" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/camera-0.png" alt="" />Instagram · Photography</a>
+        <a href="https://open.spotify.com/artist/3QbHatr8OY2onxDhLD4dmC" target="_blank" rel="noopener noreferrer" role="menuitem"><img src="icons/cd_audio_cd_a-3.png" alt="" />Spotify</a>
       </div>
       <div id="start-flyout-games" class="start-flyout start-flyout--detached" role="menu" hidden>
-        <a href="tetris.html" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/defragment-0.png" alt="" />Cloutris</a>
-        <a href="clouty-hops.html" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/game_mine_1-0.png" alt="" />Hops</a>
-        <a href="tic.html" role="menuitem"><img src="https://win98icons.alexmeub.com/icons/png/joystick-5.png" alt="" />TicTac</a>
+        <a href="tetris.html" role="menuitem"><img src="icons/defragment-0.png" alt="" />Cloutris</a>
+        <a href="clouty-hops.html" role="menuitem"><img src="icons/game_mine_1-0.png" alt="" />Hops</a>
+        <a href="tic.html" role="menuitem"><img src="icons/joystick-5.png" alt="" />TicTac</a>
       </div>
 
       <div class="start-menu-footer">
-        <button type="button" class="button" data-open-settings aria-label="Display and Mouse settings">Settings</button>
+        <button type="button" class="luna-nav luna-nav--logoff" data-action="log-off" aria-label="Log off">
+          <span class="luna-nav-badge" aria-hidden="true"></span>
+          <span>Log Off</span>
+        </button>
+        <button type="button" class="luna-nav luna-nav--shutdown" data-action="turn-off" aria-label="Turn off computer">
+          <span class="luna-nav-badge" aria-hidden="true"></span>
+          <span>Turn Off Computer</span>
+        </button>
       </div>
     </div>
   </div>
@@ -427,9 +426,13 @@
     <div class="window-body">
       <fieldset>
         <legend>Appearance</legend>
-        <div class="field-row" style="align-items:center; gap:8px;">
-          <input type="checkbox" id="pref-use-dark" />
-          <label for="pref-use-dark">Use dark color scheme for windows and desktop</label>
+        <div class="field-row" style="align-items:center; gap:8px; flex-wrap:wrap;">
+          <label for="pref-color-scheme">Color scheme:</label>
+          <select id="pref-color-scheme" style="flex:1; min-width:180px;">
+            <option value="blue">Default (Blue)</option>
+            <option value="olive">Olive Green</option>
+            <option value="silver">Silver</option>
+          </select>
         </div>
       </fieldset>
       <fieldset>
@@ -472,31 +475,87 @@
     </div>
   </div>
 
+  <div id="turnoff-dialog" class="turnoff-overlay" hidden>
+    <section class="window turnoff-card" role="dialog" aria-modal="true" aria-labelledby="turnoff-title">
+      <div class="title-bar">
+        <div class="title-bar-text" id="turnoff-title">Turn off computer</div>
+        <div class="title-bar-controls">
+          <button type="button" aria-label="Close" data-turnoff-close></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <p class="turnoff-question">What do you want the computer to do?</p>
+        <div class="turnoff-actions">
+          <button type="button" class="luna-choice luna-choice--standby" data-turnoff="standby">
+            <span class="luna-choice-badge" aria-hidden="true"></span>
+            <span>Stand By</span>
+          </button>
+          <button type="button" class="luna-choice luna-choice--off" data-turnoff="off">
+            <span class="luna-choice-badge" aria-hidden="true"></span>
+            <span>Turn Off</span>
+          </button>
+          <button type="button" class="luna-choice luna-choice--restart" data-turnoff="restart">
+            <span class="luna-choice-badge" aria-hidden="true"></span>
+            <span>Restart</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="powered-off" class="powered-off" hidden>
+    <p>It&rsquo;s now safe to turn off your computer.</p>
+    <button type="button" class="button" data-power-on>Turn the computer back on</button>
+  </div>
+
   <script src="desktop-config.js"></script>
   <script src="clouty-prefs.js"></script>
   <script src="xp-desktop.js"></script>
+  <script src="xp-datetime.js"></script>
   <script>
     (function () {
       var cfg = window.CloutyDesktopConfig || {};
-      var spot = document.getElementById("iframe-spotify");
-      if (spot && cfg.spotifyEmbed) spot.src = cfg.spotifyEmbed;
-      var cl = document.getElementById("iframe-cloutai");
-      if (cl && cfg.embedCloutAI) cl.src = cfg.embedCloutAI;
       var pf = document.getElementById("link-portfolio");
       if (pf && cfg.portfolioUrl) pf.href = cfg.portfolioUrl;
+
+      /* Spotify is injected on request only: nothing third-party loads before that click. */
+      var slot = document.getElementById("spotify-slot");
+      var load = document.getElementById("btn-load-spotify");
+      if (slot && load && cfg.spotifyEmbed) {
+        load.addEventListener("click", function () {
+          var frame = document.createElement("iframe");
+          frame.id = "iframe-spotify";
+          frame.title = "Spotify";
+          frame.width = "100%";
+          frame.height = "80";
+          frame.loading = "lazy";
+          frame.style.border = "0";
+          frame.style.borderRadius = "0";
+          frame.src = cfg.spotifyEmbed;
+          slot.innerHTML = "";
+          slot.appendChild(frame);
+        });
+      }
     })();
 
     (function () {
       var bootScreen = document.getElementById("boot");
       var blurTargets = document.querySelectorAll(".blur-target");
-      var hasBooted = sessionStorage.getItem("cloutySessionBoot");
+      var hasBooted = null;
+      try {
+        hasBooted = sessionStorage.getItem("cloutySessionBoot");
+      } catch (e) {
+        /* Storage blocked (strict privacy mode): show the boot screen, never trap on it. */
+      }
 
       window.finishBoot = function () {
         bootScreen.classList.add("fade-out");
         blurTargets.forEach(function (el) {
           el.classList.remove("blur-target");
         });
-        sessionStorage.setItem("cloutySessionBoot", "true");
+        try {
+          sessionStorage.setItem("cloutySessionBoot", "true");
+        } catch (e) {}
         setTimeout(function () {
           bootScreen.style.display = "none";
         }, 800);
@@ -571,47 +630,86 @@
     })();
 
     (function () {
-      var form = document.getElementById("note-form");
-      var input = document.getElementById("note-input");
-      var color = document.getElementById("note-color");
-      var canvas = document.getElementById("notes-canvas");
-      if (!form) return;
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        if (!input.value.trim()) return;
-        var note = document.createElement("div");
-        note.className = "window";
-        note.style.cssText =
-          "position:absolute; top:" +
-          Math.random() * 80 +
-          "px; left:" +
-          Math.random() * 80 +
-          "px; width:150px; box-shadow:2px 2px 5px rgba(0,0,0,0.3); z-index:10;";
-        note.innerHTML =
-          '<div class="window-body" style="background:' +
-          color.value +
-          '; padding:8px;">' +
-          "<p style=\"margin:0; font-size:12px; word-wrap:break-word;\">" +
-          input.value.replace(/</g, "&lt;") +
-          '</p><div style="text-align:right; margin-top:5px;"><button type="button" style="font-size:10px; padding:2px;" onclick="this.closest(\'.window\').remove()">Del</button></div></div>';
-        canvas.appendChild(note);
-        input.value = "";
-      });
-
-      var nc = document.querySelector("[data-notes-close]");
-      if (nc) nc.addEventListener("click", function () {
-        if (window.CloutyDesktop && window.CloutyDesktop.minimizeApp) {
-          window.CloutyDesktop.minimizeApp("notes");
-        }
-      });
-      var cc = document.querySelector("[data-cloutai-close]");
-      if (cc) cc.addEventListener("click", function () {
-        if (window.CloutyDesktop && window.CloutyDesktop.minimizeApp) {
-          window.CloutyDesktop.minimizeApp("cloutai");
-        }
+      document.querySelectorAll("[data-dt-close]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          if (window.CloutyDesktop && window.CloutyDesktop.minimizeApp) {
+            window.CloutyDesktop.minimizeApp("datetime");
+          }
+        });
       });
     })();
 
+  </script>
+  <script>
+    /* Start menu's Log Off and Turn Off Computer, in XP's navigation colours */
+    (function () {
+      var dialog = document.getElementById("turnoff-dialog");
+      var offScreen = document.getElementById("powered-off");
+      var status = document.getElementById("settings-status");
+
+      function setStatus(text) {
+        if (status) status.textContent = text;
+      }
+
+      function closeDialog() {
+        if (dialog) dialog.hidden = true;
+      }
+
+      document.querySelectorAll('[data-action="turn-off"]').forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          if (window.CloutyDesktop && window.CloutyDesktop.closeStartMenu) {
+            window.CloutyDesktop.closeStartMenu();
+          }
+          if (dialog) dialog.hidden = false;
+          var first = dialog ? dialog.querySelector(".luna-choice") : null;
+          if (first) first.focus();
+        });
+      });
+
+      document.querySelectorAll('[data-action="log-off"]').forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          try {
+            sessionStorage.removeItem("cloutySessionBoot");
+          } catch (e) {}
+          location.reload();
+        });
+      });
+
+      document.querySelectorAll("[data-turnoff-close]").forEach(function (btn) {
+        btn.addEventListener("click", closeDialog);
+      });
+
+      document.querySelectorAll("[data-turnoff]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var what = btn.getAttribute("data-turnoff");
+          if (what === "restart") {
+            location.reload();
+            return;
+          }
+          closeDialog();
+          if (what === "standby") {
+            setStatus("Standing by. The desktop is still here.");
+            return;
+          }
+          if (offScreen) {
+            offScreen.hidden = false;
+            var again = offScreen.querySelector("[data-power-on]");
+            if (again) again.focus();
+          }
+        });
+      });
+
+      var poweredOn = document.querySelector("[data-power-on]");
+      if (poweredOn) {
+        poweredOn.addEventListener("click", function () {
+          if (offScreen) offScreen.hidden = true;
+        });
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeDialog();
+      });
+    })();
   </script>
   <script src="maze.js" defer></script>
 </body>

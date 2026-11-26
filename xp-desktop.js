@@ -8,8 +8,7 @@
   var GRID = 76;
 
   var APP_LABELS = {
-    notes: "Sticky Notes",
-    cloutai: "CloutAI"
+    datetime: "Date and Time"
   };
 
   function getLayout() {
@@ -49,12 +48,16 @@
       month: "short",
       day: "numeric"
     });
-    el.innerHTML =
+    var html =
       '<span class="clock-time">' +
       timeStr +
       '</span><span class="clock-date">' +
       dateStr +
       "</span>";
+    if (el._clockHtml !== html) {
+      el.innerHTML = html;
+      el._clockHtml = html;
+    }
   }
 
   /* ----- Start menu ----- */
@@ -372,17 +375,17 @@
       }
 
       btnInner.addEventListener("click", function (e) {
-        if (window.matchMedia("(hover: hover)").matches && getLayout() === "desktop") {
-          return;
-        }
         e.preventDefault();
         var open = item.classList.contains("is-open");
-        items.forEach(function (o) {
-          o.classList.remove("is-open");
+        items.forEach(function (other) {
+          other.classList.remove("is-open");
+          var b = other.querySelector(".start-btn");
+          if (b) b.setAttribute("aria-expanded", "false");
         });
         hideAllDetachedFlyouts(menu);
         if (!open && flyout) {
           item.classList.add("is-open");
+          btnInner.setAttribute("aria-expanded", "true");
           positionDetachedFlyout(item, flyout);
         }
       });
@@ -411,14 +414,6 @@
         var id = el.getAttribute("data-open-app");
         closeStartMenu();
         openAppWindow(id);
-      });
-    });
-
-    document.querySelectorAll('[data-action="help-cloutai"]').forEach(function (el) {
-      el.addEventListener("click", function (e) {
-        e.preventDefault();
-        closeStartMenu();
-        openAppWindow("cloutai");
       });
     });
 
@@ -596,10 +591,29 @@
     return Math.round(v / GRID) * GRID;
   }
 
-  function loadIconPos(id) {
+  var memoryStore = {};
+
+  /* Storage can throw outright in strict privacy modes; fall back to memory. */
+  function readStore(key) {
     try {
-      var raw = localStorage.getItem(ICON_POS_PREFIX + getLayout() + "." + id);
-      if (!raw) return null;
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+    }
+  }
+
+  function writeStore(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      memoryStore[key] = value;
+    }
+  }
+
+  function loadIconPos(id) {
+    var raw = readStore(ICON_POS_PREFIX + getLayout() + "." + id);
+    if (!raw) return null;
+    try {
       return JSON.parse(raw);
     } catch (err) {
       return null;
@@ -607,12 +621,10 @@
   }
 
   function saveIconPos(id, x, y) {
-    try {
-      localStorage.setItem(
-        ICON_POS_PREFIX + getLayout() + "." + id,
-        JSON.stringify({ x: x, y: y })
-      );
-    } catch (err) {}
+    writeStore(
+      ICON_POS_PREFIX + getLayout() + "." + id,
+      JSON.stringify({ x: x, y: y })
+    );
   }
 
   function placeIcon(el, x, y) {
@@ -647,6 +659,8 @@
     icons.forEach(function (icon) {
       icon.addEventListener("pointerdown", function (e) {
         if (e.button > 0) return;
+        /* Deliberately no preventDefault and no pointer capture yet: capturing here
+           retargets the click away from the <a>, so shortcuts did nothing in Firefox. */
         iconDragState = {
           icon: icon,
           pid: e.pointerId,
@@ -654,21 +668,9 @@
           y0: e.clientY,
           l0: icon.offsetLeft,
           t0: icon.offsetTop,
-          moved: false
+          moved: false,
+          captured: false
         };
-        icon.classList.add("is-dragging");
-        try {
-          icon.setPointerCapture(e.pointerId);
-        } catch (err) {}
-        e.preventDefault();
-      });
-
-      icon.addEventListener("click", function (e) {
-        if (icon.getAttribute("data-dragged") === "1") {
-          e.preventDefault();
-          e.stopPropagation();
-          icon.removeAttribute("data-dragged");
-        }
       });
     });
 
@@ -679,7 +681,15 @@
         var st = iconDragState;
         var dx = e.clientX - st.x0;
         var dy = e.clientY - st.y0;
-        if (Math.abs(dx) + Math.abs(dy) > 4) st.moved = true;
+        if (!st.moved) {
+          if (Math.abs(dx) + Math.abs(dy) <= 4) return;
+          st.moved = true;
+          st.icon.classList.add("is-dragging");
+          try {
+            st.icon.setPointerCapture(st.pid);
+            st.captured = true;
+          } catch (err) {}
+        }
         st.icon.style.left = snap(st.l0 + dx) + "px";
         st.icon.style.top = snap(st.t0 + dy) + "px";
       },
@@ -688,16 +698,26 @@
 
     document.addEventListener("pointerup", function (e) {
       if (!iconDragState || e.pointerId !== iconDragState.pid) return;
-      var ic = iconDragState.icon;
-      try {
-        ic.releasePointerCapture(e.pointerId);
-      } catch (err) {}
-      ic.classList.remove("is-dragging");
-      if (iconDragState.moved) {
-        ic.setAttribute("data-dragged", "1");
-      }
-      saveIconPos(ic.getAttribute("data-icon-id"), ic.offsetLeft, ic.offsetTop);
+      var st = iconDragState;
       iconDragState = null;
+      var ic = st.icon;
+      if (st.captured) {
+        try {
+          ic.releasePointerCapture(st.pid);
+        } catch (err) {}
+      }
+      ic.classList.remove("is-dragging");
+      if (!st.moved) return; /* plain click: let the <a> navigate */
+      saveIconPos(ic.getAttribute("data-icon-id"), ic.offsetLeft, ic.offsetTop);
+      /* Swallow the click that follows a drag so the shortcut does not open. */
+      var swallow = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+      };
+      document.addEventListener("click", swallow, true);
+      setTimeout(function () {
+        document.removeEventListener("click", swallow, true);
+      }, 0);
     });
 
     document.addEventListener("pointercancel", function (e) {
@@ -722,7 +742,7 @@
     initWindowChrome();
     initDesktopIcons();
 
-    /* Sticky Notes + CloutAI start minimized in markup; open via taskbar / Start. */
+    /* The Date and Time window starts minimized; open it from the tray clock. */
     syncTaskButtons();
   });
 

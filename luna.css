@@ -1,0 +1,685 @@
+/**
+ * Luna — the Windows XP design language, taken from Microsoft's own
+ * "Windows XP Visual Guidelines" (2001):
+ *
+ *   Fonts   Franklin Gothic for display type over 14 pt only, Tahoma 8/9/11 pt
+ *           for everything else, Trebuchet MS Bold 10 pt for window title bars,
+ *           Verdana Bold 8 pt for tear-off / floating palettes.
+ *   Colors  A fresh, friendly blue with red, amber and green accents; gradients
+ *           and glows give depth. Three official schemes: Default (Blue),
+ *           Olive Green and Silver.
+ *   Controls round corners, subtle dimensionality, colour that shows state.
+ *   Chrome  green Start button, red Close button, light notification area.
+ *
+ * Franklin Gothic is not licensable for the web, so display type is set in
+ * Libre Franklin, its open revival, served from fonts/.
+ */
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("fonts/libre-franklin-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --luna-font-ui: Tahoma, "Segoe UI", Arial, sans-serif;
+  --luna-font-title: "Trebuchet MS", Tahoma, "Segoe UI", sans-serif;
+  --luna-font-palette: Verdana, Tahoma, "Segoe UI", sans-serif;
+  --luna-font-display: "Libre Franklin", "Franklin Gothic Medium", Tahoma, sans-serif;
+
+  /* Default (Blue) — the signature scheme */
+  --luna-frame: #0058e6;
+  --luna-title-top: #0997ff;
+  --luna-title-8: #0053ee;
+  --luna-title-40: #0050ee;
+  --luna-title-88: #0060ff;
+  --luna-title-bottom: #003dd7;
+  --luna-title-text: #fff;
+  --luna-title-shadow: 1px 1px #0f1089;
+
+  --luna-face: #ece9d8;
+  --luna-panel: #fff;
+  --luna-border: #7f9db9;
+  --luna-highlight: #316ac5;
+  --luna-highlight-text: #fff;
+  --luna-legend: #0046d5;
+  --luna-disabled: #a1a192;
+  --luna-caption-btn: #0050ee;
+
+  --luna-taskbar-top: #3a81dd;
+  --luna-taskbar-mid: #245edc;
+  --luna-taskbar-bottom: #1b4aa8;
+  --luna-taskbar-edge: #8cbfff;
+  --luna-tray-top: #4d8fe8;
+  --luna-tray-mid: #245edc;
+  --luna-tray-bottom: #1a4a9e;
+  --luna-task-top: #d8e8ff;
+  --luna-task-bottom: #9bbce8;
+  --luna-task-active-top: #a8c8f5;
+  --luna-task-active-bottom: #6b9bd8;
+  --luna-clock-text: #fff;
+
+  /* Green Start button (guidelines: green invites the first click) */
+  --luna-start-top: #5edb5e;
+  --luna-start-mid: #31a431;
+  --luna-start-bottom: #008d00;
+  --luna-start-hover: #6ff06f;
+  --luna-start-active: #267c08;
+
+  /* Desktop */
+  --luna-desktop: #4480f0;
+}
+
+/* Olive Green — comforting, natural, softer toned */
+html[data-scheme="olive"] {
+  --luna-frame: #77853b;
+  --luna-title-top: #a8b463;
+  --luna-title-8: #8a9748;
+  --luna-title-40: #7c8a39;
+  --luna-title-88: #93a04f;
+  --luna-title-bottom: #5a6628;
+  --luna-title-text: #fff;
+  --luna-title-shadow: 1px 1px #3f4a1b;
+
+  --luna-face: #ece9d8;
+  --luna-panel: #fff;
+  --luna-border: #9aa47c;
+  --luna-highlight: #7c8a39;
+  --luna-highlight-text: #fff;
+  --luna-legend: #4a5d23;
+  --luna-caption-btn: #7c8a39;
+
+  --luna-taskbar-top: #a9b665;
+  --luna-taskbar-mid: #77853b;
+  --luna-taskbar-bottom: #5f6c2c;
+  --luna-taskbar-edge: #cfd79a;
+  --luna-tray-top: #8e9b4c;
+  --luna-tray-mid: #77853b;
+  --luna-tray-bottom: #606d2d;
+  --luna-task-top: #eef1d8;
+  --luna-task-bottom: #c3cb9c;
+  --luna-task-active-top: #dfe5bd;
+  --luna-task-active-bottom: #a9b47c;
+}
+
+/* Silver — metallic, precision sculpted, neutral */
+html[data-scheme="silver"] {
+  --luna-frame: #adb0bf;
+  --luna-title-top: #f6f6fb;
+  --luna-title-8: #ececf2;
+  --luna-title-40: #e2e2ea;
+  --luna-title-88: #d7d7e2;
+  --luna-title-bottom: #b7b7c7;
+  --luna-title-text: #1e1e2a;
+  --luna-title-shadow: none;
+
+  --luna-face: #ece9d8;
+  --luna-panel: #fff;
+  --luna-border: #a9adba;
+  --luna-highlight: #8c93a8;
+  --luna-highlight-text: #fff;
+  --luna-legend: #4a5568;
+  --luna-caption-btn: #8d94a8;
+
+  --luna-taskbar-top: #f2f2f8;
+  --luna-taskbar-mid: #dcdce6;
+  --luna-taskbar-bottom: #b7b7c7;
+  --luna-taskbar-edge: #ffffff;
+  --luna-tray-top: #eaeaF2;
+  --luna-tray-mid: #d4d4e0;
+  --luna-tray-bottom: #b9b9c9;
+  --luna-task-top: #fbfbfe;
+  --luna-task-bottom: #dedee9;
+  --luna-task-active-top: #efeff6;
+  --luna-task-active-bottom: #c7c7d6;
+  --luna-clock-text: #1e1e2a;
+}
+
+/* ---------- Typography ----------
+   Tahoma is the system font at 8, 9 or 11 pt. At 96 dpi 8 pt is 11 px, XP's
+   everyday UI size, so 11 px is the base here; 9 pt (12 px) is for help-body
+   headings and 11 pt (15 px) for the largest UI text. */
+
+html {
+  font-family: var(--luna-font-ui);
+  font-size: 11px;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+optgroup,
+option,
+label,
+legend,
+fieldset,
+menu,
+.window,
+.window-body,
+.status-bar,
+.status-bar-field,
+.start-btn,
+.task-btn {
+  font-family: var(--luna-font-ui);
+}
+
+body,
+p,
+li,
+label,
+input,
+select,
+textarea,
+button,
+legend,
+.window,
+.window-body,
+.status-bar-field {
+  font-size: 11px;
+}
+
+/* Window title bars: Trebuchet MS Bold 10 pt (≈13 px at 96 dpi) */
+.window .title-bar,
+.title-bar {
+  font-family: var(--luna-font-title);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 5px 3px 3px;
+  border-top: 1px solid var(--luna-title-top);
+  border-left: 1px solid var(--luna-title-top);
+  border-right: 1px solid var(--luna-title-bottom);
+  border-bottom: 1px solid var(--luna-title-bottom);
+  border-radius: 7px 7px 0 0;
+  background: linear-gradient(
+    180deg,
+    var(--luna-title-top) 0%,
+    var(--luna-title-8) 8%,
+    var(--luna-title-40) 40%,
+    var(--luna-title-88) 88%,
+    var(--luna-title-88) 93%,
+    var(--luna-title-top) 95%,
+    var(--luna-title-bottom) 96%,
+    var(--luna-title-bottom) 100%
+  );
+  color: var(--luna-title-text);
+}
+
+.window .title-bar-text,
+.title-bar-text {
+  font-family: var(--luna-font-title);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--luna-title-text);
+  text-shadow: var(--luna-title-shadow);
+  padding-left: 3px;
+}
+
+/* The red Close button is a system cue, so it stays red in every scheme. */
+.window .title-bar-controls button[aria-label="Close"]:not(:disabled) {
+  background-color: #e0663d;
+}
+
+/* Min / max / help follow the scheme's caption colour */
+.window .title-bar-controls button:not([aria-label="Close"]):not(:disabled) {
+  background-color: var(--luna-caption-btn);
+}
+
+/* ---------- Display type: Franklin Gothic over 14 pt ---------- */
+
+.luna-display,
+h1.retro-welcome {
+  font-family: var(--luna-font-display);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-transform: none;
+}
+
+/* The desktop's own greeting (display type over 14 pt) */
+.retro-welcome {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: max(clamp(52px, 11vmin, 168px), env(safe-area-inset-top));
+  z-index: 1;
+  margin: 0;
+  padding: 0 max(14px, env(safe-area-inset-left), env(safe-area-inset-right));
+  box-sizing: border-box;
+  text-align: center;
+  pointer-events: none;
+  font-size: clamp(1.5rem, 4.2vw, 2.6rem);
+  line-height: 1.12;
+  max-width: 100vw;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: manual;
+  color: #f3f8ff;
+  text-shadow:
+    0 1px 2px rgba(0, 24, 60, 0.5),
+    0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+html[data-scheme="silver"] .retro-welcome {
+  color: #2b3242;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- Controls: state colour, highlights, group boxes ---------- */
+
+.window .window-body {
+  background: var(--luna-face);
+}
+
+/* Group boxes are square-cornered in XP; only buttons carry the rounded edge */
+fieldset {
+  border: 1px solid #d8d8d0;
+  border-radius: 0;
+}
+
+legend {
+  color: var(--luna-legend);
+  padding: 0 3px;
+  font-size: 11px;
+}
+
+.window .button,
+button.button {
+  border-radius: 3px;
+}
+
+.window .button:hover:not(:disabled),
+button.button:hover:not(:disabled) {
+  border-color: var(--luna-frame);
+}
+
+.window .button:focus-visible,
+button.button:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -3px;
+}
+
+button:disabled,
+.button:disabled {
+  color: var(--luna-disabled);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+  border: 1px solid var(--luna-border);
+  border-radius: 2px;
+  background: #fff;
+  padding: 2px 3px;
+}
+
+input[type="text"]:disabled,
+select:disabled,
+textarea:disabled {
+  background: #ebebea;
+  color: var(--luna-disabled);
+}
+
+menu[role="tablist"] button:hover {
+  color: var(--luna-legend);
+}
+
+menu[role="tablist"] button[aria-selected="true"] {
+  background: var(--luna-face);
+  color: #000;
+}
+
+.status-bar-field {
+  background: var(--luna-face);
+  color: #000;
+}
+
+/* Floating palettes (tear-off): Verdana Bold 8 pt title bars */
+.spotify-tray-popout > .title-bar,
+.spotify-tray-popout > .title-bar .title-bar-text {
+  font-family: var(--luna-font-palette);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------- Shell chrome in the three schemes ---------- */
+
+#taskbar {
+  background: linear-gradient(
+    180deg,
+    var(--luna-taskbar-top) 0%,
+    var(--luna-taskbar-mid) 45%,
+    var(--luna-taskbar-bottom) 100%
+  );
+  border-top: 1px solid var(--luna-taskbar-edge);
+}
+
+#btn-start {
+  background: linear-gradient(
+    180deg,
+    var(--luna-start-top) 0%,
+    var(--luna-start-mid) 48%,
+    var(--luna-start-bottom) 100%
+  );
+}
+
+#btn-start:hover {
+  background: linear-gradient(
+    180deg,
+    var(--luna-start-hover) 0%,
+    var(--luna-start-mid) 48%,
+    var(--luna-start-bottom) 100%
+  );
+}
+
+#btn-start:active {
+  background: linear-gradient(
+    180deg,
+    var(--luna-start-mid) 0%,
+    var(--luna-start-bottom) 60%,
+    var(--luna-start-active) 100%
+  );
+}
+
+.task-btn {
+  background: linear-gradient(180deg, var(--luna-task-top) 0%, var(--luna-task-bottom) 100%);
+}
+
+.task-btn[aria-pressed="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--luna-task-active-top) 0%,
+    var(--luna-task-active-bottom) 100%
+  );
+}
+
+.taskbar-tray-music {
+  background: linear-gradient(
+    180deg,
+    var(--luna-tray-top) 0%,
+    var(--luna-tray-mid) 55%,
+    var(--luna-tray-bottom) 100%
+  );
+}
+
+.taskbar-tray-music[aria-expanded="true"],
+.taskbar-tray-music.is-active {
+  background: linear-gradient(
+    180deg,
+    var(--luna-tray-top) 0%,
+    var(--luna-tray-mid) 50%,
+    var(--luna-tray-bottom) 100%
+  );
+  filter: brightness(1.12);
+}
+
+#clock-tray {
+  background: linear-gradient(
+    180deg,
+    var(--luna-tray-top) 0%,
+    var(--luna-tray-mid) 60%,
+    var(--luna-tray-bottom) 100%
+  );
+  color: var(--luna-clock-text);
+}
+
+/* ---------- Shared page shell for the game windows ---------- */
+
+.luna-page {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  color: #000;
+  background-color: var(--luna-desktop);
+  background-image: url("wallpaper.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  /* `fixed` breaks badly on many mobile browsers (iOS): tiled or immovable bg */
+  background-attachment: scroll;
+}
+
+@media (min-width: 769px) {
+  .luna-page {
+    background-attachment: fixed;
+  }
+}
+
+.luna-app {
+  margin: 0;
+  max-width: 100%;
+  box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.luna-app > .window-body {
+  background: var(--luna-face);
+}
+
+/* Group box that holds a game panel */
+.luna-panel {
+  margin: 0;
+  padding: 8px;
+  background: var(--luna-face);
+  border: 1px solid #d8d8d0;
+  border-radius: 0;
+}
+
+/* Sunken white field: XP text boxes and read-outs */
+.luna-field {
+  background: #fff;
+  border: 1px solid var(--luna-border);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  padding: 3px 4px;
+  font-family: var(--luna-font-ui);
+  font-size: 11px;
+}
+
+/* The playfield itself: a sunken white frame, like an XP picture box */
+.luna-viewport {
+  background: #fff;
+  border: 1px solid var(--luna-border);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.luna-lcd {
+  font-family: var(--luna-font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+  color: #003399;
+}
+
+/* Luna command buttons for the on-screen game pads */
+.luna-key {
+  font-family: var(--luna-font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  border: 1px solid #7b8aa0;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fdfdfd 0%, #f4f3ee 45%, #e7e5d8 100%);
+  box-shadow: inset 0 1px 0 #fff;
+  cursor: pointer;
+}
+
+.luna-key:active {
+  background: linear-gradient(180deg, #e2e1d6 0%, #f4f3ee 55%, #fdfdfd 100%);
+  border-color: #5c6a80;
+}
+
+.luna-key:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -3px;
+}
+
+/* ---------- Navigation buttons: colour carries the weight of the action ----------
+   Blue is neutral, green starts something, amber is a milder high-impact step
+   (Log Off), red is the high-impact one (Close, Turn Off Computer). */
+
+.start-menu-footer {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+}
+
+.luna-nav {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 8px;
+  font: 700 11px var(--luna-font-ui);
+  color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.luna-nav:hover {
+  filter: brightness(1.06);
+}
+
+.luna-nav-badge {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.luna-nav--logoff {
+  background: linear-gradient(180deg, #f6d98a 0%, #e6a93c 52%, #c9801c 100%);
+}
+
+.luna-nav--shutdown {
+  background: linear-gradient(180deg, #f08a58 0%, #de5c2f 45%, #b23c17 100%);
+}
+
+/* ---------- Turn off computer ---------- */
+
+.turnoff-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.turnoff-overlay[hidden],
+.powered-off[hidden] {
+  display: none;
+}
+
+.turnoff-card {
+  width: min(420px, 94vw);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.turnoff-question {
+  margin: 6px 0 14px;
+  text-align: center;
+}
+
+.turnoff-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.luna-choice {
+  width: 108px;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font: 700 11px var(--luna-font-ui);
+  color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.luna-choice:hover {
+  filter: brightness(1.06);
+}
+
+.luna-choice:focus-visible {
+  outline: 1px dotted #fff;
+  outline-offset: -5px;
+}
+
+.luna-choice-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.luna-choice--standby {
+  background: linear-gradient(180deg, #f6d98a 0%, #e6a93c 55%, #c9801c 100%);
+}
+
+.luna-choice--off {
+  background: linear-gradient(180deg, #f08a58 0%, #de5c2f 50%, #b23c17 100%);
+}
+
+.luna-choice--restart {
+  background: linear-gradient(180deg, #8fe791 0%, #31a431 55%, #008d00 100%);
+}
+
+.powered-off {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  box-sizing: border-box;
+  background: #000;
+  color: #d8d8d8;
+  text-align: center;
+}
+
+.powered-off p {
+  margin: 0;
+  font: 600 clamp(1rem, 2.2vw, 1.5rem) var(--luna-font-display);
+}
+
+/* Reduce motion: XP moves subtly; honour the OS setting */
+@media (prefers-reduced-motion: reduce) {
+  .luna-app,
+  #start-menu,
+  .desktop-icon,
+  .spotify-tray-popout {
+    transition: none !important;
+  }
+}

@@ -4,226 +4,125 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Cloutris - System Ready</title>
+<link rel="stylesheet" href="vendor/xp.css" />
+<link rel="stylesheet" href="luna.css" />
 <style>
-    /* --- SYSTEM FONTS & RESET --- */
-    @font-face {
-        font-family: 'W95';
-        src: local('Tahoma'), local('Verdana'), sans-serif;
-    }
-    
-    :root {
-        --win-gray: #c0c0c0;
-        --win-dark: #808080;
-        --win-darker: #000000;
-        --win-light: #ffffff;
-        --win-blue: #000080;
-        --teal-bg: #008080;
-    }
-
     * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-    body {
-        margin: 0; padding: 0;
-        background-color: var(--teal-bg);
-        font-family: 'W95', sans-serif;
-        height: 100vh; height: 100dvh;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        overflow: hidden;
-    }
+    html, body { height: 100%; }
 
-    /* --- WINDOW UI --- */
-    .window {
-        background: var(--win-gray);
-        border: 2px solid;
-        border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
-        box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
-        padding: 3px;
-        display: flex; flex-direction: column;
-        width: 100%; max-width: 450px;
-        position: relative;
-    }
+    .tetris-app { width: min(96vw, 480px); max-width: none; }
 
-    .title-bar {
-        background: linear-gradient(90deg, var(--win-blue), #1084d0);
-        padding: 3px 6px;
-        display: flex; justify-content: space-between; align-items: center;
-        color: white; font-weight: bold; font-size: 14px; margin-bottom: 4px;
-    }
-
-    .win-controls { display: flex; gap: 3px; }
-    .btn-win {
-        width: 16px; height: 14px;
-        background: var(--win-gray);
-        border: 1px solid;
-        border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
-        font-size: 10px; color: black; line-height: 10px;
-        display: flex; align-items: center; justify-content: center;
-        text-decoration: none; cursor: pointer;
-    }
-    .btn-win:active { border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); transform: translate(1px, 1px); }
-
-    /* --- GAME LAYOUT --- */
     .game-layout {
-        display: flex; gap: 10px; padding: 10px;
-        border: 2px solid;
-        border-color: var(--win-dark) var(--win-light) var(--win-light) var(--win-dark);
-        justify-content: center;
+        display: flex; gap: 10px; justify-content: center;
+        padding: 10px; background: var(--luna-face);
     }
 
-    .viewport {
-        position: relative;
-        background: black;
-        border: 2px solid;
-        border-color: var(--win-dark) var(--win-light) var(--win-light) var(--win-dark);
-        width: 200px; height: 400px; /* Logical Size */
-    }
+    .viewport { position: relative; width: 200px; height: 400px; }
 
-    canvas { display: block; width: 100%; height: 100%; }
+    #canvas { display: block; width: 100%; height: 100%; background: #000; border-radius: 1px; }
 
-    /* Sidebar */
-    .sidebar { display: flex; flex-direction: column; gap: 15px; width: 100px; }
-    .panel {
-        background: var(--win-gray);
-        border: 2px solid;
-        border-color: var(--win-light) var(--win-dark) var(--win-dark) var(--win-light);
-        padding: 5px; text-align: center;
-    }
-    .label { font-size: 11px; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; }
+    .sidebar { display: flex; flex-direction: column; gap: 10px; width: 124px; }
+
+    .luna-panel { padding: 5px 7px 7px; }
+
     .lcd {
-        background: black; color: #00ff00;
-        font-family: 'Courier New', monospace; font-weight: bold; font-size: 16px;
-        padding: 4px; border: 2px solid;
-        border-color: var(--win-dark) var(--win-light) var(--win-light) var(--win-dark);
-        text-align: right;
+        font-family: var(--luna-font-ui);
+        font-size: 17px; font-weight: 700; text-align: right;
+        color: #003399; background: #fff;
+        border: 1px solid var(--luna-border); border-radius: 2px;
+        padding: 1px 4px;
     }
 
-    /* --- OVERLAYS --- */
+    .next-box { padding: 2px; }
+
     #overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85);
+        position: absolute; inset: 0;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        z-index: 50; color: white;
+        gap: 10px; background: rgba(0, 0, 0, 0.55); color: #fff; z-index: 5;
     }
-    
-    .start-btn {
-        padding: 10px 20px; font-size: 16px; font-weight: bold;
-        background: var(--win-gray); color: black;
-        border: 2px solid;
-        border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
-        cursor: pointer; margin-top: 15px;
-        font-family: 'W95', sans-serif;
-    }
-    .start-btn:active { border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); transform: translate(1px, 1px); }
 
-    /* --- CONTROLS (Mobile) --- */
+    #status-text { font-family: var(--luna-font-display); font-size: 18px; font-weight: 600; }
+
     .mobile-controls {
-        display: none; padding-top: 15px; gap: 10px; width: 100%;
-        justify-content: center; margin-bottom: 35px;
+        display: none; padding: 8px 10px 10px; gap: 10px; width: 100%;
+        justify-content: center; background: var(--luna-face);
     }
-    .dpad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(2, 50px); gap: 5px; }
-    .action { display: flex; align-items: flex-end; }
-    
-    .key {
-        background: var(--win-gray);
-        border: 2px solid;
-        border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
-        font-size: 20px; font-weight: bold;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-    }
-    .key:active { background: #b0b0b0; border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); }
-    .key-big { width: 70px; height: 70px; border-radius: 50%; background: var(--win-blue); color: white; border: 2px solid white; }
 
-    /* --- TASKBAR --- */
-    .taskbar {
-        position: absolute; bottom: 0; left: 0; width: 100%; height: 28px;
-        background: var(--win-gray);
-        border-top: 2px solid var(--win-light);
-        display: flex; align-items: center; padding: 2px;
-        z-index: 100;
-    }
-    .start-menu-btn {
-        display: flex; align-items: center; gap: 4px;
-        height: 22px; padding: 0 6px; margin-left: 2px;
-        background: var(--win-gray);
-        border: 2px solid;
-        border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
-        font-weight: bold; font-size: 11px; text-decoration: none; color: black;
-        box-shadow: 1px 1px 0px black;
-    }
-    .start-menu-btn:active { border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker); box-shadow: none; transform: translate(1px, 1px); }
+    .dpad { display: grid; grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(2, 48px); gap: 5px; }
+
+    .action { display: flex; align-items: flex-end; }
+
+    .key { display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+    .key-big { width: 68px; height: 68px; border-radius: 4px; font-size: 12px; }
 
     @media (max-width: 600px) {
-        body { padding: 0; background: var(--win-gray); }
-        .window { width: 100%; height: 100%; border: none; box-shadow: none; max-width: none; }
-        .game-layout { border: none; flex: 1; align-items: center; }
+        .tetris-app { width: 100%; max-width: none; margin: 0; }
+        .game-layout { flex: 1; align-items: center; padding: 6px; }
         .mobile-controls { display: flex; }
-        .sidebar { gap: 5px; }
-        .lcd { font-size: 14px; }
+        .sidebar { gap: 6px; width: 96px; }
+        .lcd { font-size: 15px; }
     }
 </style>
 </head>
-<body>
+<body class="luna-page">
 
-<div class="window">
+<main class="window luna-app tetris-app" role="application" aria-label="Cloutris window">
     <div class="title-bar">
-        <span>Cloutris.exe</span>
-        <div class="win-controls">
-            <div class="btn-win">_</div>
-            <div class="btn-win">□</div>
-            <a href="index.html" class="btn-win">x</a>
+        <div class="title-bar-text">
+            <img src="icons/defragment-0.png" alt="" width="16" height="16" style="vertical-align: text-bottom; margin-right: 6px; image-rendering: pixelated;" />
+            Cloutris
+        </div>
+        <div class="title-bar-controls">
+            <button type="button" aria-label="Close" title="Close and return to desktop" onclick="location.href='index.html'"></button>
         </div>
     </div>
 
     <div class="game-layout">
-        <div class="viewport">
+        <div class="luna-viewport viewport">
             <canvas id="canvas" width="200" height="400"></canvas>
             <div id="overlay">
-                <div id="status-text" style="font-size:20px; font-weight:bold; margin-bottom:10px; display:none;">GAME OVER</div>
-                <button class="start-btn" id="btn-start">Start System</button>
+                <div id="status-text" style="display:none;">GAME OVER</div>
+                <button type="button" class="button" id="btn-start">Start System</button>
             </div>
         </div>
 
         <div class="sidebar">
-            <div class="panel">
-                <div class="label">SCORE</div>
+            <fieldset class="luna-panel">
+                <legend>Score</legend>
                 <div class="lcd" id="score">0</div>
-            </div>
-            <div class="panel">
-                <div class="label">LEVEL</div>
+            </fieldset>
+            <fieldset class="luna-panel">
+                <legend>Level</legend>
                 <div class="lcd" id="level">1</div>
-            </div>
-            <div class="panel">
-                <div class="label">NEXT</div>
-                <div style="background:black; border:2px solid; border-color:var(--win-dark) var(--win-light) var(--win-light) var(--win-dark); padding:2px;">
+            </fieldset>
+            <fieldset class="luna-panel">
+                <legend>Next</legend>
+                <div class="luna-viewport next-box">
                     <canvas id="next" width="80" height="80"></canvas>
                 </div>
-            </div>
+            </fieldset>
         </div>
     </div>
 
     <div class="mobile-controls">
         <div class="dpad">
-            <div style="grid-column:2"><div class="key" id="k-rot" style="width:100%; height:100%">↻</div></div>
-            <div style="grid-column:1; grid-row:2"><div class="key" id="k-left" style="width:100%; height:100%">←</div></div>
-            <div style="grid-column:2; grid-row:2"><div class="key" id="k-down" style="width:100%; height:100%">↓</div></div>
-            <div style="grid-column:3; grid-row:2"><div class="key" id="k-right" style="width:100%; height:100%">→</div></div>
+            <div style="grid-column:2"><button type="button" class="luna-key key" id="k-rot" style="width:100%; height:100%;">↻</button></div>
+            <div style="grid-column:1; grid-row:2"><button type="button" class="luna-key key" id="k-left" style="width:100%; height:100%;">←</button></div>
+            <div style="grid-column:2; grid-row:2"><button type="button" class="luna-key key" id="k-down" style="width:100%; height:100%;">↓</button></div>
+            <div style="grid-column:3; grid-row:2"><button type="button" class="luna-key key" id="k-right" style="width:100%; height:100%;">→</button></div>
         </div>
         <div class="action">
-            <div class="key key-big" id="k-drop">DROP</div>
+            <button type="button" class="luna-key key key-big" id="k-drop">Drop</button>
         </div>
     </div>
-</div>
 
-<div class="taskbar">
-    <a href="index.html" class="start-menu-btn">
-        <span style="display:inline-block; width:12px; height:12px; background:linear-gradient(135deg, #f00 33%, #0f0 33%, #0f0 66%, #00f 66%); border:1px solid #808080;"></span>
-        Start
-    </a>
-    <div style="border-left:2px solid gray; border-right:1px solid white; height:20px; margin:0 6px;"></div>
-    <div style="background:#d4d4d4; padding:2px 5px; font-size:11px; font-weight:bold; box-shadow:inset 1px 1px black;">Cloutris</div>
-</div>
+    <div class="status-bar">
+        <p class="status-bar-field">Clouty Games</p>
+        <p class="status-bar-field">Cloutris</p>
+    </div>
+</main>
 
 <script>
 /**
