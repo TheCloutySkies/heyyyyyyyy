@@ -17,8 +17,56 @@
   var yearInput = null;
   var timeField = null;
   var zoneName = null;
-  var zoneReadonly = null;
   var built = false;
+
+  /* Zones on the map: IANA id, a name, and the longitude its marker sits on */
+  var ZONES = [
+    { id: "Pacific/Honolulu", label: "Honolulu", lon: -157 },
+    { id: "America/Los_Angeles", label: "Los Angeles", lon: -118 },
+    { id: "America/Denver", label: "Denver", lon: -105 },
+    { id: "America/Chicago", label: "Chicago", lon: -87 },
+    { id: "America/New_York", label: "New York", lon: -74 },
+    { id: "America/Sao_Paulo", label: "Sao Paulo", lon: -46 },
+    { id: "Europe/London", label: "London", lon: 0 },
+    { id: "Europe/Moscow", label: "Moscow", lon: 37 },
+    { id: "Asia/Kolkata", label: "Kolkata", lon: 77 },
+    { id: "Asia/Shanghai", label: "Shanghai", lon: 116 },
+    { id: "Asia/Tokyo", label: "Tokyo", lon: 139 },
+    { id: "Australia/Sydney", label: "Sydney", lon: 151 },
+    { id: "Pacific/Auckland", label: "Auckland", lon: 174 }
+  ];
+
+  /* Seven segments, a to g, in a 12 x 22 digit box */
+  var SEGMENTS = {
+    a: { x: 2, y: 0, w: 8, h: 2 },
+    b: { x: 10, y: 2, w: 2, h: 8 },
+    c: { x: 10, y: 12, w: 2, h: 8 },
+    d: { x: 2, y: 20, w: 8, h: 2 },
+    e: { x: 0, y: 12, w: 2, h: 8 },
+    f: { x: 0, y: 2, w: 2, h: 8 },
+    g: { x: 2, y: 10, w: 8, h: 2 }
+  };
+
+  var SEG_ON = {
+    "0": "abcdef",
+    "1": "bc",
+    "2": "abdeg",
+    "3": "abcdg",
+    "4": "bcfg",
+    "5": "acdfg",
+    "6": "acdefg",
+    "7": "abc",
+    "8": "abcdefg",
+    "9": "abcdfg"
+  };
+
+  var zoneSelect = null;
+  var zoneDots = null;
+  var zoneWatch = null;
+  var watchName = null;
+  var watchOffset = null;
+  var pickedZone = null;
+  var digits = [];
   var view = new Date();
   var selected = new Date();
   var lastTimeText = "";
@@ -55,6 +103,171 @@
     } catch (err) {
       return "Unknown";
     }
+  }
+
+  /* ----- time zones: map markers, a picker, and the digital watch ----- */
+
+  function zoneOffsetLabel(id) {
+    try {
+      var parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: id,
+        timeZoneName: "short"
+      }).formatToParts(new Date());
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === "timeZoneName") return parts[i].value;
+      }
+    } catch (e) {}
+    return "";
+  }
+
+  function zoneClock(id) {
+    try {
+      var parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: id,
+        hourCycle: "h23",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      }).formatToParts(new Date());
+      var out = "";
+      for (var i = 0; i < parts.length; i++) {
+        var kind = parts[i].type;
+        if (kind === "hour" || kind === "minute" || kind === "second") {
+          out += parts[i].value;
+        }
+      }
+      return out;
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function localZoneId() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function defaultZone() {
+    var local = localZoneId();
+    var i;
+    for (i = 0; i < ZONES.length; i++) {
+      if (ZONES[i].id === local) return ZONES[i].id;
+    }
+    /* Same clock as here, when the exact zone is not on the map */
+    var here = local ? zoneOffsetLabel(local) : "";
+    if (here) {
+      for (i = 0; i < ZONES.length; i++) {
+        if (zoneOffsetLabel(ZONES[i].id) === here) return ZONES[i].id;
+      }
+    }
+    return "Europe/London";
+  }
+
+  function buildWatch() {
+    if (!zoneWatch || digits.length) return;
+    var ns = "http://www.w3.org/2000/svg";
+    for (var i = 0; i < 6; i++) {
+      if (i === 2 || i === 4) {
+        var colon = document.createElement("span");
+        colon.className = "dt-lcd-colon";
+        colon.appendChild(document.createTextNode(":"));
+        zoneWatch.appendChild(colon);
+      }
+      var svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("class", "dt-lcd-digit");
+      svg.setAttribute("viewBox", "0 0 12 22");
+      svg.setAttribute("aria-hidden", "true");
+      for (var seg in SEGMENTS) {
+        if (!Object.prototype.hasOwnProperty.call(SEGMENTS, seg)) continue;
+        var box = SEGMENTS[seg];
+        var rect = document.createElementNS(ns, "rect");
+        rect.setAttribute("data-seg", seg);
+        rect.setAttribute("x", String(box.x));
+        rect.setAttribute("y", String(box.y));
+        rect.setAttribute("width", String(box.w));
+        rect.setAttribute("height", String(box.h));
+        rect.setAttribute("rx", "0.6");
+        svg.appendChild(rect);
+      }
+      svg.setAttribute("data-on", SEG_ON["0"]);
+      zoneWatch.appendChild(svg);
+      digits.push(svg);
+    }
+  }
+
+  function renderWatch() {
+    if (!zoneWatch) return;
+    buildWatch();
+    if (!pickedZone) pickedZone = defaultZone();
+    var clock = zoneClock(pickedZone) || "000000";
+    var i;
+    for (i = 0; i < digits.length; i++) {
+      var digit = clock.charAt(i);
+      digits[i].setAttribute("data-on", SEG_ON[digit] || "");
+    }
+    var entry = null;
+    for (i = 0; i < ZONES.length; i++) {
+      if (ZONES[i].id === pickedZone) entry = ZONES[i];
+    }
+    if (watchName) watchName.textContent = entry ? entry.label : pickedZone;
+    if (watchOffset) watchOffset.textContent = zoneOffsetLabel(pickedZone);
+  }
+
+  function syncZonePicker() {
+    if (zoneSelect) zoneSelect.value = pickedZone;
+    if (!zoneDots) return;
+    zoneDots.querySelectorAll(".dt-zone-dot").forEach(function (dot) {
+      dot.setAttribute(
+        "aria-pressed",
+        dot.getAttribute("data-zone") === pickedZone ? "true" : "false"
+      );
+    });
+  }
+
+  function pickZone(id) {
+    pickedZone = id;
+    syncZonePicker();
+    renderWatch();
+  }
+
+  function buildZonePicker() {
+    if (zoneSelect && !zoneSelect.options.length) {
+      ZONES.forEach(function (zone) {
+        var option = document.createElement("option");
+        option.value = zone.id;
+        var offset = zoneOffsetLabel(zone.id);
+        option.textContent = zone.label + (offset ? " (" + offset + ")" : "");
+        zoneSelect.appendChild(option);
+      });
+      zoneSelect.addEventListener("change", function () {
+        pickZone(zoneSelect.value);
+      });
+    }
+
+    if (zoneDots && !zoneDots.childNodes.length) {
+      ZONES.forEach(function (zone) {
+        var dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "dt-zone-dot";
+        dot.setAttribute("data-zone", zone.id);
+        dot.setAttribute("aria-pressed", "false");
+        dot.setAttribute("aria-label", zone.label);
+        dot.title = zone.label;
+        dot.style.left = (((zone.lon + 180) / 360) * 100).toFixed(2) + "%";
+        dot.style.top = "52%";
+        dot.addEventListener("click", function () {
+          pickZone(zone.id);
+        });
+        zoneDots.appendChild(dot);
+      });
+    }
+
+    if (!pickedZone) pickedZone = defaultZone();
+    syncZonePicker();
+    renderWatch();
   }
 
   /* ----- calendar ----- */
@@ -161,6 +374,8 @@
       timeField.value = text;
       lastTimeText = text;
     }
+
+    renderWatch();
   }
 
   /* ----- tabs ----- */
@@ -205,7 +420,9 @@
     renderGrid();
     buildMarks();
     if (zoneName) zoneName.textContent = zoneLabel();
-    if (zoneReadonly) zoneReadonly.textContent = zoneLabel();
+    if (!pickedZone) pickedZone = defaultZone();
+    syncZonePicker();
+    renderWatch();
     lastTimeText = "";
     /* XP always opens on the Date & Time tab. */
     var firstTab = win.querySelector('menu[role="tablist"] button[role="tab"]');
@@ -227,7 +444,11 @@
     yearInput = document.getElementById("dt-year");
     timeField = document.getElementById("dt-time");
     zoneName = document.getElementById("dt-zone-name");
-    zoneReadonly = document.getElementById("dt-zone-readonly");
+    zoneSelect = document.getElementById("dt-zone-select");
+    zoneDots = document.getElementById("dt-zone-dots");
+    zoneWatch = document.getElementById("dt-zone-watch");
+    watchName = document.getElementById("dt-watch-name");
+    watchOffset = document.getElementById("dt-watch-offset");
 
     if (monthSel) {
       MONTHS.forEach(function (name, index) {
@@ -274,6 +495,7 @@
     }
 
     initTabs();
+    buildZonePicker();
 
     var clock = document.getElementById("clock-tray");
     if (clock) {

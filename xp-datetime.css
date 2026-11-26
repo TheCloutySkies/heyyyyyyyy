@@ -27,6 +27,9 @@
   border-right: 0;
   background: #fff;
   padding: 10px;
+  /* The zone map makes this tab taller than XP's dialog; keep it on screen */
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
 }
 
 .dt-page {
@@ -237,14 +240,134 @@
   color: #000;
 }
 
-.dt-readonly {
-  margin: 2px 0 8px;
-  font-weight: bold;
+/* ----- Time Zone tab: pick a zone on the map, read it on a digital watch ----- */
+
+.dt-page--zone {
+  display: block;
 }
 
-.dt-note {
-  margin: 8px 0 0;
-  color: #555;
+.dt-zone-map {
+  position: relative;
+  margin: 2px 0 0;
+  border: 1px solid var(--luna-border, #7f9db9);
+  background: #fff;
+}
+
+.dt-zone-map img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dt-zone-dots {
+  position: absolute;
+  inset: 0;
+}
+
+.dt-zone-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -6px 0 0 -6px;
+  padding: 0;
+  border: 1px solid #3d5a72;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.dt-zone-dot:hover {
+  background: #cfe0f7;
+  border-color: #24486e;
+}
+
+.dt-zone-dot:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: 2px;
+}
+
+.dt-zone-dot[aria-pressed="true"] {
+  background: var(--luna-highlight, #316ac5);
+  border-color: #16386b;
+  box-shadow: 0 0 0 2px rgba(49, 106, 197, 0.3);
+}
+
+.dt-zone-select-label {
+  display: block;
+  margin: 8px 0 3px;
+}
+
+.dt-zone-select {
+  width: 100%;
+}
+
+.dt-watch {
+  margin-top: 10px;
+  padding: 6px 8px 7px;
+  text-align: center;
+  background: #101a12;
+  border: 1px solid #2c3a2f;
+  border-radius: 3px;
+}
+
+.dt-watch-name {
+  font-size: 11px;
+  color: #a9c6ad;
+}
+
+.dt-watch-offset {
+  font-size: 10px;
+  color: #7fa885;
+}
+
+/* Seven-segment read-out, like an old digital watch */
+.dt-lcd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  margin: 3px 0 2px;
+  transform: skewX(-4deg);
+}
+
+.dt-lcd-digit {
+  width: 18px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+.dt-lcd-digit rect {
+  fill: #8ef6a6;
+  opacity: 0.1;
+}
+
+.dt-lcd-digit[data-on~="a"] rect[data-seg="a"],
+.dt-lcd-digit[data-on~="b"] rect[data-seg="b"],
+.dt-lcd-digit[data-on~="c"] rect[data-seg="c"],
+.dt-lcd-digit[data-on~="d"] rect[data-seg="d"],
+.dt-lcd-digit[data-on~="e"] rect[data-seg="e"],
+.dt-lcd-digit[data-on~="f"] rect[data-seg="f"],
+.dt-lcd-digit[data-on~="g"] rect[data-seg="g"] {
+  opacity: 1;
+}
+
+.dt-lcd-colon {
+  font: 700 24px/1 Tahoma, "Segoe UI", sans-serif;
+  color: #8ef6a6;
+  animation: dt-colon-blink 1s step-end infinite;
+}
+
+@keyframes dt-colon-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-lcd-colon {
+    animation: none;
+  }
 }
 
 .dt-footer {
