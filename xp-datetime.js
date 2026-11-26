@@ -19,21 +19,21 @@
   var zoneName = null;
   var built = false;
 
-  /* Zones on the map: IANA id, a name, and the longitude its marker sits on */
+  /* Zones on the map: IANA id, a name, and the point its marker sits on */
   var ZONES = [
-    { id: "Pacific/Honolulu", label: "Honolulu", lon: -157 },
-    { id: "America/Los_Angeles", label: "Los Angeles", lon: -118 },
-    { id: "America/Denver", label: "Denver", lon: -105 },
-    { id: "America/Chicago", label: "Chicago", lon: -87 },
-    { id: "America/New_York", label: "New York", lon: -74 },
-    { id: "America/Sao_Paulo", label: "Sao Paulo", lon: -46 },
-    { id: "Europe/London", label: "London", lon: 0 },
-    { id: "Europe/Moscow", label: "Moscow", lon: 37 },
-    { id: "Asia/Kolkata", label: "Kolkata", lon: 77 },
-    { id: "Asia/Shanghai", label: "Shanghai", lon: 116 },
-    { id: "Asia/Tokyo", label: "Tokyo", lon: 139 },
-    { id: "Australia/Sydney", label: "Sydney", lon: 151 },
-    { id: "Pacific/Auckland", label: "Auckland", lon: 174 }
+    { id: "Pacific/Honolulu", label: "Honolulu", lon: -157.9, lat: 21.3 },
+    { id: "America/Los_Angeles", label: "Los Angeles", lon: -118.2, lat: 34.1 },
+    { id: "America/Denver", label: "Denver", lon: -105.0, lat: 39.7 },
+    { id: "America/Chicago", label: "Chicago", lon: -87.6, lat: 41.9 },
+    { id: "America/New_York", label: "New York", lon: -74.0, lat: 40.7 },
+    { id: "America/Sao_Paulo", label: "Sao Paulo", lon: -46.6, lat: -23.5 },
+    { id: "Europe/London", label: "London", lon: -0.1, lat: 51.5 },
+    { id: "Europe/Moscow", label: "Moscow", lon: 37.6, lat: 55.8 },
+    { id: "Asia/Kolkata", label: "Kolkata", lon: 88.4, lat: 22.6 },
+    { id: "Asia/Shanghai", label: "Shanghai", lon: 121.5, lat: 31.2 },
+    { id: "Asia/Tokyo", label: "Tokyo", lon: 139.7, lat: 35.7 },
+    { id: "Australia/Sydney", label: "Sydney", lon: 151.2, lat: -33.9 },
+    { id: "Pacific/Auckland", label: "Auckland", lon: 174.8, lat: -36.8 }
   ];
 
   /* Seven segments, a to g, in a 12 x 22 digit box */
@@ -65,6 +65,7 @@
   var zoneWatch = null;
   var watchName = null;
   var watchOffset = null;
+  var watchText = null;
   var pickedZone = null;
   var digits = [];
   var view = new Date();
@@ -216,8 +217,16 @@
     for (i = 0; i < ZONES.length; i++) {
       if (ZONES[i].id === pickedZone) entry = ZONES[i];
     }
-    if (watchName) watchName.textContent = entry ? entry.label : pickedZone;
-    if (watchOffset) watchOffset.textContent = zoneOffsetLabel(pickedZone);
+    var name = entry ? entry.label : pickedZone;
+    var offset = zoneOffsetLabel(pickedZone);
+    if (watchName) watchName.textContent = name;
+    if (watchOffset) watchOffset.textContent = offset;
+    if (watchText) {
+      /* The digits are drawn, not text, so give screen readers the reading */
+      watchText.textContent =
+        name + ", " + clock.replace(/(\d\d)(\d\d)(\d\d)/, "$1:$2:$3") +
+        (offset ? " " + offset : "");
+    }
   }
 
   function syncZonePicker() {
@@ -261,7 +270,7 @@
         dot.setAttribute("aria-label", zone.label);
         dot.title = zone.label;
         dot.style.left = (((zone.lon + 180) / 360) * 100).toFixed(2) + "%";
-        dot.style.top = "52%";
+        dot.style.top = (((90 - zone.lat) / 180) * 100).toFixed(2) + "%";
         dot.addEventListener("click", function () {
           pickZone(zone.id);
         });
@@ -453,6 +462,7 @@
     zoneWatch = document.getElementById("dt-zone-watch");
     watchName = document.getElementById("dt-watch-name");
     watchOffset = document.getElementById("dt-watch-offset");
+    watchText = document.getElementById("dt-watch-text");
 
     if (monthSel) {
       MONTHS.forEach(function (name, index) {
