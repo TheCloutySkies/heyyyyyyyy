@@ -296,19 +296,70 @@
       '<div class="title-bar-text"></div>' +
       '<div class="title-bar-controls">' +
       '<button type="button" aria-label="Minimize" data-minimize></button>' +
+      '<button type="button" aria-label="Maximize" data-maximize></button>' +
       '<button type="button" aria-label="Close" data-shell-close></button>' +
       "</div></div>" +
       '<div class="window-body pip-frame-body">' +
       '<iframe title="' +
       escapeAttr(title) +
-      '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"></iframe>' +
+      '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen' +
+      ' sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"></iframe>' +
       "</div>";
     win.querySelector(".title-bar-text").textContent = title;
-    win.querySelector("iframe").src = href;
+    /* embed=1 drops the game page's own window frame, so it is one window, not two */
+    win.querySelector("iframe").src =
+      href + (href.indexOf("?") === -1 ? "?" : "&") + "embed=1&v=3";
     layer.appendChild(win);
     attachShellWindowChrome(win);
+    initPipWindowSize(win);
     openAppWindow(id, title);
     return win;
+  }
+
+  /* Games drag-resize from their corner; Maximize fills the workspace. */
+  function initPipWindowSize(win) {
+    var toggle = win.querySelector("[data-maximize]");
+    var bar = win.querySelector(".title-bar");
+    var saved = null;
+
+    function setMaximized(on) {
+      win.classList.toggle("is-maximized", on);
+      if (toggle) {
+        toggle.setAttribute("aria-label", on ? "Restore" : "Maximize");
+      }
+      if (on) {
+        saved = {
+          left: win.style.left,
+          top: win.style.top,
+          width: win.style.width,
+          height: win.style.height
+        };
+        win.style.right = "auto";
+        win.style.left = "0px";
+        win.style.top = "0px";
+        win.style.width = "100%";
+        win.style.height = "100%";
+      } else if (saved) {
+        win.style.left = saved.left;
+        win.style.top = saved.top;
+        win.style.width = saved.width;
+        win.style.height = saved.height;
+      }
+      bringToFront(win);
+    }
+
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        setMaximized(!win.classList.contains("is-maximized"));
+      });
+    }
+
+    if (bar) {
+      bar.addEventListener("dblclick", function (e) {
+        if (e.target.closest(".title-bar-controls")) return;
+        setMaximized(!win.classList.contains("is-maximized"));
+      });
+    }
   }
 
   function initStartMenu() {
