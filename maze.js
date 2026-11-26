@@ -1891,8 +1891,8 @@
         sceneEl = new Audio();
         sceneEl.preload = "auto";
         sceneEl.loop = true;
-        sceneEl.volume = 0.7;
-        sceneEl.src = "eastereggmusic.mp3";
+        sceneEl.volume = 0.5;
+        sceneEl.src = "easter egg music.mp3";
         sceneEl.load();
       } catch (e) {
         sceneEl = null;
@@ -2116,7 +2116,7 @@
     if (sceneEl && !sceneFailed) {
       try {
         sceneEl.muted = false;
-        sceneEl.volume = 0.7;
+        sceneEl.volume = 0.5;
         sceneEl.currentTime = 0;
         var p = sceneEl.play();
         if (p && typeof p.then === "function") {
