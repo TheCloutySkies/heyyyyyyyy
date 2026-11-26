@@ -30,6 +30,7 @@
   /* The zone map makes this tab taller than XP's dialog; keep it on screen */
   max-height: min(70vh, 560px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .dt-page {
@@ -251,6 +252,7 @@
   margin: 2px 0 0;
   border: 1px solid var(--luna-border, #7f9db9);
   background: #fff;
+  overflow: hidden;
 }
 
 .dt-zone-map img {
@@ -264,17 +266,21 @@
   inset: 0;
 }
 
+/* xp.css gives every button a 75px minimum; a marker is a small round dot */
 .dt-zone-dot {
   position: absolute;
-  width: 11px;
-  height: 11px;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  min-width: 0;
+  min-height: 0;
   margin: -6px 0 0 -6px;
   padding: 0;
   border: 1px solid #3d5a72;
   border-radius: 50%;
   background: #fff;
-  cursor: pointer;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
 }
 
 .dt-zone-dot:hover {
