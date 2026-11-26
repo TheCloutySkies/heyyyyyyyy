@@ -862,9 +862,24 @@ html[data-embedded] .tic-back {
   display: none !important;
 }
 
-html[data-embedded] .game-container,
+html[data-embedded] .game-container {
+  padding: 0;
+  background: transparent;
+}
+
 html[data-embedded] .game-layout {
+  padding: 6px;
+  background: transparent;
   box-sizing: border-box;
+}
+
+html[data-embedded] .hops-actions {
+  padding: 4px 0 6px;
+  background: transparent;
+}
+
+html[data-embedded] .tic-shell .window-body {
+  padding: 8px 10px 10px;
 }
 
 .turnoff-overlay {
